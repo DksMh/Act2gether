@@ -1,0 +1,46 @@
+<header>
+  <div class="header-left">
+    <!-- 왼쪽: 로고 -->
+    <div class="logo"><a href="main.html">여기부터</a></div>
+
+    <!-- 가운데: 네비게이션 -->
+    <nav>
+      <ul class="main-menu">
+        <li><a href="#">투어 탐색</a></li>
+        <li><a href="#">모임 찾기</a></li>
+        <li class="has-submenu">
+          <a href="#">서비스 소개</a>
+          <ul class="submenu">
+            <li><a href="#">브랜드 스토리</a></li>
+          </ul>
+        </li>
+        <li class="has-submenu">
+          <a href="#">고객센터</a>
+          <ul class="submenu">
+            <li><a href="faq.html">F&Q</a></li>
+            <li><a href="qna.html">QnA</a></li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  <div class="header-right">
+    <!-- 오른쪽: 로그인 상태에 따라 달라짐 -->
+    <div class="header-actions">
+      <!-- [비로그인 시 노출] -->
+      <div class="auth-buttons" id="auth-buttons">
+        <a href="#">로그인</a>
+        <button class="btn-primary">회원가입</button>
+      </div>
+
+      <!-- [로그인 시 노출] -->
+      <div class="user-buttons" id="user-buttons" style="display: none">
+        <a href="#">찜 목록</a>
+        <button class="btn-secondary">내 정보</button>
+      </div>
+
+      <!-- 검색 아이콘 -->
+      <button class="search-icon" aria-label="검색">&#128269;</button>
+    </div>
+  </div>
+</header>
