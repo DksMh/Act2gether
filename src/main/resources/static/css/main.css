@@ -1,0 +1,335 @@
+
+/* main-section  영역 */
+.main-section {
+  position: relative;
+  padding: 2rem;
+  background: #eee;
+  height: 400px;
+}
+
+.travel-type-filter {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 200px;
+}
+
+.travel-type-filter h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.travel-type-filter ul {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.travel-type-filter li {
+  background: #f0f0f0;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.3rem;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+/*  공통 추천 섹션 */
+section.recommend {
+  padding: 3rem 2rem;
+}
+
+section.recommend h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tour-list {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tour-item {
+  flex: 1 1 300px;
+  background: #fafafa;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tour-item h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.recommend-section {
+  padding: 3rem 2rem;
+}
+
+.recommend-title h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.recommend-title span {
+  color: #007aff;
+}
+
+.recommend-title .interest-keyword {
+  color: #007aff;
+}
+
+.tour-slider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.tour-cards {
+  display: flex;
+  flex: 1;
+  gap: 1.5rem;
+  overflow: hidden;
+  /* overflow-x: auto; */
+}
+
+.tour-card {
+  flex: 1 1 calc(33.33% - 1rem); /* 3개 딱 맞게 */
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 1rem;
+}
+
+.tour-card .thumbnail {
+  background: #eee;
+  height: 12rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.tour-card .tags span {
+  font-size: 0.75rem;
+  background: #ddd;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  margin-right: 0.5rem;
+}
+
+/*유저 닉네임 섹션*/
+/* .usernickname-section{background: #eee;} */
+
+/*계절 섹션*/
+.season-section{background: #eee;}
+
+/*  맞춤 추천 섹션 */
+.region-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.recommend-tag-list .region {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  background-color: #f0f0f0;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.region.active {
+  background-color: #333;
+  color: #fff;
+}
+
+/* 카드 그리드 */
+.product-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.product-card {
+  background: #f4f4f4;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h3 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.card-header .arrow {
+  font-size: 1.2rem;
+  color: #555;
+}
+
+.desc {
+  margin: 0.8rem 0 0.5rem;
+  font-size: 0.95rem;
+  color: #333;
+  line-height: 1.4;
+}
+
+.meta {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/*  동행 추천 영역 스타일 */
+.companion-recommend-section {
+  padding: 3rem 2rem;
+  background: #ccc;
+  text-align: left;
+}
+
+.companion-recommend-section h2 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  line-height: 1.4;
+  margin-bottom: 2rem;
+}
+
+/* companion section 내부 grid 조정 */
+.companion-recommend-section .product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);  /*  2개 고정 */
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.companion-recommend-section .product-card {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.companion-recommend-section .btn-primary {
+  background: #eee;
+  color: #000;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+  width: fit-content;
+}
+
+.more-button {
+  background: #f4f4f4;
+  color: #000;
+  border: none;
+  font-weight: bold;
+  padding: 1rem 2rem;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+
+/* 기타 서비스 섹션 */
+.extra-services {
+  padding: 3rem 2rem;
+  background: #f0f8ff;
+}
+.extra-services h2 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  line-height: 1.4;
+  margin-bottom: 2rem;
+}
+
+.service-links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.service-box {
+  flex: 1 1 300px;
+  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.service-box button {
+  margin-top: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 0.3rem;
+  cursor: pointer;
+}
+
+
+/* 반응형 - 모바일 대응 */
+@media (max-width: 768px) {
+  .auth-buttons,
+  .user-buttons {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .search-icon {
+    margin-left: auto;
+  }
+
+  .travel-type-filter {
+    position: static;
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .tour-list,
+  .recommend-cards,
+  .companion-cards,
+  .service-links {
+    flex-direction: column;
+  }
+
+  section.recommend,
+  .custom-recommendation,
+  .companion-section,
+  .extra-services {
+    padding: 2rem 1rem;
+  }
+
+  .tour-item,
+  .card,
+  .companion-card,
+  .service-box {
+    width: 100%;
+  }
+
+  .companion-recommend-section .product-grid {
+    grid-template-columns: 1fr;  
+  }
+}

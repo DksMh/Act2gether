@@ -1,0 +1,118 @@
+/* ✅ FAQ 전체 섹션 */
+.customerservice-section {
+  margin: 0 auto 7rem;
+}
+
+/* 상단 안내 영역 */
+.page-title{
+  padding: 80px 20px;
+  text-align: center;
+  background: #eee;
+}
+
+.page-title h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-title p {
+  font-size: 1.2rem;
+}
+
+/* FAQ, QNA 공통부분 */
+.faq-list, .qna-guide, .qna-board {
+  list-style: none;
+  padding: 0;
+  width: 80%;
+  margin: 5rem auto 0;
+}
+/* FAQ */
+.faq-item {
+  border-bottom: 1px solid #eee;
+}
+
+.faq-question {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  background: #fff;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.faq-question:hover {
+  background: #f9f9f9;
+}
+
+.faq-question .category {
+  font-weight: bold;
+  color: #007aff;
+  font-size: 0.9rem;
+}
+
+/* 펼쳐진 답변 영역 */
+.faq-answer {
+  background: #f7f9fc;
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  color: #333;
+  line-height: 1.6;
+}
+
+.faq-answer a {
+  color: #007aff;
+  text-decoration: underline;
+}
+
+.faq-tags {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* QNA */
+.qna-section {
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.qna-guide {
+  background: #f9f9f9;
+  border-left: 4px solid #2b8ed4;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.qna-guide h2 {
+  margin-bottom: 0.8rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #222;
+}
+
+.guide-list {
+  padding-left: 1rem;
+  font-size: 1rem;
+  color: #444;
+  line-height: 1.6;
+}
+
+.guide-list li {
+  margin-bottom: 0.5rem;
+}
+.guide-list b{
+  color: #007aff;
+  text-decoration: underline;
+}
+
+.qna-board {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 2rem;
+  text-align: center;
+  color: #999;
+}
