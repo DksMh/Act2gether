@@ -143,7 +143,6 @@ header {
   cursor: pointer;
 }
 
-
 /* 푸터 */
 footer {
   padding: 2rem;
@@ -198,6 +197,4 @@ footer {
     align-items: center;
     width: 100%;
   }
-
-  
 }

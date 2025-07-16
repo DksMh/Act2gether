@@ -1,0 +1,420 @@
+/* onboarding.css */
+/* 기본 설정 */
+
+/* Main Container */
+.onboarding-container {
+  background: white;
+  margin: 0 10%;
+  position: relative;
+  margin-bottom: 5%;
+}
+
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5%;
+  gap: 3%;
+}
+
+.step {
+  width: 12%;
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+  transition: background 0.3s;ㅊ
+}
+
+.step.active {
+  background: #667eea;
+}
+
+.step.completed {
+  background: #4caf50;
+}
+
+/* Page Header */
+.page-header {
+  text-align: center;
+  margin-bottom: 8%;
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 2%;
+}
+
+.page-subtitle {
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.highlight {
+  color: #667eea;
+  font-weight: 600;
+}
+
+/* Profile Setup Page */
+.profile-setup {
+  display: block;
+}
+
+.profile-setup.hidden {
+  display: none;
+}
+
+.form-section {
+  margin-bottom: 8%;
+}
+
+.form-section h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4%;
+}
+
+.input-group {
+  display: flex;
+  gap: 3%;
+  margin-bottom: 5%;
+}
+
+.input-item {
+  flex: 1;
+}
+
+.input-item label {
+  display: block;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 2%;
+}
+
+.form-input {
+  width: 100%;
+  padding: 4%;
+  border: 2px solid #f0f0f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+  background: #f9f9f9;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+}
+
+.form-select {
+  width: 100%;
+  padding: 4%;
+  border: 2px solid #f0f0f0;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+}
+
+.confirmation-section {
+  margin-top: 8%;
+  padding: 5%;
+  background: #f9f9ff;
+  border-radius: 15px;
+  border: 2px solid #e8e8ff;
+}
+
+.confirmation-section h3 {
+  color: #667eea;
+  margin-bottom: 4%;
+}
+
+.confirmation-info {
+  display: flex;
+  gap: 5%;
+  margin-bottom: 4%;
+}
+
+.info-item {
+  flex: 1;
+  text-align: center;
+}
+
+.info-label {
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 2%;
+}
+
+.info-value {
+  font-weight: 600;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+/* Interest Selection Page */
+.interest-selection {
+  display: none;
+}
+
+.interest-selection.active {
+  display: block;
+}
+
+.question-section {
+  margin-bottom: 8%;
+}
+
+.question-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 3%;
+}
+
+.question-subtitle {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 4%;
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 3%;
+  margin-bottom: 5%;
+}
+
+.option-button {
+  padding: 3% 2%;
+  border: 2px solid #f0f0f0;
+  border-radius: 25px;
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+  font-weight: 500;
+  color: #333;
+}
+
+.option-button:hover {
+  border-color: #667eea;
+  background: #f9f9ff;
+}
+
+.option-button.selected {
+  border-color: #667eea;
+  background: #667eea;
+  color: white;
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  gap: 3%;
+  margin-top: 8%;
+}
+
+.btn {
+  flex: 1;
+  padding: 4%;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:disabled {
+  background: #ccc !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  opacity: 0.5;
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 3000;
+}
+
+.loading-spinner.active {
+  display: flex;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error Message */
+.error-message {
+  display: none;
+  background: #ffebee;
+  color: #c62828;
+  padding: 4%;
+  border-radius: 10px;
+  border: 1px solid #ffcdd2;
+  margin-top: 5%;
+  margin-bottom: 4%;
+  position: relative;
+}
+
+.error-message.show {
+  display: block;
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+.retry-button {
+  background: #f44336;
+  color: white;
+  border: none;
+  padding: 3% 6%;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 3%;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.retry-button:hover {
+  background: #d32f2f;
+}
+
+/* Success Message */
+.success-message {
+  display: none;
+  background: #e8f5e8;
+  color: #2e7d32;
+  padding: 4%;
+  border-radius: 10px;
+  border: 1px solid #c8e6c9;
+  margin-top: 5%;
+  margin-bottom: 4%;
+  position: relative;
+}
+
+.success-message.show {
+  display: block;
+  animation: slideInFromBottom 0.3s ease-out;
+}
+
+/* 에러/성공 메시지 애니메이션 */
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 확인 섹션 하단에 에러 메시지 전용 공간 */
+.message-area {
+  min-height: 60px;
+  margin-top: 3%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .onboarding-container {
+    max-width: 95%;
+    padding: 6%;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .input-group {
+    flex-direction: column;
+    gap: 4%;
+  }
+
+  .confirmation-info {
+    flex-direction: column;
+    gap: 3%;
+  }
+
+  .options-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 2%;
+  }
+
+  .option-button {
+    padding: 4% 2%;
+  }
+}
+
+@media (max-width: 480px) {
+  .onboarding-container {
+    max-width: 98%;
+    padding: 4%;
+  }
+
+  .page-title {
+    font-size: 1.3rem;
+  }
+
+  .options-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .step {
+    width: 15%;
+  }
+}
