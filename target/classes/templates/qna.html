@@ -1,45 +1,352 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>고객센터 - QNA</title>
-  <link rel="stylesheet" href="/css/style.css" />
-  <link rel="stylesheet" href="/css/customerservice.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <!-- <script src="/js/include.js"></script> -->
-</head>
-<body>
-  <!-- Header -->
-   <div th:replace="header :: header"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>고객센터 - QNA</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/qna.css" />
+    <link rel="stylesheet" href="/css/customerservice.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- <script src="/js/include.js"></script> -->
+    <!-- JavaScript 파일들 -->
+    <script src="/js/qna-api.js"></script>
+    <script src="/js/qna-ui.js"></script>
+    <script src="/js/qna-main.js"></script>
+  </head>
+  <body>
+    <!-- Header -->
+    <div th:replace="header :: header"></div>
 
-  <section class="customerservice-section">
-    <!-- 상단 타이틀 -->
-    <div class="page-title">
-      <h1>Q&A</h1>
-      <p>여기부터 서비스 이용 중 궁금한 사항을 자유롭게 질문하고 답변을 확인해보세요.</p>
-    </div>
-  
-    <!-- Q&A 이용안내 -->
-    <div class="qna-guide">
-      <h2>Q&A 게시판 이용안내</h2>
-      <ul class="guide-list">
-        <li>※ 운영취지에 위반되는 게시물은 관리자에 의해 삭제될 수 있다는 점 유의하여 주십시오.</li>
-        <li>※ 많은 분들이 문의하신 질문은 <b><a href="faq.html">FAQ</a></b>에 등록하였으니 많은 이용 부탁드립니다.</li>
-      </ul>
-    </div>
-  
-    <!-- 실제 Q&A 영역 (게시판 구현 영역 자리) -->
-    <div class="qna-board">
-      <p>여기에 게시글 목록 또는 Q&A 입력폼을 구성할 수 있습니다.</p>
-    </div>
-  </section>
-  
-  
-  
+    <section class="customerservice-section">
+      <!-- 상단 타이틀 -->
+      <div class="page-title">
+        <h1>QnA</h1>
+        <p>
+          여기부터 서비스 이용 중 궁금한 사항을 자유롭게 질문하고 답변을
+          확인해보세요.
+        </p>
+      </div>
 
-   <!-- Footer -->
-   <div th:replace="footer :: footer"></div>
+      <!-- Q&A 이용안내 -->
+      <div class="qna-guide">
+        <h2>Q&A 게시판 이용안내</h2>
+        <ul class="guide-list">
+          <li>
+            ※ 운영취지에 위반되는 게시물은 관리자에 의해 삭제될 수 있다는 점
+            유의하여 주십시오.
+          </li>
+          <li>
+            ※ 많은 분들이 문의하신 질문은 <b><a href="faq.html">FAQ</a></b
+            >에 등록하였으니 많은 이용 부탁드립니다.
+          </li>
+          <li>※ 개인정보가 포함된 문의는 비공개로 작성해주세요.</li>
+        </ul>
+      </div>
 
-</body>
+      <!-- 검색 및 필터 영역 -->
+      <div class="qna-search-section">
+        <div class="search-container">
+          <!-- 검색바 -->
+          <div class="search-bar">
+            <div class="search-input-group">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="제목 또는 내용으로 검색하세요..."
+                class="search-input"
+              />
+              <button id="searchBtn" class="btn btn-search">검색</button>
+            </div>
+          </div>
+
+          <!-- 필터 옵션 -->
+          <div class="filter-container">
+            <div class="filter-group">
+              <label class="filter-label">카테고리</label>
+              <select id="categoryFilter" class="filter-select">
+                <option value="">전체</option>
+                <option value="일반문의">일반문의</option>
+                <option value="신고">신고</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">답변상태</label>
+              <select id="statusFilter" class="filter-select">
+                <option value="">전체</option>
+                <option value="답변대기">답변대기</option>
+                <option value="답변완료">답변완료</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-toggle">
+                <input type="checkbox" id="myPostsOnly" />
+                <span class="toggle-slider"></span>
+                내 글만 보기
+              </label>
+            </div>
+
+            <button id="resetFilters" class="btn btn-outline btn-small">
+              <i class="fas fa-refresh"></i>
+              초기화
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 실제 Q&A 게시판 영역 -->
+      <div class="qna-board">
+        <!-- 게시글 목록 헤더 -->
+        <div class="qna-board-header">
+          <h3 class="board-title">문의 목록</h3>
+          <div class="qna-board-actions">
+            <div class="posts-count">
+              총 <span id="totalCount">0</span>개의 문의
+            </div>
+            <button id="writeBtn" class="btn btn-primary" style="display: none">
+              <i class="fas fa-pen"></i>
+              문의 작성
+            </button>
+          </div>
+        </div>
+
+        <!-- 로딩 인디케이터 -->
+        <div
+          id="loadingIndicator"
+          class="loading-indicator"
+          style="display: none"
+        >
+          <i class="fas fa-spinner fa-spin"></i>
+          <span>로딩 중...</span>
+        </div>
+
+        <!-- 게시글 목록 -->
+        <div id="postsList" class="posts-list">
+          <!-- 게시글 항목들이 동적으로 추가됩니다 -->
+        </div>
+
+        <!-- 페이지네이션 -->
+        <div id="pagination" class="pagination">
+          <!-- 페이지 버튼들이 동적으로 추가됩니다 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 게시글 작성/수정 모달 -->
+    <div id="postModal" class="qna-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalTitle">문의 작성</h3>
+          <button id="closeModal" class="btn-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form id="postForm" class="modal-body">
+          <div class="form-group">
+            <label for="postCategory" class="form-label">카테고리 *</label>
+            <select id="postCategory" class="form-control" required>
+              <option value="">카테고리 선택</option>
+              <option value="일반문의">일반문의</option>
+              <option value="신고">신고</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="postTitle" class="form-label">제목 *</label>
+            <input
+              type="text"
+              id="postTitle"
+              class="form-control"
+              placeholder="제목을 입력해주세요"
+              maxlength="255"
+              required
+            />
+            <div class="char-counter"><span id="titleCounter">0</span>/255</div>
+          </div>
+
+          <div class="form-group">
+            <label for="postContent" class="form-label">내용 *</label>
+            <textarea
+              id="postContent"
+              class="form-control textarea"
+              placeholder="문의 내용을 자세히 작성해주세요"
+              rows="8"
+              maxlength="5000"
+              required
+            ></textarea>
+            <div class="char-counter">
+              <span id="contentCounter">0</span>/5000
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="postImage" class="form-label">이미지 첨부</label>
+            <div class="file-upload-area" id="fileUploadArea">
+              <input
+                type="file"
+                id="postImage"
+                class="file-input"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+              />
+              <div class="file-upload-content">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>클릭하여 이미지를 선택하거나 드래그하여 업로드하세요</p>
+                <p class="file-info">JPG, PNG, WebP 파일 (최대 3MB)</p>
+              </div>
+            </div>
+            <div id="imagePreview" class="image-preview" style="display: none">
+              <img id="previewImg" src="" alt="미리보기" />
+              <button type="button" id="removeImage" class="btn-remove-image">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-checkbox">
+              <input type="checkbox" id="isLocked" checked />
+              <span class="checkbox-mark"></span>
+              비공개 설정 (본인만 볼 수 있음)
+            </label>
+            <p class="form-help">
+              체크 해제 시 다른 사용자도 게시글을 볼 수 있습니다.
+            </p>
+          </div>
+        </form>
+
+        <div class="modal-footer">
+          <button type="button" id="cancelBtn" class="btn btn-outline">
+            취소
+          </button>
+          <button
+            type="submit"
+            id="submitBtn"
+            form="postForm"
+            class="btn btn-primary"
+          >
+            <i class="fas fa-save"></i>
+            <span id="submitText">작성하기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 게시글 상세 보기 모달 -->
+    <div id="detailModal" class="qna-modal">
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <div class="detail-header">
+            <div class="detail-meta">
+              <div class="detail-badges">
+                <span id="detailCategory" class="category-badge"></span>
+                <span id="detailStatus" class="status-badge"></span>
+              </div>
+              <div class="detail-info">
+                <span id="detailAuthor"></span>
+                <span id="detailDate"></span>
+                <span id="detailViews"></span>
+              </div>
+            </div>
+            <div class="detail-actions">
+              <button
+                id="editPostBtn"
+                class="btn btn-small btn-outline"
+                style="display: none"
+              >
+                <i class="fas fa-edit"></i>
+                수정
+              </button>
+              <button
+                id="deletePostBtn"
+                class="btn btn-small btn-danger"
+                style="display: none"
+              >
+                <i class="fas fa-trash"></i>
+                삭제
+              </button>
+              <button id="closeDetailModal" class="btn-close">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+          <h3 id="detailTitle" class="detail-title"></h3>
+        </div>
+
+        <div class="modal-body">
+          <div class="detail-content">
+            <div id="detailContentText" class="content-text"></div>
+            <div id="detailImage" class="content-image" style="display: none">
+              <img id="detailImg" src="" alt="첨부 이미지" />
+            </div>
+          </div>
+
+          <!-- 답변 섹션 -->
+          <div class="replies-section">
+            <h4 class="replies-title">
+              <i class="fas fa-comments"></i>
+              관리자 답변
+            </h4>
+
+            <!-- 관리자 답변 작성 폼 (관리자만) -->
+            <div id="replyForm" class="reply-form" style="display: none">
+              <div class="form-group">
+                <textarea
+                  id="replyContent"
+                  class="form-control textarea"
+                  placeholder="답변을 작성해주세요..."
+                  rows="4"
+                  maxlength="2000"
+                ></textarea>
+                <div class="char-counter">
+                  <span id="replyCounter">0</span>/2000
+                </div>
+              </div>
+              <div class="reply-actions">
+                <button id="submitReply" class="btn btn-primary">
+                  <i class="fas fa-paper-plane"></i>
+                  답변 작성
+                </button>
+              </div>
+            </div>
+
+            <!-- 답변 목록 -->
+            <div id="repliesList" class="replies-list">
+              <!-- 답변들이 동적으로 추가됩니다 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 알림 토스트 -->
+    <div id="toast" class="toast">
+      <div class="toast-content">
+        <i id="toastIcon" class="toast-icon"></i>
+        <span id="toastMessage"></span>
+      </div>
+    </div>
+
+    <!-- 확인 다이얼로그 -->
+    <div id="confirmDialog" class="qna-modal">
+      <div class="modal-content modal-small">
+        <div class="modal-header">
+          <h3 id="confirmTitle">확인</h3>
+        </div>
+        <div class="modal-body">
+          <p id="confirmMessage"></p>
+        </div>
+        <div class="modal-footer">
+          <button id="confirmCancel" class="btn btn-outline">취소</button>
+          <button id="confirmOk" class="btn btn-danger">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="footer :: footer"></div>
+  </body>
 </html>

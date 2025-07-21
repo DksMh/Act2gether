@@ -1,0 +1,836 @@
+/* QnA 게시판 전용 스타일 - 기존 customerservice.css와 조화 */
+
+/* CSS 변수 정의 (기존 스타일과 조화) */
+:root {
+  --qna-primary: #3b82f6;
+  --qna-primary-hover: #2563eb;
+  --qna-secondary: #6b7280;
+  --qna-success: #10b981;
+  --qna-warning: #f59e0b;
+  --qna-danger: #ef4444;
+  --qna-light: #f8fafc;
+  --qna-medium: #e2e8f0;
+  --qna-dark: #374151;
+  --qna-text-primary: #1f2937;
+  --qna-text-secondary: #6b7280;
+  --qna-border: #d1d5db;
+  --qna-shadow-sm: 0 0.063rem 0.125rem rgba(0, 0, 0, 0.05);
+  --qna-shadow-md: 0 0.25rem 0.375rem -0.063rem rgba(0, 0, 0, 0.1);
+  --qna-shadow-lg: 0 0.625rem 0.938rem -0.188rem rgba(0, 0, 0, 0.1);
+  --qna-radius: 0.5rem;
+  --qna-transition: all 0.2s ease-in-out;
+}
+
+/* 게시판 헤더 액션 영역 */
+.qna-board-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 0.063rem solid var(--qna-border);
+}
+
+.qna-board-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.board-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--qna-text-primary);
+  margin: 0;
+}
+
+.posts-count {
+  font-size: 0.875rem;
+  color: var(--qna-text-secondary);
+}
+
+/* 로딩 인디케이터 */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: var(--qna-text-secondary);
+}
+
+.loading-indicator i {
+  font-size: 1.125rem;
+}
+
+/* 게시글 목록 */
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.post-item {
+  padding: 1rem;
+  border: 0.063rem solid var(--qna-border);
+  border-radius: var(--qna-radius);
+  transition: var(--qna-transition);
+  cursor: pointer;
+  background: white;
+}
+
+.post-item:hover {
+  border-color: var(--qna-primary);
+  box-shadow: var(--qna-shadow-md);
+}
+
+.post-item.my-post {
+  border-left: 0.25rem solid var(--qna-primary);
+  background: rgba(59, 130, 246, 0.02);
+}
+
+.post-item.locked {
+  background: rgba(107, 114, 128, 0.05);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.post-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--qna-text-primary);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.post-title .my-indicator {
+  background: var(--qna-primary);
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+
+.post-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--qna-text-secondary);
+}
+
+/* 배지 스타일 */
+.category-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.category-badge.일반문의 {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--qna-primary);
+}
+
+.category-badge.신고 {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--qna-danger);
+}
+
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.답변대기 {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--qna-warning);
+}
+
+.status-badge.답변완료 {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--qna-success);
+}
+
+/* 페이지네이션 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.page-btn {
+  padding: 0.5rem 0.75rem;
+  border: 0.063rem solid var(--qna-border);
+  border-radius: var(--qna-radius);
+  background: white;
+  color: var(--qna-text-secondary);
+  cursor: pointer;
+  transition: var(--qna-transition);
+  min-width: 2.5rem;
+  text-align: center;
+}
+
+.page-btn:hover {
+  border-color: var(--qna-primary);
+  color: var(--qna-primary);
+}
+
+.page-btn.active {
+  background: var(--qna-primary);
+  color: white;
+  border-color: var(--qna-primary);
+}
+
+.page-btn:disabled {
+  background: var(--qna-light);
+  color: var(--qna-text-secondary);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 버튼 스타일 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--qna-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--qna-transition);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--qna-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--qna-primary-hover);
+}
+
+.btn-outline {
+  background: white;
+  color: var(--qna-primary);
+  border: 0.063rem solid var(--qna-primary);
+}
+
+.btn-outline:hover {
+  background: var(--qna-primary);
+  color: white;
+}
+
+.btn-danger {
+  background: var(--qna-danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-small {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.btn-search {
+  margin-left: 0.5rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 모달 스타일 (기존 모달과 구분하기 위해 qna-modal 사용) */
+.qna-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.qna-modal.show {
+  display: flex;
+}
+
+.qna-modal .modal-content {
+  background: white;
+  border-radius: var(--qna-radius);
+  box-shadow: var(--qna-shadow-lg);
+  width: 90%;
+  max-width: 37.5rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.qna-modal .modal-large {
+  max-width: 50rem;
+}
+
+.qna-modal .modal-small {
+  max-width: 25rem;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.qna-modal .modal-header {
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 0.063rem solid var(--qna-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.qna-modal .modal-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--qna-text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: var(--qna-transition);
+}
+
+.btn-close:hover {
+  background: var(--qna-light);
+  color: var(--qna-text-primary);
+}
+
+.qna-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.qna-modal .modal-footer {
+  padding: 1rem 1.5rem 1.5rem;
+  border-top: 0.063rem solid var(--qna-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+/* 폼 스타일 */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--qna-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 0.063rem solid var(--qna-border);
+  border-radius: var(--qna-radius);
+  font-size: 1rem;
+  transition: var(--qna-transition);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--qna-primary);
+  box-shadow: 0 0 0 0.188rem rgba(59, 130, 246, 0.1);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 6rem;
+  font-family: inherit;
+}
+
+.char-counter {
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--qna-text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* 파일 업로드 */
+.file-upload-area {
+  border: 0.125rem dashed var(--qna-border);
+  border-radius: var(--qna-radius);
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--qna-transition);
+  position: relative;
+}
+
+.file-upload-area:hover,
+.file-upload-area.dragover {
+  border-color: var(--qna-primary);
+  background: rgba(59, 130, 246, 0.02);
+}
+
+.file-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-upload-content i {
+  font-size: 2rem;
+  color: var(--qna-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.file-upload-content p {
+  margin: 0.5rem 0;
+  color: var(--qna-text-secondary);
+}
+
+.file-info {
+  font-size: 0.75rem;
+  color: var(--qna-text-secondary);
+}
+
+.image-preview {
+  position: relative;
+  display: inline-block;
+  margin-top: 1rem;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 12.5rem;
+  border-radius: var(--qna-radius);
+  box-shadow: var(--qna-shadow-md);
+}
+
+.btn-remove-image {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  background: var(--qna-danger);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+/* 체크박스 */
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.form-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-mark {
+  width: 1rem;
+  height: 1rem;
+  border: 0.063rem solid var(--qna-border);
+  border-radius: 0.25rem;
+  position: relative;
+  transition: var(--qna-transition);
+}
+
+.form-checkbox input:checked + .checkbox-mark {
+  background: var(--qna-primary);
+  border-color: var(--qna-primary);
+}
+
+.form-checkbox input:checked + .checkbox-mark::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.form-help {
+  font-size: 0.75rem;
+  color: var(--qna-text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* 상세 보기 스타일 */
+.detail-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.detail-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--qna-text-secondary);
+}
+
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detail-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1rem 0 0 0;
+  word-break: break-word;
+  color: var(--qna-text-primary);
+}
+
+.detail-content {
+  margin-bottom: 2rem;
+}
+
+.content-text {
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--qna-text-primary);
+}
+
+.content-image {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.content-image img {
+  max-width: 100%;
+  max-height: 25rem;
+  border-radius: var(--qna-radius);
+  box-shadow: var(--qna-shadow-md);
+}
+
+/* 답변 섹션 */
+.replies-section {
+  border-top: 0.063rem solid var(--qna-border);
+  padding-top: 1.5rem;
+}
+
+.replies-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--qna-text-primary);
+}
+
+.reply-form {
+  background: var(--qna-light);
+  padding: 1rem;
+  border-radius: var(--qna-radius);
+  margin-bottom: 1.5rem;
+}
+
+.reply-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.replies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.reply-item {
+  background: var(--qna-light);
+  padding: 1rem;
+  border-radius: var(--qna-radius);
+  border-left: 0.25rem solid var(--qna-success);
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.reply-author {
+  font-weight: 600;
+  color: var(--qna-success);
+}
+
+.reply-date {
+  font-size: 0.75rem;
+  color: var(--qna-text-secondary);
+}
+
+.reply-content {
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--qna-text-primary);
+}
+
+.reply-actions-inline {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* 토스트 알림 */
+.toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: white;
+  border-radius: var(--qna-radius);
+  box-shadow: var(--qna-shadow-lg);
+  padding: 1rem 1.5rem;
+  z-index: 1100;
+  transform: translateX(25rem);
+  transition: transform 0.3s ease-in-out;
+  border-left: 0.25rem solid var(--qna-success);
+}
+
+.toast.show {
+  transform: translateX(0);
+}
+
+.toast.error {
+  border-left-color: var(--qna-danger);
+}
+
+.toast.warning {
+  border-left-color: var(--qna-warning);
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toast-icon {
+  font-size: 1.125rem;
+}
+
+.toast.success .toast-icon {
+  color: var(--qna-success);
+}
+
+.toast.error .toast-icon {
+  color: var(--qna-danger);
+}
+
+.toast.warning .toast-icon {
+  color: var(--qna-warning);
+}
+
+/* 빈 상태 */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--qna-text-secondary);
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--qna-medium);
+}
+
+.empty-state h3 {
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+  color: var(--qna-text-primary);
+}
+
+/* 기존 guide-list 스타일과 조화 */
+.qna-guide .guide-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 48rem) {
+  .qna-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .qna-search-section {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .search-input-group {
+    max-width: 100%;
+  }
+
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .filter-group {
+    justify-content: space-between;
+  }
+
+  .qna-board-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .post-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .post-info {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .qna-modal .modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+
+  .qna-modal .modal-header {
+    padding: 1rem;
+  }
+
+  .qna-modal .modal-body {
+    padding: 1rem;
+  }
+
+  .qna-modal .modal-footer {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .detail-actions {
+    align-self: flex-end;
+  }
+
+  .detail-info {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .detail-badges {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 30rem) {
+  .btn {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .btn-small {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  .post-title {
+    font-size: 0.875rem;
+  }
+
+  .board-title {
+    font-size: 1.125rem;
+  }
+
+  .qna-search-section {
+    padding: 0.75rem;
+  }
+
+  .qna-board {
+    padding: 1rem;
+  }
+}
