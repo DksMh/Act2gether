@@ -197,7 +197,36 @@ function proceedSignup() {
 
   alert("회원가입이 진행됩니다.");
   // 실제 회원가입 로직 구현
+
+  emailModal();
 }
+
+function emailModal(){
+  switchModal('signup', 'email');
+
+}
+
+// 이메일 코드 전송
+function sendCode() {
+  var email = $('#email').val();
+  console.log(email);
+  $.ajax({
+        url: "/users/sendCode",
+        type: 'post',
+        contentType: "text/plain",
+        data: email,
+        success: function(data, textStatus, jqXHR) {
+            alert(data);
+        },
+        error: function(request, status, error) {
+            console.log("Error:", error);
+      console.log("Response:", request.responseText);
+        },
+        complete: function(jqXHR, textStatus) {
+            
+        }
+    });
+};
 
 // 모달 외부 클릭 시 닫기
 document.querySelectorAll(".modal-overlay").forEach((overlay) => {
