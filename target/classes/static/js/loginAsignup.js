@@ -209,7 +209,7 @@ function emailModal(){
 // 이메일 코드 전송
 function sendCode() {
   var email = $('#email').val();
-  console.log(email);
+  // console.log(email);
   $.ajax({
         url: "/users/sendCode",
         type: 'post',
@@ -219,14 +219,70 @@ function sendCode() {
             alert(data);
         },
         error: function(request, status, error) {
-            console.log("Error:", error);
-      console.log("Response:", request.responseText);
+            // console.log("Error:", error);
+            // console.log("Response:", request.responseText);
         },
         complete: function(jqXHR, textStatus) {
             
         }
     });
 };
+
+//이메일 코드 검증버튼
+function verifyCode() {
+  const data = {
+    email: $('#email').val(),
+    code: $('#code').val()
+  };
+
+  $.ajax({
+        url: "/users/verifyCode",
+        type: 'post',
+        contentType: "application/json",
+        data: JSON.stringify(data),
+        success: function(response, textStatus, jqXHR) {
+            alert(response);
+            //뒤에 회원가입 개인정보 창 만들어야함
+        },
+        error: function(request, status, error) {
+            // console.log("Error:", error);
+            // console.log("Response:", request.responseText);
+            alert("인증 실패");
+        },
+        complete: function(jqXHR, textStatus) {
+            
+        }
+    });
+}
+
+function login() {
+  // var email = $('#emailLogin').val();
+  // var password = $('#passwordLogin').val();
+
+  const data = {
+    email: $('#emailLogin').val(),
+    password: $('#passwordLogin').val()
+  };
+
+  $.ajax({
+        url: "/users/login",
+        type: 'post',
+        contentType: "application/json",
+        data: JSON.stringify(data),
+        success: function(response, textStatus, jqXHR) {
+            alert("로그인 성공");
+            //뒤에 로그인 후 화면 만들어야함
+        },
+        error: function(request, status, error) {
+            // console.log("Error:", error);
+            // console.log("Response:", request.responseText);
+            alert("로그인 실패");
+        },
+        complete: function(jqXHR, textStatus) {
+            
+        }
+    });
+}
 
 // 모달 외부 클릭 시 닫기
 document.querySelectorAll(".modal-overlay").forEach((overlay) => {

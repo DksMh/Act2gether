@@ -18,6 +18,7 @@ public class UserEntity {
     private String password;
     private String gender;
     private int age;
+    private String email;
     private String phone_number;
     private String health_status;
     private String interests;

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.act2gether.dto.EmailDTO;
 import com.example.act2gether.dto.UserDTO;
 import com.example.act2gether.service.LoginService;
 
@@ -67,20 +68,30 @@ public class LoginController {
     /**
      * 인증번호 확인
      */
-    @PostMapping("/verify-code")
-    public ResponseEntity<String> verifyCode(@RequestParam String email, @RequestParam String code) {
-        String storedCode = authCodes.get(email);
-        if (storedCode != null && storedCode.equals(code)) {
+    @PostMapping("/verifyCode")
+    public ResponseEntity<String> verifyCode(@RequestBody EmailDTO emailDto) {
+        String storedCode = authCodes.get(emailDto.getEmail());
+        if (storedCode != null && storedCode.equals(emailDto.getCode())) {
             return ResponseEntity.ok("인증 성공");
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 실패: 코드 불일치 또는 만료됨");
     }
 
-    @PostMapping("/create")
+    @PostMapping("/create") //아직 안만듬
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
         loginService.createUser(userDTO);
         return ResponseEntity.ok().body(null);
     }
+
+    @PostMapping("/login") //암호화 작업 안함.
+    public ResponseEntity<?> login(@RequestBody UserDTO userDTO) {
+        boolean isSuccess = loginService.verifyLogin(userDTO);
+        if(isSuccess){
+            return ResponseEntity.ok().body("로그인 성공");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그인 실패");
+    }
+    
 
 
     

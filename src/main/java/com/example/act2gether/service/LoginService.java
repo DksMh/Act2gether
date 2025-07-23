@@ -7,6 +7,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
 import com.example.act2gether.dto.UserDTO;
+import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -37,8 +38,20 @@ public class LoginService {
     public void sendEmail(String to, String code) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
+        message.setFrom("whtndud98@gmail.com"); //바꿔야함 발신자 메일 정보
         message.setSubject("이메일 인증번호");
         message.setText("인증번호: " + code + "\n\n3분 이내에 입력해주세요.");
         mailSender.send(message);
+    }
+
+    public boolean verifyLogin(UserDTO userDTO) {
+        UserEntity userEntity = userRepository.findByEmail(userDTO.getEmail()).orElse(null);
+        if(userEntity != null){
+            String userPw = userEntity.getPassword();
+            if(userPw.equals(userDTO.getPassword())){
+                return true;
+            }
+        }
+        return false;
     }
 }
