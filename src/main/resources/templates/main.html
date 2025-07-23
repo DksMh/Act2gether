@@ -236,12 +236,12 @@
             </div>
             <form>
                 <div class="form-group">
-                    <input type="email" class="form-input" placeholder="이메일 주소를 입력하세요" required>
+                    <input type="email" class="form-input" id="emailLogin" placeholder="이메일 주소를 입력하세요" required>
                 </div>
                 <div class="form-group">
-                    <input type="password" class="form-input" placeholder="비밀번호를 입력하세요" required>
+                    <input type="password" class="form-input" id="passwordLogin" placeholder="비밀번호를 입력하세요" required>
                 </div>
-                <button type="submit" class="form-button">로그인</button>
+                <button type="button" class="form-button" onclick="login()">로그인</button>
             </form>
             
             <div class="form-divider">
@@ -350,6 +350,35 @@
             </div>
         </div>
     </div>
+
+     <!-- 이메일 검증 모달 -->
+    <div id="emailModal" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('email')">&times;</button>
+            <div class="modal-header">
+                <h2 class="modal-title">여기부터</h2>
+                <p class="modal-subtitle">회원가입</p>
+            </div>
+
+            <form>
+                <div class="form-group">
+                    <div class="email-group" style="display: flex; gap: 10px; align-items: center;">
+                      <input type="text" class="form-input" id="email" placeholder="이메일 주소를 입력하세요" required>
+                      <button type="button" class="form-button" onclick="sendCode()" style="width: 180px;">인증번호전송</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-input" id="code" placeholder="인증번호를 입력하세요" >
+                </div>
+                <button type="button" class="form-button" onclick="verifyCode()">확인</button>
+            </form>
+<!--             
+            <div class="signup-options">
+
+            </div> -->
+        </div>
+    </div>
+
 
     <!-- 약관 전문 모달 -->
     <div id="termsModal" class="terms-modal">
