@@ -4,11 +4,14 @@ import java.util.Random;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.example.act2gether.dto.UserDTO;
 import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +22,21 @@ import lombok.extern.slf4j.Slf4j;
 public class LoginService {
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
+    private final PasswordEncoder passwordEncoder;
 
     public void createUser(UserDTO userDTO){
-
-        userRepository.save(null);
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String interestsStr = objectMapper.writeValueAsString(userDTO.getInterests());
+            // 비밀번호 암호화
+            String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+            userDTO.setPassword(encodedPassword);
+            userRepository.save(UserEntity.of(userDTO, interestsStr));
+        } catch (JsonProcessingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
     }
 
     public void checkEmail(String code) {
@@ -48,9 +62,14 @@ public class LoginService {
         UserEntity userEntity = userRepository.findByEmail(userDTO.getEmail()).orElse(null);
         if(userEntity != null){
             String userPw = userEntity.getPassword();
-            if(userPw.equals(userDTO.getPassword())){
+            // if(userPw.equals(userDTO.getPassword())){
+            //     return true;
+            // }
+
+            if (passwordEncoder.matches(userDTO.getPassword(), userPw)) {
+                // 로그인 성공
                 return true;
-            }
+            } 
         }
         return false;
     }

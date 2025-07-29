@@ -79,6 +79,8 @@ public class LoginController {
 
     @PostMapping("/create") //아직 안만듬
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
+        log.info("interests : {}", userDTO.getInterests());
+        log.info("age : {}", userDTO.getAge());
         loginService.createUser(userDTO);
         return ResponseEntity.ok().body(null);
     }

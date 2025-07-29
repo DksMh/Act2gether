@@ -195,7 +195,7 @@ function proceedSignup() {
     return;
   }
 
-  alert("회원가입이 진행됩니다.");
+  // alert("회원가입이 진행됩니다.");
   // 실제 회원가입 로직 구현
 
   emailModal();
@@ -230,8 +230,9 @@ function sendCode() {
 
 //이메일 코드 검증버튼
 function verifyCode() {
+  var emailData = $('#email').val();
   const data = {
-    email: $('#email').val(),
+    email: emailData,
     code: $('#code').val()
   };
 
@@ -241,8 +242,8 @@ function verifyCode() {
         contentType: "application/json",
         data: JSON.stringify(data),
         success: function(response, textStatus, jqXHR) {
-            alert(response);
-            //뒤에 회원가입 개인정보 창 만들어야함
+          sessionStorage.setItem("signupemail", emailData);
+          location.href = "/onboarding";
         },
         error: function(request, status, error) {
             // console.log("Error:", error);

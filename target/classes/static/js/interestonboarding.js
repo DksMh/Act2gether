@@ -131,6 +131,8 @@ function initializeEventListeners() {
 
 // 확인 정보 업데이트
 function updateConfirmationInfo() {
+  const name = "홍길동" //수정 필요
+  const password = "1234" // 수정필요
   const age = document.getElementById("ageRange").value;
   const gender = document.getElementById("gender").value;
   const region = document.getElementById("region").value;
@@ -147,7 +149,7 @@ function updateConfirmationInfo() {
     nextBtn.disabled = false;
     nextBtn.style.opacity = "1";
     nextBtn.style.cursor = "pointer";
-    userProfile = { age, gender, region };
+    userProfile = { name, password, age, gender, region };
     console.log("모든 정보 입력 완료, 버튼 활성화"); // 디버깅용
   } else {
     nextBtn.disabled = true;
@@ -197,51 +199,63 @@ function updateUserInterests() {
 
 // 관심사 페이지로 이동
 function proceedToInterests() {
+  //name, password 추가해야함
   if (!userProfile.age || !userProfile.gender || !userProfile.region) {
     alert("모든 정보를 입력해주세요.");
     return;
   }
 
-  showLoading();
+  // console.log("age " + userProfile.age);
+  // const profile = {
+  //   name: "홍길동", //이름 수정 필요
+  //   password: 1234, //password 수정 필요
+  //   age: userProfile.age,
+  //   gender: userProfile.gender,
+  //   regin: userProfile.region
+  // };
 
-  // 프로필 정보 서버 전송
-  submitProfile()
-    .then(() => {
-      hideLoading();
-      currentStep = 2;
-      updateStepIndicator();
-      showInterestSelection();
-    })
-    .catch((error) => {
-      hideLoading();
-      showError("프로필 정보 저장에 실패했습니다. 다시 시도해주세요.");
-    });
+  showInterestSelection();
+
+  // showLoading();
+
+  // // 프로필 정보 서버 전송
+  // submitProfile()
+  //   .then(() => {
+  //     hideLoading();
+  //     currentStep = 2;
+  //     updateStepIndicator();
+  //     showInterestSelection();
+  //   })
+  //   .catch((error) => {
+  //     hideLoading();
+  //     showError("프로필 정보 저장에 실패했습니다. 다시 시도해주세요.");
+  //   });
 }
 
 // 프로필 정보 서버 전송
-async function submitProfile() {
-  try {
-    const response = await fetch("/api/user/profile", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(userProfile),
-    });
+// async function submitProfile() {
+//   try {
+//     const response = await fetch("/api/user/profile", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//       body: JSON.stringify(userProfile),
+//     });
 
-    if (!response.ok) {
-      throw new Error("프로필 저장 실패");
-    }
+//     if (!response.ok) {
+//       throw new Error("프로필 저장 실패");
+//     }
 
-    const data = await response.json();
-    console.log("프로필 저장 성공:", data);
-    return data;
-  } catch (error) {
-    console.error("프로필 저장 오류:", error);
-    throw error;
-  }
-}
+//     const data = await response.json();
+//     console.log("프로필 저장 성공:", data);
+//     return data;
+//   } catch (error) {
+//     console.error("프로필 저장 오류:", error);
+//     throw error;
+//   }
+// }
 
 // 관심사 정보 서버 전송
 async function submitInterests() {
@@ -284,24 +298,57 @@ function completeOnboarding() {
     alert("최소 하나의 관심사를 선택해주세요.");
     return;
   }
+  console.log(userProfile);
+  console.log(userInterests);
+  var emailData = sessionStorage.getItem("signupemail");
 
-  showLoading();
+  const userData = {
+    username: userProfile.name,
+    password: userProfile.password,
+    age: userProfile.age,
+    gender: userProfile.gender,
+    regin: userProfile.regin,
+    email: emailData,
+    interests: userInterests,
+    status: "active"
+  };
 
-  // 관심사 정보 서버 전송
-  submitInterests()
-    .then(() => {
-      hideLoading();
-      showSuccess("관심사가 성공적으로 저장되었습니다!");
-
-      // 3초 후 메인 페이지로 이동
-      setTimeout(() => {
-        window.location.href = "/main.html";
-      }, 3000);
-    })
-    .catch((error) => {
-      hideLoading();
-      showInterestError("관심사 저장에 실패했습니다. 다시 시도해주세요.");
+  $.ajax({
+        url: "/users/create",
+        type: 'post',
+        contentType: "application/json",
+        data: JSON.stringify(userData),
+        success: function(response, textStatus, jqXHR) {
+          alert("회원가입 성공하셨습니다. 메인페이지로 돌아갑니다.");
+          location.href = "/";
+        },
+        error: function(request, status, error) {
+            // console.log("Error:", error);
+            // console.log("Response:", request.responseText);
+            alert("회원가입 실패");
+        },
+        complete: function(jqXHR, textStatus) {
+            
+        }
     });
+
+  // showLoading();
+
+  // // 관심사 정보 서버 전송
+  // submitInterests()
+  //   .then(() => {
+  //     hideLoading();
+  //     showSuccess("관심사가 성공적으로 저장되었습니다!");
+
+  //     // 3초 후 메인 페이지로 이동
+  //     setTimeout(() => {
+  //       window.location.href = "/main.html";
+  //     }, 3000);
+  //   })
+  //   .catch((error) => {
+  //     hideLoading();
+  //     showInterestError("관심사 저장에 실패했습니다. 다시 시도해주세요.");
+  //   });
 }
 
 // 프로필 페이지로 돌아가기
@@ -311,10 +358,12 @@ function goBackToProfile() {
   showProfileSetup();
 }
 
+
 // 관심사 선택 화면 표시
 function showInterestSelection() {
   document.getElementById("profileSetup").classList.add("hidden");
   document.getElementById("interestSelection").classList.add("active");
+
 }
 
 // 프로필 설정 화면 표시
