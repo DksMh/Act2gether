@@ -834,3 +834,345 @@
     padding: 1rem;
   }
 }
+/*----------------2507329 추가된 사항 -------------------------*/
+/* QnA CSS 추가 스타일 - 기존 qna.css에 추가할 내용 */
+
+/* 검색 섹션 스타일 보완 */
+.qna-search-section {
+  background: var(--qna-light);
+  padding: 1.5rem;
+  border-radius: var(--qna-radius);
+  margin-bottom: 2rem;
+  border: 1px solid var(--qna-border);
+}
+
+.search-container {
+  max-width: 100%;
+}
+
+.search-input-group {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid var(--qna-border);
+  border-radius: var(--qna-radius);
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.search-icon {
+  color: var(--qna-text-secondary);
+  margin-right: 0.5rem;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--qna-text-primary);
+  white-space: nowrap;
+}
+
+.filter-select {
+  padding: 0.5rem;
+  border: 1px solid var(--qna-border);
+  border-radius: var(--qna-radius);
+  background: white;
+  font-size: 0.875rem;
+  min-width: 100px;
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  user-select: none;
+}
+
+.filter-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 2.5rem;
+  height: 1.25rem;
+  background: var(--qna-medium);
+  border-radius: 1rem;
+  transition: var(--qna-transition);
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1rem;
+  height: 1rem;
+  background: white;
+  border-radius: 50%;
+  transition: var(--qna-transition);
+}
+
+.filter-toggle input:checked + .toggle-slider {
+  background: var(--qna-primary);
+}
+
+.filter-toggle input:checked + .toggle-slider::before {
+  transform: translateX(1.25rem);
+}
+
+/* 게시글 목록 추가 스타일 */
+.post-item {
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.post-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.post-item.my-post {
+  border-left-color: var(--qna-primary);
+  background: rgba(59, 130, 246, 0.02);
+}
+
+.post-item.locked {
+  opacity: 0.8;
+}
+
+.post-header {
+  margin-bottom: 0.75rem;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.post-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--qna-text-primary);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.post-title:hover {
+  color: var(--qna-primary);
+}
+
+.post-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--qna-text-secondary);
+  flex-wrap: wrap;
+}
+
+.my-indicator {
+  background: var(--qna-primary);
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+
+/* 빈 상태 메시지 개선 */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--qna-text-secondary);
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  color: var(--qna-medium);
+  display: block;
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--qna-text-primary);
+}
+
+/* 로딩 개선 */
+.loading-indicator {
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  font-size: 1rem;
+  color: var(--qna-text-secondary);
+}
+
+.loading-indicator i {
+  margin-right: 0.75rem;
+  font-size: 1.25rem;
+}
+
+/* 모달 애니메이션 개선 */
+.qna-modal {
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.qna-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.qna-modal.show .modal-content {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 답변 섹션 스타일 개선 */
+.no-reply {
+  text-align: center;
+  padding: 2rem;
+  color: var(--qna-text-secondary);
+  font-style: italic;
+  background: var(--qna-light);
+  border-radius: var(--qna-radius);
+}
+
+.reply-item {
+  border: 1px solid var(--qna-border);
+  border-left: 4px solid var(--qna-success);
+}
+
+.reply-header {
+  border-bottom: 1px solid var(--qna-border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.reply-author {
+  color: var(--qna-success);
+  font-weight: 600;
+}
+
+.reply-date {
+  color: var(--qna-text-secondary);
+  font-size: 0.875rem;
+}
+
+.reply-content {
+  line-height: 1.6;
+  color: var(--qna-text-primary);
+}
+
+/* 반응형 개선 */
+@media (max-width: 768px) {
+  .qna-search-section {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .filter-group {
+    justify-content: space-between;
+  }
+  
+  .search-input-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .btn-search {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .post-info {
+    gap: 0.5rem;
+  }
+  
+  .qna-board-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .qna-board-actions {
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .qna-search-section {
+    padding: 0.75rem;
+  }
+  
+  .page-title h1 {
+    font-size: 1.5rem;
+  }
+  
+  .page-title p {
+    font-size: 0.875rem;
+  }
+  
+  .post-item {
+    padding: 0.75rem;
+  }
+  
+  .post-title {
+    font-size: 0.925rem;
+  }
+  
+  .post-info {
+    font-size: 0.8125rem;
+  }
+  
+  .modal-content {
+    margin: 0.5rem;
+    width: calc(100% - 1rem);
+  }
+}

@@ -8,11 +8,17 @@
     <link rel="stylesheet" href="/css/qna.css" />
     <link rel="stylesheet" href="/css/customerservice.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <!-- <script src="/js/include.js"></script> -->
     <!-- JavaScript 파일들 -->
-    <script src="/js/qna-api.js"></script>
+    <script th:inline="javascript">
+      window.currentUser = {
+          id: '[[${userId} ?: ""]]',
+          role: '[[${userRole} ?: "GUEST"]]'
+      };
+    </script>
     <script src="/js/qna-ui.js"></script>
+    <script src="/js/qna-api.js"></script>
     <script src="/js/qna-main.js"></script>
+
   </head>
   <body>
     <!-- Header -->
@@ -37,7 +43,7 @@
             유의하여 주십시오.
           </li>
           <li>
-            ※ 많은 분들이 문의하신 질문은 <b><a href="faq.html">FAQ</a></b
+            ※ 많은 분들이 문의하신 질문은 <b><a href="/page/faq">FAQ</a></b
             >에 등록하였으니 많은 이용 부탁드립니다.
           </li>
           <li>※ 개인정보가 포함된 문의는 비공개로 작성해주세요.</li>
@@ -76,8 +82,8 @@
               <label class="filter-label">답변상태</label>
               <select id="statusFilter" class="filter-select">
                 <option value="">전체</option>
-                <option value="답변대기">답변대기</option>
-                <option value="답변완료">답변완료</option>
+                <option value="답변 대기">답변대기</option>
+                <option value="답변 완료">답변완료</option>
               </select>
             </div>
 
