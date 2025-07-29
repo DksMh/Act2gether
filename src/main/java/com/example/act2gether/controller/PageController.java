@@ -28,30 +28,29 @@ public class PageController {
 		return "interestonboarding"; // interestonboarding.html을 반환
 	}
 
-	// qna
-	// @GetMapping(value = { "/page/qna" })
-	// public String getQna() {
-	// 	return "qna";
-	// }
 	@GetMapping("/qna")
-	public String qnaPage(HttpSession session, Model model) {
-		Object userId = session.getAttribute("user_id");
-		Object userRole = session.getAttribute("user_role");
-
-		// 로그인 안 된 경우 로그인 페이지로 리다이렉트
-		if (userId == null || userRole == null) {
-				return "redirect:/login";
-		}
-
-		// 로그인된 경우 세션 정보를 모델에 담아 전달
-		model.addAttribute("userId", userId);
-		model.addAttribute("userRole", userRole);
-
-		return "qna"; // qna.html 렌더링
+	public String qnaPage() {
+			return "qna"; // 권한 체크 없이 HTML만 반환
 	}
+	
+	// public String qnaPage(HttpSession session, Model model) {
+	// 	Object userId = session.getAttribute("user_id");
+	// 	Object userRole = session.getAttribute("user_role");
+
+	// 	// 로그인 안 된 경우 로그인 페이지로 리다이렉트
+	// 	if (userId == null || userRole == null) {
+	// 			return "redirect:/login";
+	// 	}
+
+	// 	// 로그인된 경우 세션 정보를 모델에 담아 전달
+	// 	model.addAttribute("userId", userId);
+	// 	model.addAttribute("userRole", userRole);
+
+	// 	return "qna"; // qna.html 렌더링
+	// }
 
 	// faq
-	@GetMapping(value = { "/page/faq" })
+	@GetMapping(value = { "/faq" })
 	public String getFaq() {
 		return "faq";
 	}

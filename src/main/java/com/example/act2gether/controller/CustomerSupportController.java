@@ -248,9 +248,7 @@ public class CustomerSupportController {
                 .body("답변 등록에 실패했습니다: " + e.getMessage());
         }
     }
-    
-    // ========== 기존 메서드들 (호환성 유지) ==========
-    
+        
     // QnA 작성 페이지
     @GetMapping("/write")
     public String writeForm(Model model) {

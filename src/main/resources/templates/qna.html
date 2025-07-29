@@ -9,12 +9,6 @@
     <link rel="stylesheet" href="/css/customerservice.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- JavaScript 파일들 -->
-    <script th:inline="javascript">
-      window.currentUser = {
-          id: '[[${userId} ?: ""]]',
-          role: '[[${userRole} ?: "GUEST"]]'
-      };
-    </script>
     <script src="/js/qna-ui.js"></script>
     <script src="/js/qna-api.js"></script>
     <script src="/js/qna-main.js"></script>

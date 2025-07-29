@@ -21,7 +21,13 @@ class QnaUI {
             
             // 현재 사용자 정보 로드
             await this.loadCurrentUser();
-            
+
+            if (!this.currentUser.isAuthenticated) {
+                // 🎯 비로그인자를 위한 UI 표시
+                this.showLoginRequiredUI();
+                return;
+            }
+
             // 문의 유형 및 상태 목록 로드
             await this.loadInquiryTypes();
             await this.loadStatuses();
@@ -39,6 +45,61 @@ class QnaUI {
         }
     }
 
+    /**
+     * 비로그인자를 위한 UI 표시
+     */
+    showLoginRequiredUI() {
+        const postsList = document.getElementById('postsList');
+        const writeBtn = document.getElementById('writeBtn');
+        const searchSection = document.querySelector('.qna-search-section');
+        
+        // 작성 버튼 숨김
+        if (writeBtn) {
+            writeBtn.style.display = 'none';
+        }
+        
+        // 검색 영역 숨김 (또는 비활성화)
+        if (searchSection) {
+            searchSection.style.opacity = '0.5';
+            searchSection.style.pointerEvents = 'none';
+        }
+        
+        // 로그인 안내 메시지 표시
+        if (postsList) {
+            postsList.innerHTML = `
+                <div class="login-required-message">
+                    <div class="login-prompt">
+                        <i class="fas fa-lock login-icon"></i>
+                        <h3>로그인이 필요합니다</h3>
+                        <p>QnA 게시판을 이용하시려면 로그인해주세요.</p>
+                        <div class="login-actions">
+                            <a href="/login" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt"></i>
+                                로그인하기
+                            </a>
+                            <a href="/signup" class="btn btn-outline">
+                                <i class="fas fa-user-plus"></i>
+                                회원가입
+                            </a>
+                        </div>
+                        <div class="login-benefits">
+                            <h4>로그인하면 이용할 수 있어요</h4>
+                            <ul>
+                                <li><i class="fas fa-check"></i> 문의 작성 및 관리</li>
+                                <li><i class="fas fa-check"></i> 관리자 답변 확인</li>
+                                <li><i class="fas fa-check"></i> 문의 내역 조회</li>
+                                <li><i class="fas fa-check"></i> 비공개 문의 작성</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 총 문의 수는 0으로 표시
+        this.updateTotalCount({ totalElements: 0 });
+    }
+    
     /**
      * 현재 사용자 정보 로드
      */
