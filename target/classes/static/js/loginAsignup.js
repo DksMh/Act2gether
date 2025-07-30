@@ -260,24 +260,31 @@ function login() {
   // var email = $('#emailLogin').val();
   // var password = $('#passwordLogin').val();
 
-  const data = {
-    email: $('#emailLogin').val(),
-    password: $('#passwordLogin').val()
-  };
+  // const data = {
+  //   email: $('#emailLogin').val(),
+  //   password: $('#passwordLogin').val()
+  // };
+
+  const formData = new URLSearchParams();
+  formData.append('email', $('#emailLogin').val());
+  formData.append('password', $('#passwordLogin').val());
 
   $.ajax({
         url: "/users/login",
         type: 'post',
-        contentType: "application/json",
-        data: JSON.stringify(data),
+        contentType: "application/x-www-form-urlencoded",
+        data: formData.toString(),
         success: function(response, textStatus, jqXHR) {
-            alert("로그인 성공");
-            //뒤에 로그인 후 화면 만들어야함
+            // alert("로그인 성공");
+            // 로그인 성공 시 페이지 이동
+            window.location.href = "/";
         },
-        error: function(request, status, error) {
-            // console.log("Error:", error);
-            // console.log("Response:", request.responseText);
-            alert("로그인 실패");
+        error:function(xhr) {
+          if (xhr.status === 401) {
+            alert("아이디 또는 비밀번호가 올바르지 않습니다.");
+          } else {
+            alert("로그인 중 오류 발생");
+          }
         },
         complete: function(jqXHR, textStatus) {
             

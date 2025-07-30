@@ -2,10 +2,13 @@ package com.example.act2gether.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +23,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.act2gether.dto.CustomerSupportDTO;
+import com.example.act2gether.entity.UserEntity;
+import com.example.act2gether.repository.UserRepository;
 import com.example.act2gether.service.CustomerSupportService;
 
 import jakarta.servlet.http.HttpSession;
@@ -33,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CustomerSupportController {
     
     private final CustomerSupportService customerSupportService;
+    private final UserRepository userRepository;
     
     // API 엔드포인트들을 /api/qna로 매핑
     @GetMapping("/api/list")
@@ -46,14 +52,15 @@ public class CustomerSupportController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Boolean isPrivate,
             @RequestParam(required = false) String userId,
-            HttpSession session) {
+            Authentication authentication) {
         
         try {
-            String currentUserId = (String) session.getAttribute("userId");
-            if (currentUserId == null) {
+            if (authentication == null || !authentication.isAuthenticated()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("로그인이 필요합니다.");
             }
+            String currentUserId = userRepository.findByEmail(authentication.getName()).map(UserEntity::getUsername).orElse(""); //DB의 username 이메일로 보고싶으면 밑에 주석이랑 바꾸면 됨
+            // String currentUserId = authentication.getName(); //email
             
             CustomerSupportDTO searchDto = new CustomerSupportDTO();
             searchDto.setPage(page);
@@ -74,23 +81,26 @@ public class CustomerSupportController {
     // 현재 사용자 정보 조회
     @GetMapping("/api/current-user")
     @ResponseBody
-    public ResponseEntity<?> getCurrentUser(HttpSession session) {
-        String userId = (String) session.getAttribute("userId");
-        String userRoles = (String) session.getAttribute("user_roles");
-        
-        if (userId == null) {
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+       if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("isAuthenticated", false));
         }
+
+        String userId = authentication.getName(); // 기본적으로 username(email)
         
-        // 관리자 권한 확인 (user_roles에 "ADMIN" 포함 여부 확인)
-        boolean isAdmin = userRoles != null && userRoles.contains("ADMIN");
-        
+        boolean isAdmin = authentication.getAuthorities().stream()
+            .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+        String roles = authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.joining(","));
+
         Map<String, Object> userInfo = Map.of(
             "isAuthenticated", true,
             "userId", userId,
             "isAdmin", isAdmin,
-            "roles", userRoles != null ? userRoles : ""
+            "roles", roles
         );
         
         return ResponseEntity.ok(userInfo);

@@ -53,7 +53,7 @@ public class LoginController {
         ScheduledFuture<?> cleanup = scheduler.schedule(() -> {
             authCodes.remove(email);
             cleanupTasks.remove(email);
-            System.out.println("[만료] 인증번호 삭제됨: " + email);
+            log.info("[만료] 인증번호 삭제됨: {}", email);
         }, 3, TimeUnit.MINUTES);
         cleanupTasks.put(email, cleanup);
 
@@ -77,7 +77,7 @@ public class LoginController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 실패: 코드 불일치 또는 만료됨");
     }
 
-    @PostMapping("/create") //아직 안만듬
+    @PostMapping("/create") 
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
         log.info("interests : {}", userDTO.getInterests());
         log.info("age : {}", userDTO.getAge());
@@ -85,16 +85,13 @@ public class LoginController {
         return ResponseEntity.ok().body(null);
     }
 
-    @PostMapping("/login") //암호화 작업 안함.
-    public ResponseEntity<?> login(@RequestBody UserDTO userDTO) {
-        boolean isSuccess = loginService.verifyLogin(userDTO);
-        if(isSuccess){
-            return ResponseEntity.ok().body("로그인 성공");
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그인 실패");
-    }
-    
-
-
+    // @PostMapping("/login") 
+    // public ResponseEntity<?> login(@RequestBody UserDTO userDTO) {
+    //     boolean isSuccess = loginService.verifyLogin(userDTO);
+    //     if(isSuccess){
+    //         return ResponseEntity.ok().body("로그인 성공");
+    //     }
+    //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그인 실패");
+    // }
     
 }

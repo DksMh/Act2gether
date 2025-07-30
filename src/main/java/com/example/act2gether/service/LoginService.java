@@ -58,19 +58,19 @@ public class LoginService {
         mailSender.send(message);
     }
 
-    public boolean verifyLogin(UserDTO userDTO) {
-        UserEntity userEntity = userRepository.findByEmail(userDTO.getEmail()).orElse(null);
-        if(userEntity != null){
-            String userPw = userEntity.getPassword();
-            // if(userPw.equals(userDTO.getPassword())){
-            //     return true;
-            // }
+    // public boolean verifyLogin(UserDTO userDTO) {
+    //     UserEntity userEntity = userRepository.findByEmail(userDTO.getEmail()).orElse(null);
+    //     if(userEntity != null){
+    //         String userPw = userEntity.getPassword();
+    //         // if(userPw.equals(userDTO.getPassword())){
+    //         //     return true;
+    //         // }
 
-            if (passwordEncoder.matches(userDTO.getPassword(), userPw)) {
-                // 로그인 성공
-                return true;
-            } 
-        }
-        return false;
-    }
+    //         if (passwordEncoder.matches(userDTO.getPassword(), userPw)) {
+    //             // 로그인 성공
+    //             return true;
+    //         } 
+    //     }
+    //     return false;
+    // }
 }
