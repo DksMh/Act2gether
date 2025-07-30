@@ -20,13 +20,15 @@ public class CustomUserDetailsService implements UserDetailsService{
     private final UserRepository userRepository;
     
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserEntity user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
+    public UserDetails loadUserByUsername(String userid) throws UsernameNotFoundException {
+        // UserEntity user = userRepository.findByEmail(email)
+        //     .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
+        UserEntity user = userRepository.findByUser_id(userid)
+            .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userid));
 // System.out.println("유저 찾음: " + user.getEmail());
 // System.out.println("암호화된 비밀번호: " + user.getPassword());
         return new User( // org.springframework.security.core.userdetails.User
-            user.getEmail(), // username
+            user.getUser_id(), // username
             user.getPassword(), // 암호화된 password
             List.of(new SimpleGrantedAuthority("ROLE_USER")) // 권한
         );

@@ -58,9 +58,9 @@ class QnaUI {
             writeBtn.style.display = 'none';
         }
         
-        // 검색 영역 숨김 (또는 비활성화)
+        // 검색 영역 비활성화 (완전히 숨기지 않고 시각적으로만 비활성화)
         if (searchSection) {
-            searchSection.style.opacity = '0.5';
+            searchSection.style.opacity = '0.6';
             searchSection.style.pointerEvents = 'none';
         }
         
@@ -69,26 +69,32 @@ class QnaUI {
             postsList.innerHTML = `
                 <div class="login-required-message">
                     <div class="login-prompt">
-                        <i class="fas fa-lock login-icon"></i>
-                        <h3>로그인이 필요합니다</h3>
-                        <p>QnA 게시판을 이용하시려면 로그인해주세요.</p>
-                        <div class="login-actions">
-                            <a href="/login" class="btn btn-primary">
-                                <i class="fas fa-sign-in-alt"></i>
-                                로그인하기
-                            </a>
-                            <a href="/signup" class="btn btn-outline">
-                                <i class="fas fa-user-plus"></i>
-                                회원가입
-                            </a>
-                        </div>
-                        <div class="login-benefits">
-                            <h4>로그인하면 이용할 수 있어요</h4>
-                            <ul>
-                                <li><i class="fas fa-check"></i> 문의 작성 및 관리</li>
-                                <li><i class="fas fa-check"></i> 관리자 답변 확인</li>
-                                <li><i class="fas fa-check"></i> 문의 내역 조회</li>
-                                <li><i class="fas fa-check"></i> 비공개 문의 작성</li>
+                        <i class="fas fa-lock login-icon" style="font-size: 3rem; color: #6b7280; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #374151; margin-bottom: 0.5rem;">로그인이 필요합니다</h3>
+                        <p style="color: #6b7280; margin-bottom: 1.5rem;">QnA 게시판을 이용하시려면 우측 상단의 로그인 버튼을 클릭해주세요.</p>
+                        
+                        <div class="login-benefits" style="background: #f9fafb; border-radius: 8px; padding: 1.5rem; margin-top: 2rem;">
+                            <h4 style="color: #374151; margin-bottom: 1rem; font-size: 1.1rem;">
+                                <i class="fas fa-star" style="color: #fbbf24; margin-right: 0.5rem;"></i>
+                                로그인하면 이용할 수 있어요
+                            </h4>
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="display: flex; align-items: center; margin-bottom: 0.75rem; color: #4b5563;">
+                                    <i class="fas fa-check-circle" style="color: #10b981; margin-right: 0.75rem;"></i>
+                                    문의 작성 및 관리
+                                </li>
+                                <li style="display: flex; align-items: center; margin-bottom: 0.75rem; color: #4b5563;">
+                                    <i class="fas fa-check-circle" style="color: #10b981; margin-right: 0.75rem;"></i>
+                                    관리자 답변 확인
+                                </li>
+                                <li style="display: flex; align-items: center; margin-bottom: 0.75rem; color: #4b5563;">
+                                    <i class="fas fa-check-circle" style="color: #10b981; margin-right: 0.75rem;"></i>
+                                    문의 내역 조회
+                                </li>
+                                <li style="display: flex; align-items: center; color: #4b5563;">
+                                    <i class="fas fa-check-circle" style="color: #10b981; margin-right: 0.75rem;"></i>
+                                    비공개 문의 작성
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -292,6 +298,20 @@ class QnaUI {
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * 사용자 ID 포맷팅
+     */
+    formatUserId(userId) {
+        if (!userId) return '작성자';
+        
+        // UUID 형태라면 앞의 8자리만 표시
+        if (userId.length > 10 && userId.includes('-')) {
+            return userId.substring(0, 8) + '...';
+        }
+        
+        return userId;
     }
 
     /**
