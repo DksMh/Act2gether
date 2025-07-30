@@ -40,7 +40,6 @@ public class CustomerSupportController {
     private final CustomerSupportService customerSupportService;
     private final UserRepository userRepository;
     
-    // API 엔드포인트들을 /api/qna로 매핑
     @GetMapping("/api/list")
     @ResponseBody
     public ResponseEntity<?> getQnaList(
@@ -52,15 +51,16 @@ public class CustomerSupportController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Boolean isPrivate,
             @RequestParam(required = false) String userId,
-            Authentication authentication) {
+            HttpSession session) {
         
         try {
-            if (authentication == null || !authentication.isAuthenticated()) {
+            String currentUserId = (String) session.getAttribute("userId");
+            if (currentUserId == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("로그인이 필요합니다.");
             }
-            String currentUserId = userRepository.findByEmail(authentication.getName()).map(UserEntity::getUsername).orElse(""); //DB의 username 이메일로 보고싶으면 밑에 주석이랑 바꾸면 됨
-            // String currentUserId = authentication.getName(); //email
+            
+            System.out.println("userid : "+ currentUserId);
             
             CustomerSupportDTO searchDto = new CustomerSupportDTO();
             searchDto.setPage(page);
@@ -78,33 +78,54 @@ public class CustomerSupportController {
         }
     }
     
-    // 현재 사용자 정보 조회
+    
+    // 현재 사용자 정보 조회 - http session 사용으로 변경
     @GetMapping("/api/current-user")
     @ResponseBody
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-       if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("isAuthenticated", false));
+    public ResponseEntity<?> getCurrentUser(HttpSession session) {
+        String userId = (String) session.getAttribute("userId");
+        String userRoles = (String) session.getAttribute("user_roles");
+        
+        if (userId == null) {
+            return ResponseEntity.ok(Map.of("isAuthenticated", false));
         }
 
-        String userId = authentication.getName(); // 기본적으로 username(email)
-        
-        boolean isAdmin = authentication.getAuthorities().stream()
-            .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
-
-        String roles = authentication.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .collect(Collectors.joining(","));
+        boolean isAdmin = userRoles != null && userRoles.contains("ADMIN");
 
         Map<String, Object> userInfo = Map.of(
             "isAuthenticated", true,
             "userId", userId,
             "isAdmin", isAdmin,
-            "roles", roles
+            "roles", userRoles != null ? userRoles : "USER"
         );
-        
         return ResponseEntity.ok(userInfo);
     }
+    // @GetMapping("/api/current-user")
+    // @ResponseBody
+    // public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+    //    if (authentication == null || !authentication.isAuthenticated()) {
+    //         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+    //             .body(Map.of("isAuthenticated", false));
+    //     }
+
+    //     String userId = authentication.getName(); // 기본적으로 username(email)
+        
+    //     boolean isAdmin = authentication.getAuthorities().stream()
+    //         .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+    //     String roles = authentication.getAuthorities().stream()
+    //         .map(GrantedAuthority::getAuthority)
+    //         .collect(Collectors.joining(","));
+
+    //     Map<String, Object> userInfo = Map.of(
+    //         "isAuthenticated", true,
+    //         "userId", userId,
+    //         "isAdmin", isAdmin,
+    //         "roles", roles
+    //     );
+        
+    //     return ResponseEntity.ok(userInfo);
+    // }
     
     // 문의 유형 목록
     @GetMapping("/api/inquiry-types")
@@ -127,13 +148,7 @@ public class CustomerSupportController {
         );
         return ResponseEntity.ok(statuses);
     }
-
-    // // QnA 게시판 페이지 (HTML 반환)
-    // @GetMapping
-    // public String qnaPage() {
-    //     return "qna";
-    // }
-
+    
     // API - QnA 상세 조회
     @GetMapping("/api/{supportId}")
     @ResponseBody
