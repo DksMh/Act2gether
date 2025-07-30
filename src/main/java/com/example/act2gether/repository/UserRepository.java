@@ -12,6 +12,6 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<UserEntity, String>{
     Optional<UserEntity> findByEmail(String email);
     
-    @Query("SELECT u FROM UserEntity u WHERE u.user_id = :userId")
-    Optional<UserEntity> findByUser_id(String user_id);
+    
+    // Optional<UserEntity> findByUser_id(String user_id);
 }

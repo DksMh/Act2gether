@@ -41,7 +41,7 @@ public class SecurityConfig {
             .formLogin(form -> form
                 //.loginPage("/dummy-login") // 사용자 정의 로그인 페이지 (GET) // 250730 비로그인자 qna접근 불가 리다이렉트되면서 팬딩
                 .loginProcessingUrl("/users/login") // 실제 로그인 요청 처리 URL (POST)
-                //.usernameParameter("email") // ★ 프론트에서 email 파라미터로 보낼 경우 필요 // user_id ==> uuid 사용하므로 불필요
+                .usernameParameter("email") // ★ 프론트에서 email 파라미터로 보낼 경우 필요 // user_id ==> uuid 사용하므로 불필요
                 .successHandler((request, response, authentication) -> {
                     // 추가: HttpSession에 사용자 정보 저장 (QnA 컨트롤러용)
                     // 이유: QnA 컨트롤러에서 HttpSession을 사용하므로 로그인 시 세션에 정보 저장
