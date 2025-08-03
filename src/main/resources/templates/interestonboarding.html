@@ -24,119 +24,10 @@
 
     <!-- Main Container -->
     <div class="onboarding-container">
-      <!-- Step Indicator -->
-      <div class="step-indicator">
-        <div class="step active" id="step1"></div>
-        <div class="step" id="step2"></div>
-      </div>
-
-      <!-- Profile Setup Page -->
-      <div id="profileSetup" class="profile-setup">
-        <div class="page-header">
-          <h1 class="page-title">회원가입 및 개인 설정 과정</h1>
-          <p class="page-subtitle">
-            투어 탐색을 쉽게 할 수 있도록 도와드릴게요.<br />
-            <span class="highlight">홍길동</span>님에 대해 설명해주세요.
-          </p>
-        </div>
-
-        <!-- Form Section -->
-        <div class="form-section">
-          <h3>기본 정보</h3>
-          <div class="input-group">
-            <div class="input-item">
-              <label for="ageRange">연령대</label>
-              <select id="ageRange" class="form-select" required>
-                <option value="">선택하세요</option>
-                <option value="50대">50대</option>
-                <option value="60대">60대</option>
-                <option value="70대">70대</option>
-                <option value="80대 이상">80대 이상</option>
-              </select>
-            </div>
-            <div class="input-item">
-              <label for="gender">성별</label>
-              <select id="gender" class="form-select" required>
-                <option value="">선택하세요</option>
-                <option value="여성">여성</option>
-                <option value="남성">남성</option>
-              </select>
-            </div>
-            <div class="input-item">
-              <label for="region">거주지역</label>
-              <select id="region" class="form-select" required>
-                <option value="">선택하세요</option>
-                <option value="서울">서울</option>
-                <option value="경기">경기</option>
-                <option value="인천">인천</option>
-                <option value="강원">강원</option>
-                <option value="충북">충북</option>
-                <option value="충남">충남</option>
-                <option value="대전">대전</option>
-                <option value="세종">세종</option>
-                <option value="전북">전북</option>
-                <option value="전남">전남</option>
-                <option value="광주">광주</option>
-                <option value="경북">경북</option>
-                <option value="경남">경남</option>
-                <option value="대구">대구</option>
-                <option value="부산">부산</option>
-                <option value="울산">울산</option>
-                <option value="제주">제주</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Confirmation Section -->
-        <div class="confirmation-section">
-          <h3>입력하신 정보가 맞나요?</h3>
-          <div class="confirmation-info">
-            <div class="info-item">
-              <div class="info-label">연령대</div>
-              <div class="info-value" id="confirmAge">-</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">성별</div>
-              <div class="info-value" id="confirmGender">-</div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">거주지역</div>
-              <div class="info-value" id="confirmRegion">-</div>
-            </div>
-          </div>
-
-          <!-- 메시지 영역 -->
-          <div class="message-area">
-            <div id="profileSuccessMessage" class="success-message">
-              <p>정보가 확인되었습니다! 다음 단계로 진행합니다.</p>
-            </div>
-            <div id="errorMessage" class="error-message">
-              <p id="errorText">오류가 발생했습니다. 다시 시도해주세요.</p>
-              <button class="retry-button" onclick="retryProfileSubmission()">
-                다시 시도
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Button Group -->
-        <div class="button-group">
-          <button
-            class="btn btn-primary"
-            id="nextBtn"
-            onclick="proceedToInterests()"
-            disabled
-          >
-            다음
-          </button>
-        </div>
-      </div>
-
-      <!-- Interest Selection Page -->
+      <!-- Interest Selection Page (기본정보 단계 제거) -->
       <div id="interestSelection" class="interest-selection">
         <div class="page-header">
-          <h1 class="page-title">관심사 선택</h1>
+          <h1 class="page-title">관심사 설정</h1>
           <p class="page-subtitle">
             맞춤형 여행 추천을 위해 관심사를 선택해주세요.<br />
             <span class="highlight">여러 개</span>를 선택할 수 있습니다.
@@ -260,8 +151,8 @@
 
         <!-- Button Group -->
         <div class="button-group">
-          <button class="btn btn-secondary" onclick="goBackToProfile()">
-            이전
+          <button class="btn btn-secondary" onclick="skipOnboarding()">
+            나중에 설정
           </button>
           <button class="btn btn-primary" onclick="completeOnboarding()">
             완료

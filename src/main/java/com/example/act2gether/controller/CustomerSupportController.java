@@ -2,13 +2,10 @@ package com.example.act2gether.controller;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.act2gether.dto.CustomerSupportDTO;
-import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.UserRepository;
 import com.example.act2gether.service.CustomerSupportService;
 
@@ -40,6 +36,8 @@ public class CustomerSupportController {
     private final CustomerSupportService customerSupportService;
     private final UserRepository userRepository;
     
+    // ========== API 엔드포인트들 ==========
+    
     @GetMapping("/api/list")
     @ResponseBody
     public ResponseEntity<?> getQnaList(
@@ -51,16 +49,15 @@ public class CustomerSupportController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Boolean isPrivate,
             @RequestParam(required = false) String userId,
+            @RequestParam(required = false) Boolean myPostsOnly,
             HttpSession session) {
         
         try {
-            String currentUserId = (String) session.getAttribute("userId");
+            String currentUserId = (String) session.getAttribute("userid");
             if (currentUserId == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("로그인이 필요합니다.");
             }
-            
-            System.out.println("userid : "+ currentUserId);
             
             CustomerSupportDTO searchDto = new CustomerSupportDTO();
             searchDto.setPage(page);
@@ -68,7 +65,12 @@ public class CustomerSupportController {
             searchDto.setSearchType(searchType);
             searchDto.setSearchKeyword(searchKeyword);
             
-            Page<CustomerSupportDTO> supportList = customerSupportService.getSupportList(currentUserId, searchDto);
+            Page<CustomerSupportDTO> supportList;
+            if (myPostsOnly != null && myPostsOnly) {
+                supportList = customerSupportService.getMySupportList(currentUserId, searchDto);
+            } else {
+                supportList = customerSupportService.getSupportList(currentUserId, searchDto);
+            }
             
             return ResponseEntity.ok(supportList);
         } catch (Exception e) {
@@ -78,67 +80,39 @@ public class CustomerSupportController {
         }
     }
     
-    
-    // 현재 사용자 정보 조회 - http session 사용으로 변경
     @GetMapping("/api/current-user")
     @ResponseBody
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
-        String userId = (String) session.getAttribute("userId");
-        String userRoles = (String) session.getAttribute("user_roles");
-        
-        if (userId == null) {
+        String userid = (String) session.getAttribute("userid");
+        String userRole = (String) session.getAttribute("user_role");
+        String username = (String) session.getAttribute("username");
+
+        if (userid == null) {
             return ResponseEntity.ok(Map.of("isAuthenticated", false));
         }
 
-        boolean isAdmin = userRoles != null && userRoles.contains("ADMIN");
+        boolean isAdmin = userRole != null && "ADMIN".equals(userRole);
 
         Map<String, Object> userInfo = Map.of(
             "isAuthenticated", true,
-            "userId", userId,
+            "userid", userid,
+            "username",username,
             "isAdmin", isAdmin,
-            "roles", userRoles != null ? userRoles : "USER"
+            "roles", userRole != null ? userRole : "USER"
         );
+        
         return ResponseEntity.ok(userInfo);
     }
-    // @GetMapping("/api/current-user")
-    // @ResponseBody
-    // public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-    //    if (authentication == null || !authentication.isAuthenticated()) {
-    //         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-    //             .body(Map.of("isAuthenticated", false));
-    //     }
-
-    //     String userId = authentication.getName(); // 기본적으로 username(email)
-        
-    //     boolean isAdmin = authentication.getAuthorities().stream()
-    //         .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
-
-    //     String roles = authentication.getAuthorities().stream()
-    //         .map(GrantedAuthority::getAuthority)
-    //         .collect(Collectors.joining(","));
-
-    //     Map<String, Object> userInfo = Map.of(
-    //         "isAuthenticated", true,
-    //         "userId", userId,
-    //         "isAdmin", isAdmin,
-    //         "roles", roles
-    //     );
-        
-    //     return ResponseEntity.ok(userInfo);
-    // }
     
-    // 문의 유형 목록
     @GetMapping("/api/inquiry-types")
     @ResponseBody
     public ResponseEntity<?> getInquiryTypes() {
         List<Map<String, String>> types = List.of(
-            Map.of("code", "일반문의", "displayName", "일반문의"),
-            Map.of("code", "신고", "displayName", "신고")
+            Map.of("code", "일반문의", "displayName", "일반문의")
         );
         return ResponseEntity.ok(types);
     }
     
-    // 상태 목록
     @GetMapping("/api/statuses")
     @ResponseBody
     public ResponseEntity<?> getStatuses() {
@@ -149,18 +123,17 @@ public class CustomerSupportController {
         return ResponseEntity.ok(statuses);
     }
     
-    // API - QnA 상세 조회
     @GetMapping("/api/{supportId}")
     @ResponseBody
     public ResponseEntity<?> getQnaDetail(@PathVariable String supportId, HttpSession session) {
         try {
-            String userId = (String) session.getAttribute("userId");
-            if (userId == null) {
+            String userid = (String) session.getAttribute("userid");
+            if (userid == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("로그인이 필요합니다.");
             }
             
-            CustomerSupportDTO support = customerSupportService.getSupportDetail(supportId, userId);
+            CustomerSupportDTO support = customerSupportService.getSupportDetail(supportId, userid);
             return ResponseEntity.ok(support);
         } catch (Exception e) {
             log.error("문의 상세 조회 중 오류 발생: ", e);
@@ -169,24 +142,32 @@ public class CustomerSupportController {
         }
     }
 
-    // API - QnA 등록
     @PostMapping("/api")
     @ResponseBody
     public ResponseEntity<?> createQnaPost(
-            @RequestBody CustomerSupportDTO dto,
+            CustomerSupportDTO dto,
+            @RequestParam(required = false) List<MultipartFile> imageFiles,
             HttpSession session) {
         
         try {
-            String userId = (String) session.getAttribute("userId");
-            if (userId == null) {
+            String userid = (String) session.getAttribute("userid");
+            if (userid == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("로그인이 필요합니다.");
             }
             
-            dto.setUserId(userId);
-            String supportId = customerSupportService.createSupport(dto, null);
+            dto.setUserId(userid);
             
-            return ResponseEntity.ok(Map.of("id", supportId, "message", "문의가 성공적으로 등록되었습니다."));
+            String supportId = customerSupportService.createSupport(dto, imageFiles);
+            
+            int imageCount = imageFiles != null ? (int) imageFiles.stream()
+                .filter(f -> f != null && !f.isEmpty()).count() : 0;
+            
+            return ResponseEntity.ok(Map.of(
+                "id", supportId, 
+                "message", "문의가 성공적으로 등록되었습니다.",
+                "imageCount", imageCount
+            ));
         } catch (Exception e) {
             log.error("문의 작성 중 오류 발생: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -194,24 +175,43 @@ public class CustomerSupportController {
         }
     }
 
-    // API - QnA 수정
     @PutMapping("/api/{supportId}")
     @ResponseBody
     public ResponseEntity<?> updateQnaPost(
             @PathVariable String supportId,
-            @RequestBody CustomerSupportDTO dto,
+            CustomerSupportDTO dto,
+            @RequestParam(required = false) List<MultipartFile> imageFiles,
+            @RequestParam(required = false) List<String> deleteImagePaths,
+            @RequestParam(required = false, defaultValue = "false") boolean deleteAllImages,
             HttpSession session) {
         
         try {
-            String userId = (String) session.getAttribute("userId");
-            if (userId == null) {
+            String userid = (String) session.getAttribute("userid");
+            if (userid == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("로그인이 필요합니다.");
             }
             
-            customerSupportService.updateSupport(supportId, userId, dto, null);
+            int newImageCount = imageFiles != null ? (int) imageFiles.stream()
+                .filter(f -> f != null && !f.isEmpty()).count() : 0;
+            int deleteCount = deleteImagePaths != null ? deleteImagePaths.size() : 0;
             
-            return ResponseEntity.ok(Map.of("message", "문의가 성공적으로 수정되었습니다."));
+            // 🎯 개별 삭제인 경우 deleteAllImages를 false로 강제 설정
+            if (deleteImagePaths != null && !deleteImagePaths.isEmpty() && !deleteAllImages) {
+                customerSupportService.updateSupportWithImageDelete(
+                    supportId, userid, dto, imageFiles, deleteImagePaths, false); // 🎯 명시적으로 false
+            } else if (deleteAllImages) {
+                customerSupportService.updateSupportWithImageDelete(
+                    supportId, userid, dto, imageFiles, deleteImagePaths, true);
+            } else {
+                customerSupportService.updateSupport(supportId, userid, dto, imageFiles);
+            }
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "문의가 성공적으로 수정되었습니다.",
+                "newImageCount", newImageCount,
+                "deletedCount", deleteCount
+            ));
         } catch (Exception e) {
             log.error("문의 수정 중 오류 발생: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -219,18 +219,17 @@ public class CustomerSupportController {
         }
     }
 
-    // API - QnA 삭제
     @DeleteMapping("/api/{supportId}")
     @ResponseBody
     public ResponseEntity<?> deleteQnaPost(@PathVariable String supportId, HttpSession session) {
         try {
-            String userId = (String) session.getAttribute("userId");
-            if (userId == null) {
+            String userid = (String) session.getAttribute("userid");
+            if (userid == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("로그인이 필요합니다.");
             }
             
-            customerSupportService.deleteSupport(supportId, userId);
+            customerSupportService.deleteSupport(supportId, userid);
             
             return ResponseEntity.ok(Map.of("message", "문의가 성공적으로 삭제되었습니다."));
         } catch (Exception e) {
@@ -240,7 +239,6 @@ public class CustomerSupportController {
         }
     }
 
-    // API - 관리자 답변 등록
     @PostMapping("/api/{supportId}/reply")
     @ResponseBody
     public ResponseEntity<?> addResponse(
@@ -249,22 +247,21 @@ public class CustomerSupportController {
             HttpSession session) {
         
         try {
-            String userId = (String) session.getAttribute("userId");
-            String userRoles = (String) session.getAttribute("user_roles");
+            String userid = (String) session.getAttribute("userid");
+            String userRole = (String) session.getAttribute("user_role");
             
-            if (userId == null) {
+            if (userid == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("로그인이 필요합니다.");
             }
             
-            // 관리자 권한 확인
-            if (userRoles == null || !userRoles.contains("ADMIN")) {
+            if (userRole == null || !"ADMIN".equals(userRole)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("관리자 권한이 필요합니다.");
             }
             
             String replyContent = requestBody.get("replyContent");
-            customerSupportService.addResponse(supportId, userId, replyContent);
+            customerSupportService.addResponse(supportId, userid, replyContent);
             
             return ResponseEntity.ok(Map.of("message", "답변이 성공적으로 등록되었습니다."));
         } catch (Exception e) {
@@ -272,147 +269,5 @@ public class CustomerSupportController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("답변 등록에 실패했습니다: " + e.getMessage());
         }
-    }
-        
-    // QnA 작성 페이지
-    @GetMapping("/write")
-    public String writeForm(Model model) {
-        model.addAttribute("customerSupport", new CustomerSupportDTO());
-        return "qna-write";
-    }
-    
-    // QnA 작성 처리 (파일 업로드 포함)
-    @PostMapping("/write")
-    @ResponseBody
-    public ResponseEntity<?> writeSupport(
-            CustomerSupportDTO dto,
-            @RequestParam(required = false) MultipartFile imageFile,
-            HttpSession session) {
-        
-        try {
-            String userId = (String) session.getAttribute("userId");
-            if (userId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("로그인이 필요합니다.");
-            }
-            
-            dto.setUserId(userId);
-            String supportId = customerSupportService.createSupport(dto, imageFile);
-            
-            return ResponseEntity.ok()
-                .body("문의가 성공적으로 등록되었습니다. ID: " + supportId);
-        } catch (Exception e) {
-            log.error("문의 작성 중 오류 발생: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("문의 등록에 실패했습니다: " + e.getMessage());
-        }
-    }
-    
-    // QnA 수정 처리 (파일 업로드 포함)
-    @PutMapping("/{supportId}")
-    @ResponseBody
-    public ResponseEntity<?> updateSupport(
-            @PathVariable String supportId,
-            CustomerSupportDTO dto,
-            @RequestParam(required = false) MultipartFile imageFile,
-            HttpSession session) {
-        
-        try {
-            String userId = (String) session.getAttribute("userId");
-            if (userId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("로그인이 필요합니다.");
-            }
-            
-            customerSupportService.updateSupport(supportId, userId, dto, imageFile);
-            
-            return ResponseEntity.ok()
-                .body("문의가 성공적으로 수정되었습니다.");
-        } catch (Exception e) {
-            log.error("문의 수정 중 오류 발생: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("문의 수정에 실패했습니다: " + e.getMessage());
-        }
-    }
-    
-    // QnA 삭제 처리 (기존 방식)
-    @DeleteMapping("/{supportId}")
-    @ResponseBody
-    public ResponseEntity<?> deleteSupport(@PathVariable String supportId, HttpSession session) {
-        try {
-            String userId = (String) session.getAttribute("userId");
-            if (userId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("로그인이 필요합니다.");
-            }
-            
-            customerSupportService.deleteSupport(supportId, userId);
-            
-            return ResponseEntity.ok()
-                .body("문의가 성공적으로 삭제되었습니다.");
-        } catch (Exception e) {
-            log.error("문의 삭제 중 오류 발생: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("문의 삭제에 실패했습니다: " + e.getMessage());
-        }
-    }
-
-    // 관리자 답변 추가 (기존 방식)
-    @PostMapping("/{supportId}/response")
-    @ResponseBody
-    public ResponseEntity<?> addResponseLegacy(
-            @PathVariable String supportId,
-            @RequestParam String response,
-            HttpSession session) {
-        
-        try {
-            String userId = (String) session.getAttribute("userId");
-            String userRoles = (String) session.getAttribute("user_roles");
-            
-            if (userId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("로그인이 필요합니다.");
-            }
-            
-            // 관리자 권한 확인
-            if (userRoles == null || !userRoles.contains("ADMIN")) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("관리자 권한이 필요합니다.");
-            }
-            
-            customerSupportService.addResponse(supportId, userId, response);
-            
-            return ResponseEntity.ok()
-                .body("답변이 성공적으로 등록되었습니다.");
-        } catch (Exception e) {
-            log.error("답변 등록 중 오류 발생: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("답변 등록에 실패했습니다: " + e.getMessage());
-        }
-    }
-    
-    // 내 문의 목록
-    @GetMapping("/my")
-    public String myQnaList(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            Model model,
-            HttpSession session) {
-        
-        String userId = (String) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/login";
-        }
-        
-        CustomerSupportDTO searchDto = new CustomerSupportDTO();
-        searchDto.setPage(page);
-        searchDto.setSize(size);
-        
-        Page<CustomerSupportDTO> supportList = customerSupportService.getMySupportList(userId, searchDto);
-        
-        model.addAttribute("supportList", supportList);
-        model.addAttribute("currentPage", page);
-        
-        return "my-qna";
     }
 }

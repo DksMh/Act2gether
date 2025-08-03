@@ -26,7 +26,8 @@ import lombok.NoArgsConstructor;
 public class UserEntity {
     @Id
     private String user_id; //uuid
-    private String username; //사용자이름
+    private String username; //사용자 닉네임이 여기로 들어가서 닉네임
+    private String realname; // 사용자 이름
     private String password;
     private String gender;
     private String age;
@@ -44,11 +45,12 @@ public class UserEntity {
         return UserEntity.builder()
         .user_id(UUID.randomUUID().toString())
         .username(userDTO.getUsername())
+        .realname(userDTO.getRealname())
         .password(userDTO.getPassword())
         .gender(userDTO.getGender())
         .age(userDTO.getAge())
         .regin(userDTO.getRegin())
-        .user_role(null)
+        .user_role("USER")// 기본값은 null대신 user로 줌
         .phone_number(null)
         .interests(interests)
         .status("Active")

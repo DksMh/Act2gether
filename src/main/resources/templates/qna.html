@@ -8,11 +8,179 @@
     <link rel="stylesheet" href="/css/qna.css" />
     <link rel="stylesheet" href="/css/customerservice.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <!-- JavaScript 파일들 -->
-    <script src="/js/qna-ui.js"></script>
+    <!-- JavaScript 파일들 - 의존성 순서 정리 -->
     <script src="/js/qna-api.js"></script>
+    <script src="/js/qna-ui.js"></script>
     <script src="/js/qna-main.js"></script>
+    
+    <!-- 다중 이미지 미리보기 스타일 -->
+    <style>
+      .image-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 15px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
 
+      .image-preview-item {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f9fafb;
+        transition: all 0.2s ease;
+      }
+
+      .image-preview-item:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+      }
+
+      .image-preview-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .remove-image-btn {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(4px);
+      }
+
+      .remove-image-btn:hover {
+        background: rgba(239, 68, 68, 1);
+        transform: scale(1.1);
+      }
+
+      .image-count-badge {
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 12px;
+        backdrop-filter: blur(4px);
+      }
+
+      .file-upload-area.dragover {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+        transform: scale(1.02);
+      }
+
+      .file-upload-area {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        padding: 24px;
+        text-align: center;
+        background: #fafafa;
+      }
+
+      .file-upload-area:hover {
+        border-color: #6b7280;
+        background: #f3f4f6;
+      }
+
+      .multi-image-info {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #6b7280;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .image-limit-text {
+        color: #9ca3af;
+      }
+
+      .current-image-count {
+        font-weight: 500;
+        color: #374151;
+      }
+
+      .detail-image-gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .detail-image-item {
+        width: 200px;
+        height: 150px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .detail-image-item:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .detail-image-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* 이미지 모달 (상세보기용) */
+      .image-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        cursor: pointer;
+      }
+
+      .image-modal img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+      }
+
+      .image-modal-close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        color: white;
+        font-size: 30px;
+        cursor: pointer;
+      }
+    </style>
   </head>
   <body>
     <!-- Header -->
@@ -41,6 +209,7 @@
             >에 등록하였으니 많은 이용 부탁드립니다.
           </li>
           <li>※ 개인정보가 포함된 문의는 비공개로 작성해주세요.</li>
+          <li>※ 이미지는 최대 5개까지 첨부 가능합니다.</li>
         </ul>
       </div>
 
@@ -68,7 +237,6 @@
               <select id="categoryFilter" class="filter-select">
                 <option value="">전체</option>
                 <option value="일반문의">일반문의</option>
-                <option value="신고">신고</option>
               </select>
             </div>
 
@@ -97,8 +265,8 @@
         </div>
       </div>
 
-      <!-- 실제 Q&A 게시판 영역 -->
-      <div class="qna-board">
+      <!-- QnA 게시판 목록 영역 -->
+      <div id="qnaBoardView" class="qna-board">
         <!-- 게시글 목록 헤더 -->
         <div class="qna-board-header">
           <h3 class="board-title">문의 목록</h3>
@@ -123,9 +291,24 @@
           <span>로딩 중...</span>
         </div>
 
-        <!-- 게시글 목록 -->
-        <div id="postsList" class="posts-list">
-          <!-- 게시글 항목들이 동적으로 추가됩니다 -->
+        <!-- 게시글 목록 테이블 -->
+        <div class="qna-table-container">
+          <table id="qnaTable" class="qna-board-table">
+            <thead>
+              <tr>
+                <th style="width: 60px;">번호</th>
+                <th style="width: 100px;">카테고리</th>
+                <th>제목</th>
+                <th style="width: 100px;">작성자</th>
+                <th style="width: 100px;">작성일</th>
+                <th style="width: 80px;">조회수</th>
+                <th style="width: 100px;">답변상태</th>
+              </tr>
+            </thead>
+            <tbody id="postsList">
+              <!-- 게시글 항목들이 동적으로 추가됩니다 -->
+            </tbody>
+          </table>
         </div>
 
         <!-- 페이지네이션 -->
@@ -133,25 +316,25 @@
           <!-- 페이지 버튼들이 동적으로 추가됩니다 -->
         </div>
       </div>
-    </section>
 
-    <!-- 게시글 작성/수정 모달 -->
-    <div id="postModal" class="qna-modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 id="modalTitle">문의 작성</h3>
-          <button id="closeModal" class="btn-close">
-            <i class="fas fa-times"></i>
-          </button>
+      <!-- 게시글 작성/수정 페이지 -->
+      <div id="qnaWriteView" class="qna-write-page" style="display: none;">
+        <div class="page-header">
+          <h2 id="writeTitle">문의 작성</h2>
+          <div class="page-actions">
+            <button id="cancelWriteBtn" class="btn btn-outline">
+              <i class="fas fa-arrow-left"></i>
+              목록으로
+            </button>
+          </div>
         </div>
 
-        <form id="postForm" class="modal-body">
+        <form id="postForm" class="qna-write-form">
           <div class="form-group">
             <label for="postCategory" class="form-label">카테고리 *</label>
             <select id="postCategory" class="form-control" required>
               <option value="">카테고리 선택</option>
               <option value="일반문의">일반문의</option>
-              <option value="신고">신고</option>
             </select>
           </div>
 
@@ -174,7 +357,7 @@
               id="postContent"
               class="form-control textarea"
               placeholder="문의 내용을 자세히 작성해주세요"
-              rows="8"
+              rows="12"
               maxlength="5000"
               required
             ></textarea>
@@ -191,18 +374,25 @@
                 id="postImage"
                 class="file-input"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
+                multiple
+                style="display: none;"
               />
               <div class="file-upload-content">
                 <i class="fas fa-cloud-upload-alt"></i>
                 <p>클릭하여 이미지를 선택하거나 드래그하여 업로드하세요</p>
-                <p class="file-info">JPG, PNG, WebP 파일 (최대 3MB)</p>
+                <p class="file-info">JPG, PNG, WebP 파일 (최대 3MB, 5개까지)</p>
               </div>
             </div>
-            <div id="imagePreview" class="image-preview" style="display: none">
-              <img id="previewImg" src="" alt="미리보기" />
-              <button type="button" id="removeImage" class="btn-remove-image">
-                <i class="fas fa-times"></i>
-              </button>
+            
+            <!-- 다중 이미지 미리보기 컨테이너 -->
+            <div id="imagePreviewContainer" class="image-preview-container" style="display: none">
+              <!-- 선택된 이미지들이 동적으로 추가됩니다 -->
+            </div>
+            
+            <!-- 이미지 개수 및 안내 -->
+            <div class="multi-image-info" id="imageInfo" style="display: none">
+              <span class="current-image-count">선택된 이미지: <span id="currentImageCount">0</span>개</span>
+              <span class="image-limit-text">최대 5개</span>
             </div>
           </div>
 
@@ -216,40 +406,28 @@
               체크 해제 시 다른 사용자도 게시글을 볼 수 있습니다.
             </p>
           </div>
+
+          <div class="form-actions">
+            <button type="button" id="cancelBtn" class="btn btn-outline">
+              취소
+            </button>
+            <button type="submit" id="submitBtn" class="btn btn-primary">
+              <i class="fas fa-save"></i>
+              <span id="submitText">작성하기</span>
+            </button>
+          </div>
         </form>
-
-        <div class="modal-footer">
-          <button type="button" id="cancelBtn" class="btn btn-outline">
-            취소
-          </button>
-          <button
-            type="submit"
-            id="submitBtn"
-            form="postForm"
-            class="btn btn-primary"
-          >
-            <i class="fas fa-save"></i>
-            <span id="submitText">작성하기</span>
-          </button>
-        </div>
       </div>
-    </div>
 
-    <!-- 게시글 상세 보기 모달 -->
-    <div id="detailModal" class="qna-modal">
-      <div class="modal-content modal-large">
-        <div class="modal-header">
-          <div class="detail-header">
-            <div class="detail-meta">
-              <div class="detail-badges">
-                <span id="detailCategory" class="category-badge"></span>
-                <span id="detailStatus" class="status-badge"></span>
-              </div>
-              <div class="detail-info">
-                <span id="detailAuthor"></span>
-                <span id="detailDate"></span>
-                <span id="detailViews"></span>
-              </div>
+      <!-- 게시글 상세 보기 페이지 -->
+      <div id="qnaDetailView" class="qna-detail-page" style="display: none;">
+        <div class="detail-header-section">
+          <div class="page-header">
+            <div class="page-nav">
+              <button id="backToListBtn" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i>
+                목록으로
+              </button>
             </div>
             <div class="detail-actions">
               <button
@@ -268,37 +446,49 @@
                 <i class="fas fa-trash"></i>
                 삭제
               </button>
-              <button id="closeDetailModal" class="btn-close">
-                <i class="fas fa-times"></i>
-              </button>
             </div>
           </div>
-          <h3 id="detailTitle" class="detail-title"></h3>
+
+          <div class="detail-meta-section">
+            <div class="detail-badges">
+              <span id="detailCategory" class="category-badge"></span>
+              <span id="detailStatus" class="status-badge"></span>
+            </div>
+            <div class="detail-info">
+              <span id="detailAuthor"></span>
+              <span id="detailDate"></span>
+              <span id="detailViews"></span>
+            </div>
+          </div>
+
+          <h1 id="detailTitle" class="detail-title"></h1>
         </div>
 
-        <div class="modal-body">
+        <div class="detail-content-section">
           <div class="detail-content">
             <div id="detailContentText" class="content-text"></div>
-            <div id="detailImage" class="content-image" style="display: none">
-              <img id="detailImg" src="" alt="첨부 이미지" />
+            <!-- 다중 이미지 갤러리 -->
+            <div id="detailImageGallery" class="detail-image-gallery" style="display: none">
+              <!-- 이미지들이 동적으로 추가됩니다 -->
             </div>
           </div>
 
           <!-- 답변 섹션 -->
           <div class="replies-section">
-            <h4 class="replies-title">
+            <h3 class="replies-title">
               <i class="fas fa-comments"></i>
               관리자 답변
-            </h4>
+            </h3>
 
             <!-- 관리자 답변 작성 폼 (관리자만) -->
             <div id="replyForm" class="reply-form" style="display: none">
               <div class="form-group">
+                <label for="replyContent" class="form-label">답변 작성</label>
                 <textarea
                   id="replyContent"
                   class="form-control textarea"
                   placeholder="답변을 작성해주세요..."
-                  rows="4"
+                  rows="6"
                   maxlength="2000"
                 ></textarea>
                 <div class="char-counter">
@@ -320,7 +510,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- 알림 토스트 -->
     <div id="toast" class="toast">
@@ -344,6 +534,12 @@
           <button id="confirmOk" class="btn btn-danger">확인</button>
         </div>
       </div>
+    </div>
+
+    <!-- 이미지 상세보기 모달 -->
+    <div id="imageModal" class="image-modal">
+      <span class="image-modal-close">&times;</span>
+      <img id="modalImage" src="" alt="이미지 상세보기" />
     </div>
 
     <!-- Footer -->

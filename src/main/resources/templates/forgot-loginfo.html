@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>비밀번호 찾기 - 여기부터</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/login.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap"
+      rel="stylesheet"
+    />
+    <script src="/js/forgot-loginfo.js"></script>
+  </head>
+  <body>
+    <!-- Header -->
+    <div th:replace="header :: header"></div>
+    
+    <!-- Main Reset Container -->
+    <div class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <h2>계정 찾기</h2>
+                <p>이메일 또는 비밀번호를 찾아드립니다</p>
+            </div>
+
+            <!-- 탭 메뉴 -->
+            <div class="tab-menu">
+                <button class="tab-btn active" data-tab="find-email">이메일 찾기</button>
+                <button class="tab-btn" data-tab="find-password">비밀번호 찾기</button>
+            </div>
+
+            <!-- 이메일 찾기 섹션 -->
+            <div id="find-email" class="tab-content active">
+                <div class="tab-header">
+                    <h3>이메일 찾기</h3>
+                    <p>등록시 입력한 이름과 닉네임으로 이메일을 찾을 수 있습니다</p>
+                </div>
+
+                <!-- 이메일 찾기 1단계: 정보 입력 -->
+                <div id="email-step1" class="reset-step">
+                    <form id="findEmailForm" autocomplete="off" novalidate>
+                        <div class="form-group">
+                            <label for="findName">이름</label>
+                            <input type="text" id="findName" name="findName" placeholder="실명을 입력하세요" required autocomplete="off">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="findUsername">닉네임</label>
+                            <input type="text" id="findUsername" name="findUsername" placeholder="닉네임을 입력하세요" required autocomplete="off">
+                        </div>
+                        
+                        <button class="login-btn" type="submit" id="findEmailBtn">
+                            <span class="btn-text">이메일 찾기</span>
+                            <span class="btn-loading" style="display: none;">확인 중...</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 이메일 찾기 2단계: 결과 -->
+                <div id="email-step2" class="reset-step" style="display: none;">
+                    <div class="find-result">
+                        <div class="result-icon">📧</div>
+                        <h3>이메일을 찾았습니다</h3>
+                        <div class="email-result" id="emailResult">
+                            <!-- 찾은 이메일이 여기 표시됩니다 -->
+                        </div>
+                        <div class="result-actions">
+                            <a href="/login" class="login-btn">로그인하기</a>
+                            <button class="secondary-btn" onclick="window.location.href='/forgot-loginfo?type=password'">비밀번호 찾기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 비밀번호 찾기 섹션 -->
+            <div id="find-password" class="tab-content">
+                <div class="tab-header">
+                    <h3>비밀번호 찾기</h3>
+                    <p>등록된 이메일로 비밀번호를 재설정할 수 있습니다</p>
+                </div>
+
+                <!-- 1단계: 이메일 입력 -->
+                <div id="password-step1" class="reset-step">
+                    <form id="emailForm" autocomplete="off" novalidate>
+                        <div class="form-group">
+                            <label for="email">이메일</label>
+                            <input type="email" id="email" name="email" placeholder="등록된 이메일 주소를 입력하세요" required autocomplete="off">
+                        </div>
+                        
+                        <button class="login-btn" type="submit" id="sendCodeBtn">
+                            <span class="btn-text">인증번호 발송</span>
+                            <span class="btn-loading" style="display: none;">발송 중...</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 2단계: 인증번호 입력 -->
+                <div id="password-step2" class="reset-step" style="display: none;">
+                    <form id="verifyForm" autocomplete="off" novalidate>
+                        <div class="form-group">
+                            <label for="verificationCode">인증번호</label>
+                            <div class="verification-input-container">
+                                <input type="text" id="verificationCode" name="verificationCode" placeholder="6자리 인증번호 입력" maxlength="6" required autocomplete="off">
+                                <div class="verification-info-row">
+                                    <div class="timer-info">
+                                        <span id="timer">3:00</span> 후 만료됩니다
+                                    </div>
+                                    <button type="button" id="resendCodeBtn" class="resend-btn">재발송</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="login-btn" type="submit" id="verifyCodeBtn">
+                            <span class="btn-text">인증하기</span>
+                            <span class="btn-loading" style="display: none;">확인 중...</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 3단계: 새 비밀번호 설정 -->
+                <div id="password-step3" class="reset-step" style="display: none;">
+                    <form id="resetPasswordForm" autocomplete="off" novalidate>
+                        <div class="form-group">
+                            <label for="newPassword">새 비밀번호</label>
+                            <input type="password" id="newPassword" name="newPassword" placeholder="새 비밀번호를 입력하세요" required autocomplete="new-password">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirmPassword">비밀번호 확인</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="비밀번호를 다시 입력하세요" required autocomplete="new-password">
+                        </div>
+                        
+                        <button class="login-btn" type="submit" id="resetPasswordBtn">
+                            <span class="btn-text">비밀번호 변경</span>
+                            <span class="btn-loading" style="display: none;">변경 중...</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 4단계: 완료 -->
+                <div id="password-step4" class="reset-step" style="display: none;">
+                    <div class="success-container">
+                        <div class="success-icon">✓</div>
+                        <h3>비밀번호가 성공적으로 변경되었습니다</h3>
+                        <p>새로운 비밀번호로 로그인해 주세요</p>
+                        <a href="/login" class="login-btn">로그인하기</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="back-to-login">
+                <p><a href="/login">← 로그인으로 돌아가기</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div th:replace="footer :: footer"></div>
+
+    <style>
+        /* 탭 메뉴 스타일 */
+        .tab-menu {
+            display: flex;
+            border-bottom: 0.125rem solid #dee2e6;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #6c757d;
+            border-bottom: 0.1875rem solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+        }
+
+        .tab-btn:hover {
+            color: #0056b3;
+            background-color: #f8f9fa;
+        }
+
+        /* 탭 콘텐츠 */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-header h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 1.25rem;
+        }
+
+        .tab-header p {
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        /* 이메일 찾기 결과 스타일 */
+        .find-result {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .result-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .find-result h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .email-result {
+            background-color: #f8f9fa;
+            border: 0.0625rem solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .secondary-btn {
+            padding: 0.75rem 1.5rem;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .secondary-btn:hover {
+            background-color: #5a6268;
+        }
+
+        /* 기존 스타일들 */
+        .reset-step {
+            margin-bottom: 1.25rem;
+        }
+
+        .verification-input-container {
+            width: 100%;
+        }
+
+        .verification-input-group {
+            display: flex;
+            gap: 0.625rem;
+            align-items: center;
+        }
+
+        .verification-input-group input {
+            flex: 1;
+        }
+
+        .verification-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        .resend-btn {
+            padding: 0.5rem 1rem;
+            background-color: #007bff;
+            border: 0.0625rem solid #007bff;
+            border-radius: 0.3125rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: white;
+            white-space: nowrap;
+            transition: background-color 0.3s ease;
+        }
+
+        .resend-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .resend-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .timer-info {
+            font-size: 1rem;
+            color: #dc3545;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .btn-loading {
+            display: none;
+        }
+
+        .success-container {
+            text-align: center;
+            padding: 2.5rem 1.25rem;
+        }
+
+        .success-icon {
+            width: 3.75rem;
+            height: 3.75rem;
+            background-color: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.25rem;
+            font-size: 1.875rem;
+            color: white;
+        }
+
+        .success-container h3 {
+            margin-bottom: 0.625rem;
+            color: #333;
+        }
+
+        .success-container p {
+            color: #666;
+            margin-bottom: 1.875rem;
+        }
+
+        .back-to-login {
+            text-align: center;
+            margin-top: 1.25rem;
+        }
+
+        .back-to-login a {
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .back-to-login a:hover {
+            color: #495057;
+            text-decoration: underline;
+        }
+
+        .verification-status {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .verification-status.error {
+            color: #dc3545;
+        }
+
+        .verification-status.success {
+            color: #28a745;
+        }
+
+        .verification-status.info {
+            color: #17a2b8;
+        }
+
+        .error-message, .success-message, .info-message {
+            padding: 0.75rem;
+            border-radius: 0.3125rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            border: 0.0625rem solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            border: 0.0625rem solid #c3e6cb;
+            color: #155724;
+        }
+
+        .info-message {
+            background-color: #d1ecf1;
+            border: 0.0625rem solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+  </body>
+</html>

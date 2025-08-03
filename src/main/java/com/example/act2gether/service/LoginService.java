@@ -1,5 +1,8 @@
 package com.example.act2gether.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Random;
 
 import org.springframework.mail.SimpleMailMessage;
@@ -13,6 +16,7 @@ import com.example.act2gether.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,23 +28,53 @@ public class LoginService {
     private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
 
-    public void createUser(UserDTO userDTO){
+    // public void createUser(UserDTO userDTO){
+    //     try {
+    //         ObjectMapper objectMapper = new ObjectMapper();
+    //         String interestsStr = objectMapper.writeValueAsString(userDTO.getInterests());
+    //         // 비밀번호 암호화
+    //         String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+    //         userDTO.setPassword(encodedPassword);
+    //         userRepository.save(UserEntity.of(userDTO, interestsStr));
+    //     } catch (JsonProcessingException e) {
+    //         // TODO Auto-generated catch block
+    //         e.printStackTrace();
+    //     }
+        
+    // }
+
+    // 수정
+    public String createUser(UserDTO userDTO) {
         try {
+            // 이메일 중복 체크 추가
+            if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+                throw new RuntimeException("이미 가입된 이메일입니다: " + userDTO.getEmail());
+            }
+            
             ObjectMapper objectMapper = new ObjectMapper();
             String interestsStr = objectMapper.writeValueAsString(userDTO.getInterests());
+            
             // 비밀번호 암호화
             String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
             userDTO.setPassword(encodedPassword);
-            userRepository.save(UserEntity.of(userDTO, interestsStr));
+            
+            // UserEntity 생성 및 저장
+            UserEntity savedUser = userRepository.save(UserEntity.of(userDTO, interestsStr));
+            
+            // 생성된 UUID 반환
+            return savedUser.getUser_id();
+            
         } catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException("사용자 생성 중 오류가 발생했습니다.");
         }
-        
     }
 
     public void checkEmail(String code) {
         
+    }
+    // 이메일 중복 체크 메서드 추가
+    public boolean isEmailExists(String email) {
+        return userRepository.findByEmail(email).isPresent();
     }
 
     // 인증번호 생성 (6자리)
@@ -58,6 +92,23 @@ public class LoginService {
         mailSender.send(message);
     }
 
+    // 관심사 업데이트 메서드 추가
+    @Transactional
+    public void updateUserInterests(String email, Map<String, Object> interests) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String interestsJson = objectMapper.writeValueAsString(interests);
+            String updatedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            
+            userRepository.updateInterestsByEmail(email, interestsJson, updatedAt);
+            
+            log.info("사용자 관심사 업데이트 완료: {}", email);
+            
+        } catch (JsonProcessingException e) {
+            log.error("관심사 JSON 변환 실패: {}", e.getMessage());
+            throw new RuntimeException("관심사 처리 중 오류가 발생했습니다.");
+        }
+    }
     // public boolean verifyLogin(UserDTO userDTO) {
     //     UserEntity userEntity = userRepository.findByEmail(userDTO.getEmail()).orElse(null);
     //     if(userEntity != null){

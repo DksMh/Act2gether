@@ -4,9 +4,8 @@
 /* Main Container */
 .onboarding-container {
   background: white;
-  margin: 0 10%;
+  margin: 5% 10% 7%;
   position: relative;
-  margin-bottom: 5%;
 }
 
 .step-indicator {
@@ -22,7 +21,7 @@
   height: 4px;
   background: #e0e0e0;
   border-radius: 2px;
-  transition: background 0.3s;ㅊ
+  transition: 0.3s;
 }
 
 .step.active {
@@ -228,39 +227,13 @@
 
 .btn {
   flex: 1;
-  padding: 4%;
+  padding: 3.5%;
   border: none;
   border-radius: 10px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-}
-
-.btn-primary:disabled {
-  background: #ccc !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  opacity: 0.5;
-}
-
-.btn-secondary {
-  background: #f0f0f0;
-  color: #666;
-}
-
-.btn-secondary:hover {
-  background: #e0e0e0;
 }
 
 /* Loading Spinner */

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>회원가입 - 여기부터</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/signup.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet" />
+    <script src="/js/signup.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="header :: header"></div>
+
+    <!-- Main Container -->
+    <div class="signup-container">
+        <div class="signup-content">
+            <!-- Progress Indicator -->
+            <div class="progress-bar">
+                <div class="progress-step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">약관동의</div>
+                </div>
+                <div class="progress-step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">정보입력</div>
+                </div>
+                <div class="progress-step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">완료</div>
+                </div>
+            </div>
+
+            <!-- Step 1: 약관동의 -->
+            <div class="signup-step active" id="termsStep">
+                <div class="step-header">
+                    <h1>회원가입</h1>
+                    <p>서비스 이용을 위한 약관에 동의해주세요</p>
+                </div>
+
+                <!-- 연령 확인 -->
+                <div class="age-verification">
+                    <label>
+                        <input type="checkbox" id="ageCheck">
+                        <span>만 14세 이상입니다</span>
+                    </label>
+                </div>
+
+                <!-- 약관 동의 섹션 -->
+                <div class="terms-section">
+                    <!-- 전체 동의 -->
+                    <div class="terms-item terms-all">
+                        <input type="checkbox" id="agreeAll" class="terms-checkbox">
+                        <div class="terms-content">
+                            <div class="terms-text">전체 동의</div>
+                        </div>
+                    </div>
+
+                    <!-- 필수 약관들 -->
+                    <div class="terms-item">
+                        <input type="checkbox" id="terms1" class="terms-checkbox required-term">
+                        <div class="terms-content">
+                            <div class="terms-text required">[필수] 서비스 이용약관 동의</div>
+                            <a href="#" class="terms-link" onclick="showTermsModal('이용약관')">전문 보기</a>
+                        </div>
+                    </div>
+
+                    <div class="terms-item">
+                        <input type="checkbox" id="terms2" class="terms-checkbox required-term">
+                        <div class="terms-content">
+                            <div class="terms-text required">[필수] 개인정보 수집·이용 동의</div>
+                            <a href="#" class="terms-link" onclick="showTermsModal('개인정보처리방침')">전문 보기</a>
+                        </div>
+                    </div>
+
+                    <div class="terms-item">
+                        <input type="checkbox" id="terms3" class="terms-checkbox required-term">
+                        <div class="terms-content">
+                            <div class="terms-text required">[필수] 위치정보 이용약관 동의</div>
+                            <a href="#" class="terms-link" onclick="showTermsModal('위치정보약관')">전문 보기</a>
+                        </div>
+                    </div>
+
+                    <!-- 선택 약관들 -->
+                    <div class="terms-item">
+                        <input type="checkbox" id="terms4" class="terms-checkbox optional-term">
+                        <div class="terms-content">
+                            <div class="terms-text optional">[선택] 마케팅 정보 수신 동의</div>
+                            <a href="#" class="terms-link" onclick="showTermsModal('마케팅정보')">전문 보기</a>
+                        </div>
+                    </div>
+
+                    <div class="terms-item">
+                        <input type="checkbox" id="terms5" class="terms-checkbox optional-term">
+                        <div class="terms-content">
+                            <div class="terms-text optional">[선택] 이벤트 및 할인 혜택 알림 동의</div>
+                            <a href="#" class="terms-link" onclick="showTermsModal('이벤트정보')">전문 보기</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" id="nextToInfoBtn" onclick="nextToInfo()" disabled>다음</button>
+                </div>
+            </div>
+
+            <!-- Step 2: 정보입력 -->
+            <div class="signup-step" id="infoStep">
+                <div class="step-header">
+                    <h1>회원정보 입력</h1>
+                    <p>서비스 이용을 위한 정보를 입력해주세요</p>
+                </div>
+
+                <form id="signupForm">
+                    <!-- 이메일 입력 -->
+                    <div class="form-section">
+                        <h3>이메일 인증</h3>
+                        <div class="form-group">
+                            <label for="email">이메일</label>
+                            <div class="input-group">
+                                <input type="email" id="email" class="form-input" placeholder="이메일 주소를 입력하세요" required>
+                                <button type="button" class="btn btn-outline" id="sendCodeBtn" onclick="sendEmailCode()">인증번호 전송</button>
+                            </div>
+                            <div class="verification-status" id="emailInputStatus"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="emailCode">인증번호</label>
+                            <div class="input-group">
+                                <input type="text" id="emailCode" class="form-input" placeholder="인증번호를 입력하세요" disabled>
+                                <button type="button" class="btn btn-outline" id="verifyCodeBtn" onclick="verifyEmailCode()" disabled>확인</button>
+                            </div>
+                            <div class="verification-status" id="emailStatus"></div>
+                        </div>
+                    </div>
+
+                    <!-- 기본 정보 입력 -->
+                    <div class="form-section">
+                        <h3>기본 정보</h3>
+                        <div class="form-group">
+                            <label for="username">닉네임</label>
+                            <input type="text" id="username" class="form-input" placeholder="닉네임을 입력하세요" required disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="realName">이름</label>
+                            <input type="text" id="realName" class="form-input" placeholder="이름을 입력하세요" required disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">비밀번호</label>
+                            <input type="password" id="password" class="form-input" placeholder="영문과 숫자를 포함해 8자 이상 비밀번호를 입력하세요" required disabled>
+                            <div class="password-hint">8자 이상, 영문과 숫자를 포함해주세요</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">비밀번호 확인</label>
+                            <input type="password" id="confirmPassword" class="form-input" placeholder="비밀번호를 다시 입력하세요" required disabled>
+                            <div class="password-match" id="passwordMatch"></div>
+                        </div>
+                    </div>
+
+                    <!-- 개인정보 입력 (수정) -->
+                    <div class="form-section">
+                        <h3>개인정보</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="birthYear">출생년도</label>
+                                <select id="birthYear" class="form-input" required disabled>
+                                    <option value="">선택해주세요</option>
+                                    <!-- 50세 이상만 가입 가능 (현재년도 기준) -->
+                                </select>
+                                <!-- <div class="birth-year-hint">50세 이상만 가입 가능합니다.</div> -->
+                            </div>
+
+                            <div class="form-group">
+                                <label for="gender">성별</label>
+                                <select id="gender" class="form-input" required disabled>
+                                    <option value="">선택해주세요</option>
+                                    <option value="남성">남성</option>
+                                    <option value="여성">여성</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="region">거주지역</label>
+                            <select id="region" class="form-input" required disabled>
+                                <option value="">선택해주세요</option>
+                                <option value="서울">서울</option>
+                                <option value="경기">경기</option>
+                                <option value="인천">인천</option>
+                                <option value="강원">강원</option>
+                                <option value="충북">충북</option>
+                                <option value="충남">충남</option>
+                                <option value="대전">대전</option>
+                                <option value="세종">세종</option>
+                                <option value="전북">전북</option>
+                                <option value="전남">전남</option>
+                                <option value="광주">광주</option>
+                                <option value="경북">경북</option>
+                                <option value="경남">경남</option>
+                                <option value="대구">대구</option>
+                                <option value="부산">부산</option>
+                                <option value="울산">울산</option>
+                                <option value="제주">제주</option>
+                            </select>
+                        </div>
+                        
+                        <div class="info-notice">
+                            <p>💡 <strong>출생년도, 성별</strong>은 맞춤형 여행 추천을 위해 사용되며, 가입 후 변경할 수 없습니다.</p>
+                            <p>📍 거주지역은 마이페이지에서 언제든지 변경할 수 있습니다.</p>
+                            <p>🎯 본 서비스는 <strong>액티브 시니어(50세 이상)</strong>를 위한 맞춤형 여행 플랫폼입니다.</p>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="prevToTerms()">이전</button>
+                    <button class="btn btn-primary" id="completeSignupBtn" onclick="completeSignup()" disabled>회원가입 완료</button>
+                </div>
+            </div>
+
+            <!-- Step 3: 완료 -->
+            <div class="signup-step" id="completeStep">
+                <div class="step-header">
+                    <h1>회원가입 완료!</h1>
+                    <p>회원가입이 성공적으로 완료되었습니다.<br>맞춤형 서비스 제공을 위해 관심사를 설정해주세요.</p>
+                </div>
+
+                <div class="complete-icon">
+                    <div class="checkmark">✓</div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="goToMain()">메인으로</button>
+                    <button class="btn btn-primary" onclick="goToInterests()">관심사 설정하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 약관 전문 모달 -->
+    <div id="termsModal" class="terms-modal">
+        <div class="terms-modal-content">
+            <div class="terms-modal-header">
+                <h3 class="terms-modal-title" id="termsModalTitle">약관 전문</h3>
+                <button class="terms-modal-close" onclick="closeTermsModal()">&times;</button>
+            </div>
+            <div class="terms-modal-body" id="termsModalBody">
+                <!-- 약관 내용이 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="footer :: footer"></div>
+
+    <style>
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .info-notice {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .info-notice p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        select.form-input {
+            background-color: white;
+            cursor: pointer;
+        }
+        
+        .birth-year-hint {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .age-restriction-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            color: #856404;
+        }
+    </style>
+</body>
+</html>

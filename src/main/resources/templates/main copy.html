@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>여행 추천 플랫폼</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap"
+      rel="stylesheet"
+    />
+    <script src="/js/loginAsignup.js"></script> 
+  </head>
+  <body>
+    <!-- Header -->
+    <div th:replace="header :: header"></div>
+
+    <!-- main Section -->
+    <section class="main-section">
+      <div class="slider">
+        <!-- 좌우 버튼, 메인 배너 -->
+      </div>
+      <div class="travel-type-filter">
+        <h3>어떤 여행을 떠나볼까요?</h3>
+        <ul>
+          <li>문화</li>
+          <li>힐링</li>
+          <li>자연</li>
+          <li>축제</li>
+          <li>체험</li>
+          <li>맛집</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 추천 섹션 1 -->
+    <section class="recommend-section usernickname-section">
+      <div class="recommend-title">
+        <h2>
+          <span class="nickname">OOO</span>님을 위한<br />
+          <span class="interest-keyword">이동 거리가 짧은</span> 여행이<br />
+          준비되어 있어요
+        </h2>
+      </div>    
+      <div class="tour-slider">
+        <div class="tour-cards-wrapper">        
+          <div class="tour-cards">
+            <!-- 반복 요소 예시 -->
+            <div class="tour-card">
+              <div class="thumbnail"></div>
+              <div class="tags">
+                <span>힐링</span>
+              </div>
+              <h4>[경북 안동] 유유자적 역사 산책</h4>
+              <p>유교문화권의 심장, 병산서원~하회마을 산책 루트</p>
+            </div>
+            <!-- ... 추가 카드들 ... -->
+         </div>
+      </div>
+        <!-- 모바일용 슬라이드 인디케이터 -->
+        <div class="slider-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        
+        <button class="slider-arrow left">←</button>
+        <button class="slider-arrow right">→</button>
+      </div>
+    </section>    
+
+    <!-- 추천 섹션 2 -->
+    <section class="recommend-section season-section">
+      <div class="recommend-title">
+        <h2>
+          <span class="season">여름 테마</span> 여행이<br />
+          준비되어 있어요
+        </h2>
+      </div>
+
+      <div class="tour-slider">
+        <div class="tour-cards-wrapper">        
+          <div class="tour-cards">
+            <!-- 반복 요소 예시 -->
+            <div class="tour-card">
+              <div class="thumbnail"></div>
+              <div class="tags">
+                <span>힐링</span>
+              </div>
+              <h4>[경북 안동] 유유자적 역사 산책</h4>
+              <p>유교문화권의 심장, 병산서원~하회마을 산책 루트</p>
+            </div>
+            <!-- ... 추가 카드들 ... -->
+         </div>
+      </div>
+        <!-- 모바일용 슬라이드 인디케이터 -->
+        <div class="slider-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        
+        <button class="slider-arrow left">←</button>
+        <button class="slider-arrow right">→</button>
+      </div>
+    </section>
+
+    <!-- 추천 섹션 3 -->
+    <section class="recommend-section experience-section">
+      <div class="recommend-title">
+        <h2>
+          <span class="">전국 방방곡곡</span> 지역 특색을 느껴보는<br />
+           여행이 준비되어 있어요
+        </h2>
+      </div> 
+      <div class="region-filter">
+        <button class="region active">서울</button>
+        <button class="region">경기</button>
+        <button class="region">강원</button>
+        <button class="region">대전</button>
+        <button class="region">부산</button>
+        <button class="region">제주</button>
+        <button class="region">경북</button>
+      </div> 
+      <div class="tour-slider">
+        <div class="tour-cards-wrapper">     
+          <div class="product-card">
+            <div class="card-header">
+              <h3>안동 택시 투어</h3>
+              <span class="arrow">→</span>
+            </div>
+            <p class="desc">
+              주요 명소를 빠짐없이 돌아보고 싶다면?<br />
+              베테랑 기사님의 설명과 함께 알차게 돌아보세요! 🧑‍✈️
+            </p>
+            <p class="meta">지자체 인증 해설사 동행 & 이번 달만 무료 해설 진행</p>
+          </div>
+          <div class="product-card">
+            <div class="card-header">
+              <h3>안동 막걸리 만들기 체험</h3>
+              <span class="arrow">→</span>
+            </div>
+            <p class="desc">
+              전통 방식으로 직접 만들어보는 안동 막걸리!<br />
+              술 빚기의 즐거움과 함께 안동 문화도 배워보세요
+            </p>
+            <p class="meta">매주 토요일 오후 진행 & 현장 시음 포함</p>
+          </div>
+         </div>
+      </div>
+        <!-- 모바일용 슬라이드 인디케이터 -->
+        <div class="slider-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        
+        <!-- <button class="slider-arrow left">←</button>
+        <button class="slider-arrow right">→</button> -->
+      </div>
+    </section>
+
+    <!-- 동행 참여 -->
+    <section class="companion-recommend-section">
+      <h2>동행에 참여해<br />즐거운 인연을 만들어 보세요</h2>
+    
+      <div class="product-grid">
+        <div class="product-card">
+          <div class="card-header">
+            <h3>중년 여성끼리 소박하게 국내 여행 가요~</h3>
+          </div>
+          <p class="desc">테마 / 연령대 / 커뮤니티에 대한 정보</p>
+          <button class="btn-primary">둘러보기</button>
+        </div>
+    
+        <div class="product-card">
+          <div class="card-header">
+            <h3>중년 여성끼리 소박하게 국내 여행 가요~</h3>
+          </div>
+          <button class="btn-primary">둘러보기</button>
+        </div>
+    
+        <div class="product-card">
+          <div class="card-header">
+            <h3>중년 여성끼리 소박하게 국내 여행 가요~</h3>
+          </div>
+          <button class="btn-primary">둘러보기</button>
+        </div>
+    
+        <div class="product-card">
+          <div class="card-header">
+            <h3>중년 여성끼리 소박하게 국내 여행 가요~</h3>
+          </div>
+          <button class="btn-primary">둘러보기</button>
+        </div>
+      </div>
+    
+      <button class="more-button gray">다른 모임도 구경하기</button>
+    </section>
+
+    <!-- 서비스 추천 -->
+    <section class="extra-services">
+      <h2>이런 서비스도 이용해보세요</h2>
+      <div class="product-grid">
+        <div class="product-card">
+          <div class="card-header">
+            <h3>시니어 특화 여행 보험</h3>
+          </div>
+          <button class="btn-primary">둘러보기</button>
+        </div>
+        <div class="product-card">
+          <div class="card-header">
+            <h3>문화 누리 카드 신청</h3>
+          </div>
+          <button class="btn-primary">둘러보기</button>
+        </div>
+        <div class="product-card">
+          <div class="card-header">
+            <h3>셔틀 버스 대절</h3>
+          </div>
+          <button class="btn-primary">둘러보기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 로그인 /  회원가입 모달 -->
+     <!-- 로그인 모달 -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('login')">&times;</button>
+            <div class="modal-header">
+                <h2 class="modal-title">여기부터</h2>
+                <p class="modal-subtitle">로그인</p>
+            </div>
+            <form>
+                <div class="form-group">
+                    <input type="email" class="form-input" id="emailLogin" placeholder="이메일 주소를 입력하세요" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-input" id="passwordLogin" placeholder="비밀번호를 입력하세요" required>
+                </div>
+                <button type="button" class="form-button" onclick="login()">로그인</button>
+            </form>
+            
+            <div class="form-divider">
+                <span>또는</span>
+            </div>
+            
+            <div class="social-buttons">
+                <button class="social-button">구글로 로그인</button>
+                <button class="social-button">네이버로 로그인</button>
+            </div>
+            
+            <div class="form-footer">
+                계정이 없으신가요? <a href="#" onclick="switchModal('login', 'signup')">회원가입</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회원가입 모달 -->
+    <div id="signupModal" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('signup')">&times;</button>
+            <div class="modal-header">
+                <h2 class="modal-title">여기부터</h2>
+                <p class="modal-subtitle">회원가입</p>
+            </div>
+            
+            <div class="signup-options">
+                <div class="signup-option active" onclick="selectOption(this)">
+                    휴대폰 번호로 가입
+                </div>
+                <div class="signup-option" onclick="selectOption(this)">
+                    이메일로 가입
+                </div>
+                <div class="signup-option" onclick="selectOption(this)">
+                    카카오 계정으로 가입
+                </div>
+            </div>
+
+            <!-- 연령 확인 -->
+            <div class="age-verification">
+                <label>
+                    <input type="checkbox" id="ageCheck" onchange="checkAge()">
+                    <span>만 14세 이상입니다</span>
+                </label>
+            </div>
+
+            <!-- 약관 동의 섹션 -->
+            <div class="terms-section">
+                <div class="terms-title">서비스 이용을 위한 약관 동의</div>
+                
+                <!-- 전체 동의 -->
+                <div class="terms-item terms-all">
+                    <input type="checkbox" id="agreeAll" class="terms-checkbox" onchange="toggleAll()">
+                    <div class="terms-content">
+                        <div class="terms-text">전체 동의</div>
+                    </div>
+                </div>
+
+                <!-- 필수 약관들 -->
+                <div class="terms-item">
+                    <input type="checkbox" id="terms1" class="terms-checkbox required-term" onchange="updateAgreeAll()">
+                    <div class="terms-content">
+                        <div class="terms-text required">[필수] 서비스 이용약관 동의</div>
+                        <a href="#" class="terms-link" onclick="showTermsModal('이용약관')">전문 보기</a>
+                    </div>
+                </div>
+
+                <div class="terms-item">
+                    <input type="checkbox" id="terms2" class="terms-checkbox required-term" onchange="updateAgreeAll()">
+                    <div class="terms-content">
+                        <div class="terms-text required">[필수] 개인정보 수집·이용 동의</div>
+                        <a href="#" class="terms-link" onclick="showTermsModal('개인정보처리방침')">전문 보기</a>
+                    </div>
+                </div>
+
+                <div class="terms-item">
+                    <input type="checkbox" id="terms3" class="terms-checkbox required-term" onchange="updateAgreeAll()">
+                    <div class="terms-content">
+                        <div class="terms-text required">[필수] 위치정보 이용약관 동의</div>
+                        <a href="#" class="terms-link" onclick="showTermsModal('위치정보약관')">전문 보기</a>
+                    </div>
+                </div>
+
+                <!-- 선택 약관들 -->
+                <div class="terms-item">
+                    <input type="checkbox" id="terms4" class="terms-checkbox optional-term" onchange="updateAgreeAll()">
+                    <div class="terms-content">
+                        <div class="terms-text optional">[선택] 마케팅 정보 수신 동의</div>
+                        <a href="#" class="terms-link" onclick="showTermsModal('마케팅정보')">전문 보기</a>
+                    </div>
+                </div>
+
+                <div class="terms-item">
+                    <input type="checkbox" id="terms5" class="terms-checkbox optional-term" onchange="updateAgreeAll()">
+                    <div class="terms-content">
+                        <div class="terms-text optional">[선택] 이벤트 및 할인 혜택 알림 동의</div>
+                        <a href="#" class="terms-link" onclick="showTermsModal('이벤트정보')">전문 보기</a>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="form-button" id="signupBtn" onclick="proceedSignup()" disabled>회원가입 계속하기</button>
+            
+            <div class="form-footer">
+                이미 계정이 있으신가요? <a href="#" onclick="switchModal('signup', 'login')">로그인</a>
+            </div>
+        </div>
+    </div>
+
+     <!-- 이메일 검증 모달 -->
+    <div id="emailModal" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('email')">&times;</button>
+            <div class="modal-header">
+                <h2 class="modal-title">여기부터</h2>
+                <p class="modal-subtitle">회원가입</p>
+            </div>
+
+            <form>
+                <div class="form-group">
+                    <div class="email-group" style="display: flex; gap: 10px; align-items: center;">
+                      <input type="text" class="form-input" id="email" placeholder="이메일 주소를 입력하세요" required>
+                      <button type="button" class="form-button" onclick="sendCode()" style="width: 180px;">인증번호전송</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-input" id="code" placeholder="인증번호를 입력하세요" >
+                </div>
+                <button type="button" class="form-button" onclick="verifyCode()">확인</button>
+            </form>
+<!--             
+            <div class="signup-options">
+
+            </div> -->
+        </div>
+    </div>
+
+
+    <!-- 약관 전문 모달 -->
+    <div id="termsModal" class="terms-modal">
+        <div class="terms-modal-content">
+            <div class="terms-modal-header">
+                <h3 class="terms-modal-title" id="termsModalTitle">약관 전문</h3>
+                <button class="terms-modal-close" onclick="closeTermsModal()">&times;</button>
+            </div>
+            <div class="terms-modal-body" id="termsModalBody">
+                <!-- 약관 내용이 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+     <div th:replace="footer :: footer"></div>
+  </body>
+</html>
