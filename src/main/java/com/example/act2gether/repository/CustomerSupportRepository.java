@@ -22,7 +22,6 @@ public interface CustomerSupportRepository extends JpaRepository<CustomerSupport
     // 문의 유형별 조회
     @Query("SELECT cs FROM CustomerSupportEntity cs WHERE cs.inquiry_type = :inquiryType")
     Page<CustomerSupportEntity> findByInquiry_type(@Param("inquiryType") String inquiryType, Pageable pageable);
-    //Page<CustomerSupportEntity> findByInquiry_type(String inquiryType, Pageable pageable);
     
     // 상태별 조회
     Page<CustomerSupportEntity> findByStatus(String status, Pageable pageable);
@@ -52,18 +51,15 @@ public interface CustomerSupportRepository extends JpaRepository<CustomerSupport
     Page<CustomerSupportEntity> findByUserIdAndTitleOrContentContaining(@Param("userId") String userId, @Param("keyword") String keyword, Pageable pageable);
     
     // 특정 사용자가 볼 수 있는 문의 조회 (자신의 문의 + 공개 문의)
-    @Query("SELECT cs FROM CustomerSupportEntity cs WHERE cs.userId = :userId OR cs.isPrivate = false ORDER BY cs.createdAt DESC")
+    @Query("SELECT cs FROM CustomerSupportEntity cs WHERE " +
+           "cs.userId = :userId OR cs.isPrivate = false")
     Page<CustomerSupportEntity> findVisiblePosts(@Param("userId") String userId, Pageable pageable);
     
-    // 사용자의 문의 중 제목으로 검색
-    @Query("SELECT cs FROM CustomerSupportEntity cs WHERE cs.userId = :userId AND cs.title LIKE %:keyword%")
-    Page<CustomerSupportEntity> findByUser_idAndTitleContaining(@Param("userId") String userId, @Param("keyword") String keyword, Pageable pageable);
+    // 디버깅용: 내 글만 조회
+    @Query("SELECT cs FROM CustomerSupportEntity cs WHERE cs.userId = :userId")
+    Page<CustomerSupportEntity> findMyPosts(@Param("userId") String userId, Pageable pageable);
     
-    // 사용자의 문의 중 내용으로 검색
-    @Query("SELECT cs FROM CustomerSupportEntity cs WHERE cs.userId = :userId AND cs.content LIKE %:keyword%")
-    Page<CustomerSupportEntity> findByUser_idAndContentContaining(@Param("userId") String userId, @Param("keyword") String keyword, Pageable pageable);
-    
-    // 사용자의 문의 중 제목 또는 내용으로 검색
-    @Query("SELECT cs FROM CustomerSupportEntity cs WHERE cs.userId = :userId AND (cs.title LIKE %:keyword% OR cs.content LIKE %:keyword%)")
-    Page<CustomerSupportEntity> findByUser_idAndTitleOrContentContaining(@Param("userId") String userId, @Param("keyword") String keyword, Pageable pageable);
+    // 디버깅용: 공개 글만 조회  
+    @Query("SELECT cs FROM CustomerSupportEntity cs WHERE cs.isPrivate = false")
+    Page<CustomerSupportEntity> findPublicPosts(Pageable pageable);
 }

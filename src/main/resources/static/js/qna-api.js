@@ -1,5 +1,5 @@
 /**
- * QnA API 통신 모듈 - Spring Boot 백엔드 연동 수정버전
+ * QnA API 통신 모듈 - FormData 지원 (이미지 업로드)
  */
 class QnaApi {
     constructor() {
@@ -109,15 +109,56 @@ class QnaApi {
     }
 
     /**
-     * QnA 등록
-     * @param {object} data 등록 데이터
+     * QnA 등록 (FormData 지원 - 이미지 업로드)
+     * @param {FormData} formData 등록 데이터 (이미지 파일 포함)
      * @returns {Promise<object>} 등록된 QnA 정보
      */
-    async createQnaPost(data) {
-        return await this.request(this.baseUrl, {
+    async createQnaPost(formData) {
+        // 🎯 FormData 전송을 위해 Content-Type 헤더 제거 (브라우저가 자동 설정)
+        const config = {
             method: 'POST',
-            body: JSON.stringify(data)
-        });
+            body: formData,
+            credentials: 'include'
+            // Content-Type 헤더 제거 - FormData는 자동으로 multipart/form-data 설정
+        };
+
+        try {
+            const response = await fetch(this.baseUrl, config);
+            
+            // 에러 처리
+            if (response.status === 401) {
+                this.handleUnauthorized();
+                throw new Error('로그인이 필요합니다.');
+            }
+            
+            if (response.status === 403) {
+                throw new Error('권한이 없습니다.');
+            }
+            
+            if (response.status === 404) {
+                throw new Error('요청한 리소스를 찾을 수 없습니다.');
+            }
+            
+            if (response.status >= 500) {
+                throw new Error('서버 오류가 발생했습니다.');
+            }
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || '요청 처리 중 오류가 발생했습니다.');
+            }
+            
+            // 응답 처리
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                return await response.json();
+            } else {
+                return await response.text();
+            }
+        } catch (error) {
+            console.error('QnA 등록 API 오류:', error);
+            throw error;
+        }
     }
 
     /**
@@ -126,11 +167,64 @@ class QnaApi {
      * @param {object} data 수정 데이터
      * @returns {Promise<object>} 수정된 QnA 정보
      */
-    async updateQnaPost(id, data) {
-        return await this.request(`${this.baseUrl}/${id}`, {
+    // async updateQnaPost(id, data) {
+    //     return await this.request(`${this.baseUrl}/${id}`, {
+    //         method: 'PUT',
+    //         body: JSON.stringify(data)
+    //     });
+    // }
+    /**
+     * QnA 수정 (FormData 지원 - 이미지 업로드)
+     * @param {string} id QnA ID
+     * @param {FormData} formData 수정 데이터 (이미지 파일 포함)
+     * @returns {Promise<object>} 수정된 QnA 정보
+     */
+    async updateQnaPost(id, formData) {
+        // 🎯 FormData 전송을 위해 Content-Type 헤더 제거 (브라우저가 자동 설정)
+        const config = {
             method: 'PUT',
-            body: JSON.stringify(data)
-        });
+            body: formData,
+            credentials: 'include'
+            // Content-Type 헤더 제거 - FormData는 자동으로 multipart/form-data 설정
+        };
+
+        try {
+            const response = await fetch(`${this.baseUrl}/${id}`, config);
+            
+            // 에러 처리
+            if (response.status === 401) {
+                this.handleUnauthorized();
+                throw new Error('로그인이 필요합니다.');
+            }
+            
+            if (response.status === 403) {
+                throw new Error('권한이 없습니다.');
+            }
+            
+            if (response.status === 404) {
+                throw new Error('요청한 리소스를 찾을 수 없습니다.');
+            }
+            
+            if (response.status >= 500) {
+                throw new Error('서버 오류가 발생했습니다.');
+            }
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || '요청 처리 중 오류가 발생했습니다.');
+            }
+            
+            // 응답 처리
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                return await response.json();
+            } else {
+                return await response.text();
+            }
+        } catch (error) {
+            console.error('QnA 수정 API 오류:', error);
+            throw error;
+        }
     }
 
     /**

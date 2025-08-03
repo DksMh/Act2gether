@@ -1,6 +1,17 @@
 <!-- header.html -->
 <div th:fragment="header">
+  <!-- 디버깅용 정보 (개발 중에만 사용, 나중에 제거) -->
+  <div style="background: #f0f0f0; padding: 10px; margin: 10px; border: 1px solid #ccc; font-size: 12px;">
+    <strong>디버깅 정보:</strong><br>
+    isAuthenticated: <span th:text="${isAuthenticated}">false</span><br>
+    username: <span th:text="${username}">없음</span><br>
+    email: <span th:text="${email}">없음</span><br>
+    user_role: <span th:text="${user_role}">없음</span><br>
+    isAdmin: <span th:text="${isAdmin}">false</span>
+  </div>
+  
   <header>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <div class="header-left">
       <!-- 왼쪽: 로고 -->
       <div class="logo"><a href="/">여기부터</a></div>
@@ -30,20 +41,22 @@
       <!-- 오른쪽: 로그인 상태에 따라 달라짐 -->
       <div class="header-actions">
         <!-- [비로그인 시 노출] -->
-        <div class="auth-buttons" id="auth-buttons">
-          <!-- <a href="/login">로그인</a> -->
-          <button class="btn-primary" onclick="openModal('login')">
-            로그인
-          </button>
-          <button class="btn-primary" onclick="openModal('signup')">
-            회원가입
-          </button>
+        <div class="auth-buttons" th:if="${!isAuthenticated}">
+          <a href="/login" class="btn-primary">로그인</a>
+          <a href="/signup" class="btn-primary">회원가입</a>
         </div>
 
         <!-- [로그인 시 노출] -->
-        <div class="user-buttons" id="user-buttons" style="display: none">
+        <div class="user-buttons" th:if="${isAuthenticated}">
+          <!-- 닉네임은 변경 가능하므로 안전하게 처리 -->
+          <span class="user-welcome" th:text="${username != null ? username + '님' : '사용자님'}">사용자님</span>
+          
+          <!-- 관리자만 보이는 메뉴 (선택사항) -->
+          <a href="/admin" th:if="${isAdmin}" class="admin-link">관리자</a>
+          
           <a href="#">찜 목록</a>
           <button class="btn-secondary">내 정보</button>
+          <a href="/users/logout" class="btn-logout">로그아웃</a>
         </div>
 
         <!-- 검색 아이콘 -->

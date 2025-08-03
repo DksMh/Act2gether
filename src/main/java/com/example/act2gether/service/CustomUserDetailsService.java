@@ -21,16 +21,30 @@ public class CustomUserDetailsService implements UserDetailsService{
     
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        System.out.println("=== CustomUserDetailsService 호출 ===");
+        System.out.println("입력된 email: " + email);
+        
         UserEntity user = userRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
-        // UserEntity user = userRepository.findById(userid)
-        //     .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userid));
-// System.out.println("유저 찾음: " + user.getEmail());
-// System.out.println("암호화된 비밀번호: " + user.getPassword());
-        return new User( // org.springframework.security.core.userdetails.User
-            user.getUser_id(), // username
-            user.getPassword(), // 암호화된 password
-            List.of(new SimpleGrantedAuthority("ROLE_USER")) // 권한
+        
+        System.out.println("조회된 사용자 정보:");
+        System.out.println("- userid: " + user.getUser_id());
+        System.out.println("- email: " + user.getEmail());
+        System.out.println("- username: " + user.getUsername());
+        System.out.println("- user_role: " + user.getUser_role());
+        
+        // 사용자 역할을 동적으로 설정
+        String role = user.getUser_role() != null ? user.getUser_role() : "USER";
+        if (!role.startsWith("ROLE_")) {
+            role = "ROLE_" + role;
+        }
+        
+        System.out.println("설정된 권한: " + role);
+        
+        return new User(
+            user.getUser_id(), 
+            user.getPassword(),
+            List.of(new SimpleGrantedAuthority(role))
         );
     }
 }
