@@ -40,6 +40,7 @@ public class UserEntity {
     private String created_at;
     private String updated_at;
     private String email;
+    private String agreement;
 
     public static UserEntity of (UserDTO userDTO, String interests){
         return UserEntity.builder()
@@ -56,7 +57,12 @@ public class UserEntity {
         .status("Active")
         .created_at(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
         .email(userDTO.getEmail())
+        .agreement(userDTO.getAgreement())
         .build();
+    }
+
+    public void resetPassword(String encodedPassword) {
+       this.password = encodedPassword;
     }
 
 }

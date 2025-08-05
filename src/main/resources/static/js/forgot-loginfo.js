@@ -485,9 +485,9 @@ async function sendVerificationCode(email) {
         const response = await fetch('/users/sendCode', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'text/plain',
             },
-            body: JSON.stringify(email)
+            body: email
         });
         
         if (response.ok) {

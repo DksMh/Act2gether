@@ -13,9 +13,11 @@ import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.UserRepository;
 
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableWebSecurity
+@Slf4j
 public class SecurityConfig {
 
     @Autowired
@@ -43,10 +45,10 @@ public class SecurityConfig {
                 .passwordParameter("password")
                 .failureUrl("/login?error=true")
                 .successHandler((request, response, authentication) -> {
-                    System.out.println("=== 로그인 성공 핸들러 시작 ===");
+                    log.info("=== 로그인 성공 핸들러 시작 ===");
                     
                     String userid = authentication.getName(); // userid 반환
-                    System.out.println("Authentication에서 가져온 userid: " + userid);
+                    log.info("Authentication에서 가져온 userid: {}", userid);
                     
                     try {
                         // userid로 사용자 정보 조회
@@ -60,25 +62,24 @@ public class SecurityConfig {
                             request.getSession().setAttribute("username", userEntity.getUsername());
                             request.getSession().setAttribute("isAuthenticated", true);
                             
-                            System.out.println("=== 세션에 저장된 정보 ===");
-                            System.out.println("- userid: " + userEntity.getUser_id());
-                            System.out.println("- email: " + userEntity.getEmail());
-                            System.out.println("- username: " + userEntity.getUsername());
-                            System.out.println("- user_role: " + userEntity.getUser_role());
-                            System.out.println("- isAuthenticated: true");
+                            log.info("=== 세션에 저장된 정보 ===");
+                            log.info("- userid: " + userEntity.getUser_id());
+                            log.info("- email: " + userEntity.getEmail());
+                            log.info("- username: " + userEntity.getUsername());
+                            log.info("- user_role: " + userEntity.getUser_role());
+                            log.info("- isAuthenticated: true");
                         } else {
-                            System.out.println("사용자 정보를 찾을 수 없음: " + userid);
+                           log.info("사용자 정보를 찾을 수 없음: " + userid);
                         }
                     } catch (Exception e) {
-                        System.out.println("사용자 정보 조회 중 오류: " + e.getMessage());
-                        e.printStackTrace();
+                        log.error("사용자 정보 조회 중 오류", e);
                     }
                     
-                    System.out.println("=== 로그인 성공 핸들러 종료 ===");
+                    log.info("=== 로그인 성공 핸들러 종료 ===");
                     response.sendRedirect("/");
                 })
                 .failureHandler((request, response, exception) -> {
-                    System.out.println("로그인 실패 원인: " + exception.getMessage());
+                    log.info("로그인 실패 원인: {}", exception.getMessage());
                     response.sendRedirect("/login?error=true");
                 })
                 .permitAll()

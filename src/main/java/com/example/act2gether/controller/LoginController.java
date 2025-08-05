@@ -17,6 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.act2gether.dto.EmailDTO;
+import com.example.act2gether.dto.FindEmailDTO;
+import com.example.act2gether.dto.ResetPasswordDTO;
+import com.example.act2gether.dto.UserDTO;
+import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.dto.UserDTO;
 import com.example.act2gether.service.LoginService;
 
@@ -78,14 +82,6 @@ public class LoginController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 실패: 코드 불일치 또는 만료됨");
     }
-
-    // @PostMapping("/create") 
-    // public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
-    //     log.info("interests : {}", userDTO.getInterests());
-    //     log.info("age : {}", userDTO.getAge());
-    //     loginService.createUser(userDTO);
-    //     return ResponseEntity.ok().body(null);
-    // }
     
     // 이메일 중복체크
     @PostMapping("/checkEmail")
@@ -136,13 +132,24 @@ public class LoginController {
         }
     }
 
-    // @PostMapping("/login") 
-    // public ResponseEntity<?> login(@RequestBody UserDTO userDTO) {
-    //     boolean isSuccess = loginService.verifyLogin(userDTO);
-    //     if(isSuccess){
-    //         return ResponseEntity.ok().body("로그인 성공");
-    //     }
-    //     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그인 실패");
-    // }
+    @PostMapping("/findEmail")
+    public ResponseEntity<?> findEmail(@RequestBody FindEmailDTO findEmailDTO) {
+        UserEntity user = loginService.findEmail(findEmailDTO);
+
+        if (user != null) {
+            return ResponseEntity.ok(Map.of("email", user.getEmail()));
+        }
+        return ResponseEntity.badRequest().body("일치하는 계정을 찾을 수 없습니다.");
+    }
+
+    @PostMapping("/resetPassword")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
+        boolean isReset = loginService.resetPassword(resetPasswordDTO);
+        if(isReset){
+            return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+        }else {
+            return ResponseEntity.badRequest().body("사용자를 찾을 수 없습니다.");
+        }
+    }
     
 }

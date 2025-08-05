@@ -1,10 +1,13 @@
 /Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/Act2getherApplication.java
 /Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/config/SecurityConfig.java
+/Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/config/WebConfig.java
 /Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/controller/CustomerSupportController.java
 /Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/controller/LoginController.java
 /Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/controller/PageController.java
 /Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/dto/CustomerSupportDTO.java
 /Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/dto/EmailDTO.java
+/Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/dto/FindEmailDTO.java
+/Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/dto/ResetPasswordDTO.java
 /Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/dto/UserDTO.java
 /Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/entity/CustomerSupportEntity.java
 /Users/josuyeong/Act2gether/src/main/java/com/example/act2gether/entity/UserEntity.java

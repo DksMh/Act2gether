@@ -10,6 +10,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import com.example.act2gether.dto.FindEmailDTO;
+import com.example.act2gether.dto.ResetPasswordDTO;
 import com.example.act2gether.dto.UserDTO;
 import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.UserRepository;
@@ -27,21 +29,6 @@ public class LoginService {
     private final UserRepository userRepository;
     private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
-
-    // public void createUser(UserDTO userDTO){
-    //     try {
-    //         ObjectMapper objectMapper = new ObjectMapper();
-    //         String interestsStr = objectMapper.writeValueAsString(userDTO.getInterests());
-    //         // 비밀번호 암호화
-    //         String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
-    //         userDTO.setPassword(encodedPassword);
-    //         userRepository.save(UserEntity.of(userDTO, interestsStr));
-    //     } catch (JsonProcessingException e) {
-    //         // TODO Auto-generated catch block
-    //         e.printStackTrace();
-    //     }
-        
-    // }
 
     // 수정
     public String createUser(UserDTO userDTO) {
@@ -109,19 +96,26 @@ public class LoginService {
             throw new RuntimeException("관심사 처리 중 오류가 발생했습니다.");
         }
     }
-    // public boolean verifyLogin(UserDTO userDTO) {
-    //     UserEntity userEntity = userRepository.findByEmail(userDTO.getEmail()).orElse(null);
-    //     if(userEntity != null){
-    //         String userPw = userEntity.getPassword();
-    //         // if(userPw.equals(userDTO.getPassword())){
-    //         //     return true;
-    //         // }
 
-    //         if (passwordEncoder.matches(userDTO.getPassword(), userPw)) {
-    //             // 로그인 성공
-    //             return true;
-    //         } 
-    //     }
-    //     return false;
-    // }
+    public UserEntity findEmail(FindEmailDTO findEmailDTO) {
+        // realname + username으로 email 조회
+        return userRepository.findByRealnameAndUsername(
+            findEmailDTO.getName(),
+            findEmailDTO.getUsername()
+        ).orElse(null);
+    }
+
+    @Transactional
+    public boolean resetPassword(ResetPasswordDTO resetPasswordDTO) {
+        UserEntity user = userRepository.findByEmail(resetPasswordDTO.getEmail()).orElse(null);
+        if(user != null){
+            // 비밀번호 암호화 후 업데이트
+            String encodedPassword = passwordEncoder.encode(resetPasswordDTO.getNewPassword());
+            user.resetPassword(encodedPassword); 
+            return true;
+        }
+
+        return false;
+    }
+ 
 }

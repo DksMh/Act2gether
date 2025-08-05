@@ -22,4 +22,5 @@ public class UserDTO {
     private String created_at;
     private String updated_at;
     private String email;
+    private String agreement;
 }

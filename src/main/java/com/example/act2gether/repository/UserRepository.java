@@ -18,4 +18,6 @@ public interface UserRepository extends JpaRepository<UserEntity, String>{
     void updateInterestsByEmail(@Param("email") String email, 
                                @Param("interests") String interests, 
                                @Param("updatedAt") String updatedAt);
+
+    Optional<UserEntity> findByRealnameAndUsername(String realname, String username);
 }

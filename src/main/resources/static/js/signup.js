@@ -674,7 +674,14 @@ function completeSignup() {
     // 회원가입 데이터 준비 - 백엔드가 기대하는 필드명으로 맞춤
     const birthYear = document.getElementById('birthYear').value;
     const age = birthYear ? new Date().getFullYear() - parseInt(birthYear) : 0;
-    
+    const agreement = {
+        age: $("#ageCheck").is(":checked"),
+        terms: $("#terms1").is(":checked"),
+        privacy: $("#terms2").is(":checked"),
+        location: $("#terms3").is(":checked"),
+        marketing: $("#terms4").is(":checked"),
+        event: $("#terms5").is(":checked"),
+    }  
     const userData = {
         email: document.getElementById('email').value,
         username: document.getElementById('username').value,
@@ -684,7 +691,8 @@ function completeSignup() {
         gender: document.getElementById('gender').value,
         regin: document.getElementById('region').value, // region → regin
         interests: null, // 관심사는 나중에 설정
-        status: "active"
+        status: "active",
+        agreement: JSON.stringify(agreement)
     };
     
     console.log('회원가입 데이터:', userData);
