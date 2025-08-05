@@ -2,13 +2,10 @@ package com.example.act2gether.entity;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import com.example.act2gether.dto.UserDTO;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
