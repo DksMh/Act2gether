@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/signup", "/forgot-loginfo", "/users/**", "/onboarding",
-                                "/qna", "/faq")
+                                "/qna", "/faq", "tour-search")
                         .permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                         .requestMatchers("/qna/api/inquiry-types", "/qna/api/statuses").permitAll()

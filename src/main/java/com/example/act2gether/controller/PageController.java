@@ -17,30 +17,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
 public class PageController {
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @ModelAttribute
     private void addAuthInfoToModel(HttpSession session, Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
+
         log.info("=== 인증 상태 확인 ===");
-        
-        boolean isAuthenticated = authentication != null && 
-                                authentication.isAuthenticated() && 
-                                !"anonymousUser".equals(authentication.getPrincipal());
-        
+
+        boolean isAuthenticated = authentication != null &&
+                authentication.isAuthenticated() &&
+                !"anonymousUser".equals(authentication.getPrincipal());
+
         log.info("Spring Security 인증: {}", isAuthenticated);
-        
+
         if (isAuthenticated) {
             try {
                 String userid = authentication.getName(); // userid 반환
                 log.info("Authentication에서 가져온 userid: {}", userid);
-                
+
                 // userid로 사용자 정보 조회
                 UserEntity userEntity = userRepository.findById(userid).orElse(null);
-                
+
                 if (userEntity != null) {
                     // 모델에 사용자 정보 설정
                     model.addAttribute("isAuthenticated", true);
@@ -48,11 +48,11 @@ public class PageController {
                     model.addAttribute("user_role", userEntity.getUser_role());
                     model.addAttribute("email", userEntity.getEmail());
                     model.addAttribute("username", userEntity.getUsername());
-                    
+
                     // 관리자 권한 확인
                     boolean isAdmin = "ADMIN".equals(userEntity.getUser_role());
                     model.addAttribute("isAdmin", isAdmin);
-                    
+
                     log.info("=== 사용자 정보 설정 완료 ===");
                     log.info("- userid: {}", userEntity.getUser_id());
                     log.info("- email: {}", userEntity.getEmail());
@@ -75,17 +75,18 @@ public class PageController {
             model.addAttribute("isAdmin", false);
         }
     }
-    
+
     @GetMapping(value = { "/login" })
     public String login() {
         return "login";
     }
+
     @GetMapping("/signup")
     public String signup() {
         log.info("회원가입 페이지 요청");
         return "signup";
     }
-    
+
     @GetMapping("/forgot-loginfo")
     public String forgotLoginInfoPage() {
         return "forgot-loginfo";
@@ -109,5 +110,10 @@ public class PageController {
     @GetMapping(value = { "/faq" })
     public String getFaq() {
         return "faq";
+    }
+
+    @GetMapping("/tour-search")
+    public String tourSearchPage() {
+        return "tour-search";
     }
 }
