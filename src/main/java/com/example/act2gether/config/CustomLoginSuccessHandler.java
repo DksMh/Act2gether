@@ -42,11 +42,6 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
                     
                     if (userEntity != null) {
                         LoginAttemptsEntity loginAttemptsEntity = loginAttemsRepository.findByUserId(userEntity.getUserId()).orElse(null);
-                        // if(userEntity.getStatus().equalsIgnoreCase("Lock")){
-                        //     log.error("5번 로그인 실패로 계정이 잠깁니다. 관리자에게 문의하세요.");
-                        //     response.sendRedirect("/login?error=true");
-                        //     return;
-                        // }
 
                         if(loginAttemptsEntity != null){
                             //로그인 횟수 초기화, 잠긴거 풀음
