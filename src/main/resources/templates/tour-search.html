@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>여기부터 - 투어 검색</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/tour-search.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap"
+      rel="stylesheet"
+    />
+    <script src="/js/tour-search.js"></script>
+  </head>
+  <body>
+    <!-- Header -->
+    <div th:replace="header :: header"></div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="tour-search-container">
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">어떤 여행을 떠나볼까요? 👀</h1>
+        <p class="page-subtitle">✈ 가장 인기 있는 기준 암호로 쪽폐됩니다.</p>
+      </div>
+
+      <!-- Search Filters -->
+      <div class="search-filters">
+        <div class="filter-row">
+          <div class="filter-group">
+            <select class="filter-select" id="regionFilter">
+              <option value="">여행 지역</option>
+              <option value="서울">서울</option>
+              <option value="부산">부산</option>
+              <option value="제주">제주</option>
+              <option value="강원">강원</option>
+              <option value="경기">경기</option>
+              <option value="경남">경남</option>
+              <option value="경북">경북</option>
+              <option value="전남">전남</option>
+              <option value="전북">전북</option>
+              <option value="충남">충남</option>
+              <option value="충북">충북</option>
+              <option value="대구">대구</option>
+              <option value="인천">인천</option>
+              <option value="광주">광주</option>
+              <option value="대전">대전</option>
+              <option value="울산">울산</option>
+              <option value="세종">세종</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <select class="filter-select" id="companionFilter">
+              <option value="">누구와 함께</option>
+              <option value="나 혼자">나 혼자</option>
+              <option value="배우자와">배우자와</option>
+              <option value="친구와">친구와</option>
+              <option value="가족과">가족과</option>
+              <option value="단체와">단체와</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <select class="filter-select" id="themeFilter">
+              <option value="">선호 테마</option>
+              <option value="자연">자연</option>
+              <option value="역사">역사</option>
+              <option value="체험">체험</option>
+              <option value="힐링">힐링</option>
+              <option value="축제">축제</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <select class="filter-select" id="activityFilter">
+              <option value="">선호 활동</option>
+              <option value="맛집 탐방">맛집 탐방</option>
+              <option value="문화체험">문화체험</option>
+              <option value="자연감상">자연감상</option>
+              <option value="액티비티">액티비티</option>
+              <option value="쇼핑">쇼핑</option>
+              <option value="건강관리">건강관리</option>
+              <option value="휴식">휴식</option>
+              <option value="사진촬영">사진촬영</option>
+              <option value="학습">학습</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <select class="filter-select" id="placeFilter">
+              <option value="">장소</option>
+              <option value="해변">해변</option>
+              <option value="산">산</option>
+              <option value="도시관광">도시관광</option>
+              <option value="시골">시골</option>
+              <option value="호수">호수</option>
+              <option value="온천지역">온천지역</option>
+              <option value="섬지역">섬지역</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <select class="filter-select" id="needsFilter">
+              <option value="">편의 시설</option>
+              <option value="접근성">접근성</option>
+              <option value="휠체어">휠체어</option>
+              <option value="유치원시설">유치원시설</option>
+              <option value="병원">병원</option>
+              <option value="약국">약국</option>
+              <option value="응급실">응급실</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Interest Tags -->
+        <div class="interest-tags" id="interestTags">
+          <!-- 관심사 태그들이 동적으로 추가됩니다 -->
+        </div>
+      </div>
+
+      <!-- Recommended Tours Section -->
+      <div class="tours-section">
+        <div class="section-header">
+          <h2 class="section-title">여기부터님을 위한 맞춤 투어</h2>
+          <button class="view-all-btn">전체 보기</button>
+        </div>
+        <div class="tour-list" id="recommendedTours">
+          <!-- 추천 투어 카드들이 동적으로 추가됩니다 -->
+        </div>
+      </div>
+
+      <!-- Popular Tours Section -->
+      <div class="tours-section">
+        <div class="section-header">
+          <h2 class="section-title">투어 검색 결과</h2>
+          <button class="view-all-btn">전체 보기</button>
+        </div>
+        <div class="tour-list" id="searchResults">
+          <!-- 검색 결과 투어 카드들이 동적으로 추가됩니다 -->
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination">
+        <button class="pagination-btn prev" id="prevBtn">&lt;</button>
+        <div class="pagination-numbers" id="paginationNumbers">
+          <!-- 페이지 번호들이 동적으로 추가됩니다 -->
+        </div>
+        <button class="pagination-btn next" id="nextBtn">&gt;</button>
+      </div>
+
+      <!-- No Results Message -->
+      <div class="no-results" id="noResults" style="display: none">
+        <p>검색 결과가 없습니다.</p>
+        <p>다른 조건으로 검색해보세요.</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="footer :: footer"></div>
+  </body>
+</html>
