@@ -7,7 +7,8 @@ import lombok.Data;
 @Data
 public class CustomerSupportDTO {
     private String support_id;
-    private String userId; // 조인용 
+    private String userId; // 조인용
+    private String userName; // 관리자 - 작성자명 확인용 필드 추가
     private String title;
     private String content;
     private String responder;
@@ -20,10 +21,10 @@ public class CustomerSupportDTO {
     // private String image_path;
     // private Integer view_count;
 
-     // 🎯 이미지 관련 필드
-    private String image_path;        // 기존 호환성 (첫 번째 이미지)
-    private List<String> image_paths; // 🎯 다중 이미지 목록
-    
+    // 이미지 관련 필드
+    private String image_path; // 기존 호환성 (첫 번째 이미지)
+    private List<String> image_paths; // 다중 이미지 목록
+
     private Integer view_count;
 
     // 검색 및 페이징을 위한 필드
