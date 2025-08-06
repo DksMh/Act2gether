@@ -91,7 +91,7 @@ public class CustomerSupportService {
             List<UserEntity> users = userRepository.findAllById(userIds);
             userNameMap = users.stream()
                     .collect(Collectors.toMap(
-                            UserEntity::getUser_id,
+                            UserEntity::getUserId,
                             UserEntity::getUsername,
                             (existing, replacement) -> existing));
         }

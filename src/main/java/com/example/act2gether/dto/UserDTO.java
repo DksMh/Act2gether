@@ -23,4 +23,6 @@ public class UserDTO {
     private String updated_at;
     private String email;
     private String agreement;
+    private int failure_count;
+    private String login_id;
 }

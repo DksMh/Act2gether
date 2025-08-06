@@ -44,20 +44,20 @@ public class PageController {
                 if (userEntity != null) {
                     // 모델에 사용자 정보 설정
                     model.addAttribute("isAuthenticated", true);
-                    model.addAttribute("userid", userEntity.getUser_id());
-                    model.addAttribute("user_role", userEntity.getUser_role());
+                    model.addAttribute("userid", userEntity.getUserId());
+                    model.addAttribute("user_role", userEntity.getUserRole());
                     model.addAttribute("email", userEntity.getEmail());
                     model.addAttribute("username", userEntity.getUsername());
 
                     // 관리자 권한 확인
-                    boolean isAdmin = "ADMIN".equals(userEntity.getUser_role());
+                    boolean isAdmin = "ADMIN".equals(userEntity.getUserRole());
                     model.addAttribute("isAdmin", isAdmin);
 
                     log.info("=== 사용자 정보 설정 완료 ===");
-                    log.info("- userid: {}", userEntity.getUser_id());
+                    log.info("- userid: {}", userEntity.getUserId());
                     log.info("- email: {}", userEntity.getEmail());
                     log.info("- username: {}", userEntity.getUsername());
-                    log.info("- user_role: {}", userEntity.getUser_role());
+                    log.info("- user_role: {}", userEntity.getUserRole());
                     log.info("- isAdmin: {}", isAdmin);
                 } else {
                     log.warn("사용자 정보를 찾을 수 없음: {}", userid);

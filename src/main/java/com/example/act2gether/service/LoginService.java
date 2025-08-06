@@ -49,7 +49,7 @@ public class LoginService {
             UserEntity savedUser = userRepository.save(UserEntity.of(userDTO, interestsStr));
             
             // 생성된 UUID 반환
-            return savedUser.getUser_id();
+            return savedUser.getUserId();
             
         } catch (JsonProcessingException e) {
             throw new RuntimeException("사용자 생성 중 오류가 발생했습니다.");
@@ -86,8 +86,11 @@ public class LoginService {
             ObjectMapper objectMapper = new ObjectMapper();
             String interestsJson = objectMapper.writeValueAsString(interests);
             String updatedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            
-            userRepository.updateInterestsByEmail(email, interestsJson, updatedAt);
+            UserEntity userEntity = userRepository.findByEmail(email).orElse(null);
+            if(userEntity != null){
+                userEntity.updateInterestsByEmail(interestsJson, updatedAt);
+            }
+            // userRepository.updateInterestsByEmail(email, interestsJson, updatedAt);
             
             log.info("사용자 관심사 업데이트 완료: {}", email);
             

@@ -1,5 +1,6 @@
 package com.example.act2gether.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -16,16 +17,36 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TravelGroupsEntity {
     @Id
-    private String group_id; 
-    private String tour_id;
-    private String tour_days_info; 
+    @Column(name = "group_id")
+    private String groupId; 
+
+    @Column(name = "tour_id")
+    private String tourId;
+
+    @Column(name = "tour_days_info")
+    private String tourDaysInfo; 
     private String intro;
-    private int current_members;
-    private int max_members;
-    private String start_date;
-    private String end_date;
-    private String recruit_deadline;
+
+    @Column(name = "current_members")
+    private int currentMembers;
+
+    @Column(name = "max_members")
+    private int maxMembers;
+
+    @Column(name = "start_date")
+    private String startDate;
+
+    @Column(name = "end_date")
+    private String endDate;
+
+    @Column(name = "recruit_deadline")
+    private String recruitDeadline;
+    
     private String status;
-    private String created_at;
-    private boolean hidden_after_trip;
+
+    @Column(name = "created_at")
+    private String createdAt;
+
+    @Column(name = "hidden_after_trip")
+    private boolean hiddenAfterTrip;
 }

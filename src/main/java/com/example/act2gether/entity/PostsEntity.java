@@ -1,5 +1,6 @@
 package com.example.act2gether.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -16,13 +17,28 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PostsEntity {
     @Id
-    private String post_id; 
-    private String member_id;
-    private String parent_post_id; 
+    @Column(name = "post_id")
+    private String postId; 
+
+    @Column(name = "member_id")
+    private String memberId;
+
+    @Column(name = "parent_post_id")
+    private String parentPostId; 
+
     private String content;
+
     private String type;
-    private boolean is_deleted;
-    private int likes_count;
-    private String created_at;
-    private String updated_at;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
+
+    @Column(name = "likes_count")
+    private int likesCount;
+
+    @Column(name = "created_at")
+    private String createdAt;
+
+    @Column(name = "updated_at")
+    private String updatedAt;
 }

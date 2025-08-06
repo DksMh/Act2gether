@@ -1,5 +1,6 @@
 package com.example.act2gether.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -16,11 +17,23 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TravelGroupApplicationsEntity {
     @Id
-    private String application_id;
-    private String group_id; 
-    private String applicant_user_id; 
-    private String application_message;
+    @Column(name = "application_id")
+    private String applicationId;
+
+    @Column(name = "group_id")
+    private String groupId; 
+
+    @Column(name = "applicant_user_id")
+    private String applicantUserId; 
+
+    @Column(name = "application_message")
+    private String applicationMessage;
+
     private String status;
-    private String applied_at;
-    private String processed_at;
+
+    @Column(name = "applied_at")
+    private String appliedAt;
+
+    @Column(name = "processed_at")
+    private String processedAt;
 }

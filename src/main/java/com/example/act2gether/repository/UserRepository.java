@@ -13,11 +13,11 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<UserEntity, String>{
     Optional<UserEntity> findByEmail(String email);
     
-    @Modifying
-    @Query("UPDATE UserEntity u SET u.interests = :interests, u.updated_at = :updatedAt WHERE u.email = :email")
-    void updateInterestsByEmail(@Param("email") String email, 
-                               @Param("interests") String interests, 
-                               @Param("updatedAt") String updatedAt);
+    // @Modifying
+    // @Query("UPDATE UserEntity u SET u.interests = :interests, u.updated_at = :updatedAt WHERE u.email = :email")
+    // void updateInterestsByEmail(@Param("email") String email, 
+    //                            @Param("interests") String interests, 
+    //                            @Param("updatedAt") String updatedAt);
 
     Optional<UserEntity> findByRealnameAndUsername(String realname, String username);
 }

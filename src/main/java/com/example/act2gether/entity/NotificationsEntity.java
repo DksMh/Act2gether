@@ -1,5 +1,6 @@
 package com.example.act2gether.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -16,14 +17,31 @@ import lombok.NoArgsConstructor;
 @Builder
 public class NotificationsEntity {
      @Id
-    private String notification_id; 
-    private String receivcer_user_id;
-    private String sender_user_id; 
-    private String post_id; 
-    private String group_id; 
-    private String notification_type; 
+     @Column(name = "notification_id")
+    private String notificationId; 
+
+    @Column(name = "receivcer_user_id")
+    private String receivcerUserId;
+
+    @Column(name = "sender_user_id")
+    private String senderUserId; 
+
+    @Column(name = "post_id")
+    private String postId; 
+
+    @Column(name = "group_id")
+    private String groupId; 
+
+    @Column(name = "notification_type")
+    private String notificationType; 
     private String message; 
-    private boolean is_read; 
-    private boolean is_enabled; 
-    private String created_at;
+
+    @Column(name = "is_read")
+    private boolean isRead; 
+
+    @Column(name = "is_enabled")
+    private boolean isEnabled;
+    
+    @Column(name = "created_at")
+    private String createdAt;
 }
