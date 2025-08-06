@@ -12,7 +12,7 @@
     <script src="/js/qna-api.js"></script>
     <script src="/js/qna-ui.js"></script>
     <script src="/js/qna-main.js"></script>
-    
+
     <!-- 다중 이미지 미리보기 스타일 -->
     <style>
       .image-preview-container {
@@ -296,13 +296,13 @@
           <table id="qnaTable" class="qna-board-table">
             <thead>
               <tr>
-                <th style="width: 60px;">번호</th>
-                <th style="width: 100px;">카테고리</th>
+                <th style="width: 60px">번호</th>
+                <th style="width: 100px">카테고리</th>
                 <th>제목</th>
-                <th style="width: 100px;">작성자</th>
-                <th style="width: 100px;">작성일</th>
-                <th style="width: 80px;">조회수</th>
-                <th style="width: 100px;">답변상태</th>
+                <th style="width: 100px">작성자</th>
+                <th style="width: 100px">작성일</th>
+                <th style="width: 80px">조회수</th>
+                <th style="width: 100px">답변상태</th>
               </tr>
             </thead>
             <tbody id="postsList">
@@ -318,7 +318,7 @@
       </div>
 
       <!-- 게시글 작성/수정 페이지 -->
-      <div id="qnaWriteView" class="qna-write-page" style="display: none;">
+      <div id="qnaWriteView" class="qna-write-page" style="display: none">
         <div class="page-header">
           <h2 id="writeTitle">문의 작성</h2>
           <div class="page-actions">
@@ -375,7 +375,7 @@
                 class="file-input"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
                 multiple
-                style="display: none;"
+                style="display: none"
               />
               <div class="file-upload-content">
                 <i class="fas fa-cloud-upload-alt"></i>
@@ -383,15 +383,21 @@
                 <p class="file-info">JPG, PNG, WebP 파일 (최대 3MB, 5개까지)</p>
               </div>
             </div>
-            
+
             <!-- 다중 이미지 미리보기 컨테이너 -->
-            <div id="imagePreviewContainer" class="image-preview-container" style="display: none">
+            <div
+              id="imagePreviewContainer"
+              class="image-preview-container"
+              style="display: none"
+            >
               <!-- 선택된 이미지들이 동적으로 추가됩니다 -->
             </div>
-            
+
             <!-- 이미지 개수 및 안내 -->
             <div class="multi-image-info" id="imageInfo" style="display: none">
-              <span class="current-image-count">선택된 이미지: <span id="currentImageCount">0</span>개</span>
+              <span class="current-image-count"
+                >선택된 이미지: <span id="currentImageCount">0</span>개</span
+              >
               <span class="image-limit-text">최대 5개</span>
             </div>
           </div>
@@ -420,7 +426,7 @@
       </div>
 
       <!-- 게시글 상세 보기 페이지 -->
-      <div id="qnaDetailView" class="qna-detail-page" style="display: none;">
+      <div id="qnaDetailView" class="qna-detail-page" style="display: none">
         <div class="detail-header-section">
           <div class="page-header">
             <div class="page-nav">
@@ -468,7 +474,11 @@
           <div class="detail-content">
             <div id="detailContentText" class="content-text"></div>
             <!-- 다중 이미지 갤러리 -->
-            <div id="detailImageGallery" class="detail-image-gallery" style="display: none">
+            <div
+              id="detailImageGallery"
+              class="detail-image-gallery"
+              style="display: none"
+            >
               <!-- 이미지들이 동적으로 추가됩니다 -->
             </div>
           </div>

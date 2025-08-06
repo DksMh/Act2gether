@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +22,15 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Entity
-@Table(name = "customer_support")
+@Table(name = "customer_support", indexes = {
+        @Index(name = "idx_created_at", columnList = "created_at"), // 🎯 정렬용
+        @Index(name = "idx_user_id", columnList = "user_id"), // 🎯 사용자별 조회용
+        @Index(name = "idx_is_private", columnList = "is_private"), // 🎯 공개/비공개 필터용
+        @Index(name = "idx_status", columnList = "status"), // 🎯 상태별 필터용
+        @Index(name = "idx_inquiry_type", columnList = "inquiry_type"), // 🎯 카테고리별 필터용
+        @Index(name = "idx_title", columnList = "title"), // 🎯 제목 검색용
+        @Index(name = "idx_user_created", columnList = "user_id, created_at") // 🎯 복합 인덱스
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,41 +40,41 @@ import lombok.extern.slf4j.Slf4j;
 public class CustomerSupportEntity {
     @Id
     private String support_id;
-    
+
     @Column(name = "user_id")
     private String userId;
-    
+
     private String title;
-    
+
     @Column(columnDefinition = "TEXT")
     private String content;
-    
+
     private String responder;
-    
+
     @Column(columnDefinition = "TEXT")
     private String response;
-    
+
     private String inquiry_type;
-    
+
     private String status;
-    
+
     @Column(name = "is_private")
     private Boolean isPrivate;
-    
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-    
-    @Column(name = "updated_at") 
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    
+
     // 🎯 기존 image_path 필드 그대로 (JSON 배열도 저장 가능)
     private String image_path;
-    
+
     @Column(columnDefinition = "int default 0")
     private Integer view_count;
-    
+
     // 🎯 다중 이미지 처리 메서드들 추가
-    
+
     /**
      * image_path를 List<String>으로 변환
      * - 단일 이미지: "uuid1.jpg" → ["uuid1.jpg"]
@@ -75,22 +84,23 @@ public class CustomerSupportEntity {
         if (image_path == null || image_path.trim().isEmpty()) {
             return new ArrayList<>();
         }
-        
+
         // JSON 배열 형태인지 확인
         if (image_path.startsWith("[") && image_path.endsWith("]")) {
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                return mapper.readValue(image_path, new TypeReference<List<String>>() {});
+                return mapper.readValue(image_path, new TypeReference<List<String>>() {
+                });
             } catch (Exception e) {
                 log.warn("JSON 파싱 실패, 단일 이미지로 처리: {}", image_path);
-                return List.of(image_path);  // JSON 파싱 실패 시 단일로 처리
+                return List.of(image_path); // JSON 파싱 실패 시 단일로 처리
             }
         } else {
             // 기존 단일 이미지인 경우
             return List.of(image_path);
         }
     }
-    
+
     /**
      * List<String>을 image_path에 저장
      * - 단일 이미지: ["uuid1.jpg"] → "uuid1.jpg"
@@ -103,24 +113,24 @@ public class CustomerSupportEntity {
             System.out.println("🎯 paths가 null/empty, image_path = null"); // 🎯 추가!
             return;
         }
-        
+
         // 단일 이미지면 그냥 문자열로, 다중이면 JSON 배열로
         if (paths.size() == 1) {
-            this.image_path = paths.get(0);  // "uuid1.jpg"
-            System.out.println("🎯 단일 이미지 저장: " + this.image_path); 
+            this.image_path = paths.get(0); // "uuid1.jpg"
+            System.out.println("🎯 단일 이미지 저장: " + this.image_path);
         } else {
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                this.image_path = mapper.writeValueAsString(paths);  // "[\"uuid1.jpg\", \"uuid2.png\"]"
+                this.image_path = mapper.writeValueAsString(paths); // "[\"uuid1.jpg\", \"uuid2.png\"]"
                 System.out.println("🎯 다중 이미지 JSON 저장: " + this.image_path); // 🎯 추가
             } catch (Exception e) {
                 log.error("JSON 변환 실패", e);
                 System.err.println("🚨 JSON 변환 실패: " + e.getMessage()); // 🎯 추가!
-                this.image_path = paths.get(0);  // 실패 시 첫 번째만
+                this.image_path = paths.get(0); // 실패 시 첫 번째만
             }
         }
     }
-    
+
     /**
      * 첫 번째 이미지 경로만 반환 (썸네일용, 기존 호환성)
      */
@@ -128,16 +138,16 @@ public class CustomerSupportEntity {
         List<String> paths = getImagePathList();
         return paths.isEmpty() ? null : paths.get(0);
     }
-    
+
     /**
      * 이미지 개수 반환
      */
     public int getImageCount() {
         return getImagePathList().size();
     }
-    
+
     // 🎯 기존 메서드들 그대로 유지
-    
+
     public static CustomerSupportEntity of(CustomerSupportDTO dto) {
         return CustomerSupportEntity.builder()
                 .support_id(UUID.randomUUID().toString())
@@ -149,11 +159,11 @@ public class CustomerSupportEntity {
                 .isPrivate(dto.getIsPrivate() != null ? dto.getIsPrivate() : true)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
-                .image_path(dto.getImage_path())  // 🎯 기존 방식 유지
+                .image_path(dto.getImage_path()) // 🎯 기존 방식 유지
                 .view_count(0)
                 .build();
     }
-    
+
     public void updateFromDTO(CustomerSupportDTO dto) {
         System.out.println("🎯 updateFromDTO 시작"); // 🎯 추가!
         try {
@@ -161,7 +171,7 @@ public class CustomerSupportEntity {
             this.content = dto.getContent();
             this.inquiry_type = dto.getInquiry_type();
             this.isPrivate = dto.getIsPrivate();
-            //this.image_path = dto.getImage_path();  // 🎯 기존 방식 유지
+            // this.image_path = dto.getImage_path(); // 🎯 기존 방식 유지
             this.updatedAt = LocalDateTime.now();
             System.out.println("🎯 updateFromDTO 완료"); // 🎯 추가!
         } catch (Exception e) {
@@ -169,15 +179,14 @@ public class CustomerSupportEntity {
             throw e;
         }
     }
-    
-    
+
     public void addResponse(String responder, String response) {
         this.responder = responder;
         this.response = response;
         this.status = "답변 완료";
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     public void incrementViewCount() {
         this.view_count = (this.view_count == null ? 0 : this.view_count) + 1;
     }
