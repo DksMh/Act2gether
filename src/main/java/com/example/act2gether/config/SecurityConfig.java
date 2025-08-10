@@ -9,8 +9,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.example.act2gether.entity.UserEntity;
-import com.example.act2gether.repository.UserRepository;
 import com.example.act2gether.service.CustomUserDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +22,7 @@ public class SecurityConfig {
     private CustomLoginFailureHandler failureHandler;
     @Autowired
     private CustomLoginSuccessHandler successHandler;
+
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
@@ -40,6 +39,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/signup", "/forgot-loginfo", "/users/**", "/onboarding", "/qna", "/faq", "/tour-search").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                 .requestMatchers("/qna/api/inquiry-types", "/qna/api/statuses").permitAll()
+                .requestMatchers("/api/tours/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .usernameParameter("email")
                 .passwordParameter("password")
                 .failureUrl("/login?error=true")
+                //.successHandler(DebugLoginSuccessHandler)  // 이 부분 수정
                 .successHandler(successHandler)
                 .failureHandler(failureHandler)
                 .permitAll()
