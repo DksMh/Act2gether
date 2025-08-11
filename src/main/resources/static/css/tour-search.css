@@ -1,1642 +1,1150 @@
-/* =============================================================
-   완성된 투어 검색 페이지 스타일 - 모든 인라인 CSS 통합
-   ============================================================= */
+/* ========================================
+   투어 검색 시스템 v2.1 - 지역+시군구 가로 배치
+   ======================================== */
 
-/* ------------------------------------
-   1) 기본 레이아웃 및 컨테이너
--------------------------------------*/
-
+/* 기본 레이아웃 */
 .tour-search-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: 'Noto Sans KR', sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
+/* 페이지 헤더 */
 .page-header {
-    text-align: center;
-    margin-bottom: 40px;
-    padding: 40px 20px;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    border-radius: 15px;
-    border: 1px solid #dee2e6;
+  text-align: center;
+  margin-bottom: 30px;
 }
 
 .page-title {
-    font-size: 28px;
-    font-weight: 700;
-    color: #333;
-    margin: 0 0 15px 0;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.version-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 10px;
 }
 
 .page-subtitle {
-    font-size: 16px;
-    color: #666;
-    line-height: 1.6;
-    margin: 0;
+  font-size: 16px;
+  color: #666;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-/* ------------------------------------
-   2) 검색 필터 영역
--------------------------------------*/
+/* ========================================
+   검색 필터 영역
+   ======================================== */
 
 .search-filters {
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    border: 1px solid #e9ecef;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .filter-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    align-items: end;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  align-items: end;
 }
 
 .filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 .filter-group label {
-    font-weight: 600;
-    color: #333;
-    font-size: 14px;
-    margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
 }
 
-.filter-select {
-    padding: 12px 15px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
+/* ========================================
+   🆕 지역+시군구 가로 배치 스타일
+   ======================================== */
+
+.region-selector-container {
+  display: flex;
+  flex-direction: row; /* 가로 배치 */
+  gap: 10px;
+  align-items: stretch;
+}
+
+.region-selector-container .filter-select {
+  flex: 1;
+  min-width: 0; /* flex item이 줄어들 수 있도록 */
+}
+
+.region-selector-container #regionFilter {
+  flex: 1.2; /* 지역 선택기를 약간 더 넓게 */
+}
+
+.region-selector-container #sigunguFilter {
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+/* 시군구 필터가 보일 때 애니메이션 */
+.region-selector-container #sigunguFilter[style*="block"] {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.region-selector-container #sigunguFilter[style*="none"] {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+/* ========================================
+   📱 반응형 디자인 (768px 이하)
+   ======================================== */
+
+@media (max-width: 768px) {
+  .tour-search-container {
+    padding: 15px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
     font-size: 14px;
-    background: white;
-    transition: all 0.3s ease;
-    font-family: inherit;
+  }
+
+  .search-filters {
+    padding: 20px;
+  }
+
+  .filter-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  /* 🆕 모바일에서는 지역+시군구 세로 배치 */
+  .region-selector-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .region-selector-container .filter-select {
+    flex: none;
+  }
+
+  .region-selector-container #regionFilter,
+  .region-selector-container #sigunguFilter {
+    flex: none;
+    width: 100%;
+  }
+}
+
+/* ========================================
+   필터 요소 공통 스타일
+   ======================================== */
+
+.filter-select {
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .filter-select:focus {
-    outline: none;
-    border-color: #4CAF50;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
 .filter-select:hover {
-    border-color: #ced4da;
-}
-
-/* ------------------------------------
-   3) 필터 상태 표시 (관심사 vs 변경)
--------------------------------------*/
-
-/* 관심사 기반 필터 (회색 배경 + 초록 테두리) */
-.user-interest-filter {
-    background-color: #f5f5f5 !important;
-    border: 2px solid #4CAF50 !important;
-    font-weight: 600 !important;
-}
-
-/* 사용자 변경 필터 (파란 배경 + 파란 테두리) */
-.user-modified-filter {
-    background-color: #e3f2fd !important;
-    border: 2px solid #2196F3 !important;
-    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2) !important;
-    font-weight: 600 !important;
-}
-
-/* ------------------------------------
-   4) 실시간 필터 표시 패널
--------------------------------------*/
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* ------------------------------------
-   5) 사이드 메뉴 스타일
--------------------------------------*/
-
-/* 공통 트리거 버튼 */
-.region-trigger-button,
-.theme-trigger-button {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    background: white;
-    font-size: 14px;
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: inherit;
-}
-
-.region-trigger-button:hover,
-.theme-trigger-button:hover {
-    border-color: #4CAF50;
-    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
-}
-
-.region-trigger-button.active,
-.theme-trigger-button.active {
-    border-color: #4CAF50;
-    background: #f8f9fa;
-}
-
-.theme-trigger-button:hover {
-    border-color: #9C27B0;
-    box-shadow: 0 2px 8px rgba(156, 39, 176, 0.2);
-}
-
-.theme-trigger-button.active {
-    border-color: #9C27B0;
-}
-
-/* 사이드 메뉴 컨테이너 */
-.side-menu-container,
-.theme-menu-container {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    /* border: 2px solid #e9ecef; */
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    z-index: 1000;
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.4s ease;
-}
-
-.side-menu-container.show,
-.theme-menu-container.show {
-    max-height: 400px;
-}
-
-.menu-content {
-    display: flex;
-    height: 320px;
-}
-
-/* 지역 선택기 */
-.region-list {
-    width: 50%;
-    overflow-y: auto;
-    border-right: 1px solid #e9ecef;
-    background: #fafafa;
-}
-
-.sigungu-list {
-    width: 50%;
-    overflow-y: auto;
-    background: white;
-}
-
-.sigungu-list.empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #999;
-    font-size: 13px;
-    font-style: italic;
-    text-align: center;
-    padding: 20px;
-}
-
-.region-item,
-.sigungu-item {
-    padding: 14px 18px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
-}
-
-.region-item:hover {
-    background: linear-gradient(135deg, #e8f5e8, #d4edda);
-    color: #4CAF50;
-    padding-left: 22px;
-}
-
-.region-item.active {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-    color: white;
-    font-weight: 600;
-}
-
-.sigungu-item:hover {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-    color: white;
-    padding-left: 22px;
-}
-
-.sigungu-item.selected {
-    background: #e8f5e8;
-    color: #2E7D32;
-    font-weight: 600;
-}
-
-/* 테마 선택기 */
-.main-category-list,
-.middle-category-list,
-.small-category-list {
-    width: 33.33%;
-    overflow-y: auto;
-    border-right: 1px solid #e9ecef;
-}
-
-.main-category-list {
-    background: #fafafa;
-}
-
-.middle-category-list {
-    background: #f8f9fa;
-}
-
-.small-category-list {
-    background: white;
-    border-right: none;
-}
-
-.main-category-item,
-.middle-category-item,
-.small-category-item {
-    padding: 14px 18px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 13px;
-}
-
-.main-category-item:hover,
-.middle-category-item:hover {
-    background: linear-gradient(135deg, #f3e5f5, #e1bee7);
-    color: #9C27B0;
-    padding-left: 22px;
-}
-
-.main-category-item.active,
-.middle-category-item.active {
-    background: linear-gradient(135deg, #9C27B0, #8E24AA);
-    color: white;
-    font-weight: 600;
-}
-
-.small-category-item:hover {
-    background: #9C27B0;
-    color: white;
-    padding-left: 22px;
-}
-
-.small-category-item.selected {
-    background: #f3e5f5;
-    color: #7B1FA2;
-    font-weight: 600;
-}
+  border-color: #c1c7cd;
+}
 
-.middle-category-list.empty,
-.small-category-list.empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #999;
-    font-size: 13px;
-    font-style: italic;
-    text-align: center;
-    padding: 20px;
+/* 사용자 관심사 기반 필터 스타일 */
+.filter-select.user-interest-filter {
+  background-color: #f5f5f5;
+  border-color: #4caf50;
+  font-weight: 600;
 }
 
-/* ------------------------------------
-   6) 관심사 태그 영역
--------------------------------------*/
-
-.interest-tags {
-    margin-top: 20px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    border: 1px solid #e9ecef;
-}
-
-.interest-tag {
-    display: inline-block;
-    background: linear-gradient(135deg, #6c757d, #5a6268);
-    color: white;
-    padding: 6px 12px;
-    margin: 4px;
-    border-radius: 15px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.interest-tag:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
-}
-
-/* ------------------------------------
-   7) 투어 섹션 및 카드
--------------------------------------*/
-
-.tours-section {
-    margin: 40px 0;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.section-title {
-    font-size: 20px;
-    color: #333;
-    margin: 0;
-    font-weight: 600;
-}
-
-.section-subtitle {
-    font-size: 14px;
-    color: #666;
-    margin-top: 5px;
-}
-
-.result-count {
-    font-size: 14px;
-    color: #666;
-    background: #f8f9fa;
-    padding: 8px 15px;
-    border-radius: 20px;
-}
-
-.count-number {
-    font-weight: 600;
-    color: #4CAF50;
-}
-
-.tour-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.tour-card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-    border: 1px solid #e9ecef;
-}
-
-.tour-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
-
-/* ------------------------------------
-   19) Fallback 이미지 처리
--------------------------------------*/
-
-.tour-image {
-    position: relative;
-    height: 200px;
-    overflow: hidden;
-    background: #f8f9fa;
-}
-
-.tour-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-/* 이미지 로딩 실패 시 대체 콘텐츠 */
-.tour-image.no-image {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 600;
-    text-align: center;
-}
-/* 카테고리별 fallback 배경 */
-.tour-image.no-image.nature {
-    background: linear-gradient(135deg, #4CAF50, #2E7D32);
-}
-
-.tour-image.no-image.culture {
-    background: linear-gradient(135deg, #2196F3, #0D47A1);
+/* 사용자가 수정한 필터 스타일 */
+.filter-select.user-modified-filter {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  font-weight: 600;
 }
 
-.tour-image.no-image.sports {
-    background: linear-gradient(135deg, #FF9800, #E65100);
-}
-
-.tour-image.no-image.food {
-    background: linear-gradient(135deg, #F44336, #C62828);
-}
-
-.tour-image.no-image.course {
-    background: linear-gradient(135deg, #607D8B, #37474F);
-}
-
-.tour-image.no-image.default {
-    background: linear-gradient(135deg, #9E9E9E, #616161);
-}
-/* fallback 이미지 아이콘 */
-.fallback-icon {
-    font-size: 48px;
-    margin-bottom: 10px;
-    animation: fadeIn 0.5s ease;
-}
-
-.fallback-text {
-    font-size: 14px;
-    font-family: 'Noto Sans KR', sans-serif;
-    opacity: 0.9;
-}
-/* 이미지 로딩 상태 표시 */
-.tour-image.loading {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-    0% {
-        background-position: 200% 0;
-    }
-    100% {
-        background-position: -200% 0;
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* 이미지 호버 효과 (실제 이미지가 있는 경우에만) */
-.tour-card:hover .tour-image:not(.no-image) img {
-    transform: scale(1.05);
-}
-/* 이미지 없음 표시자 */
-.no-image-indicator {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: 500;
-}
-/* 실제 이미지가 있는 경우 표시자 */
-.real-image-indicator {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    background: rgba(76, 175, 80, 0.8);
-    color: white;
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: 500;
-}
-
-/* 이미지 품질별 스타일 */
-.tour-card[data-image-quality="real"] .tour-image {
-    border: 2px solid #4CAF50;
-}
-
-.tour-card[data-image-quality="fallback"] .tour-image {
-    border: 2px solid #FF9800;
-}
-
-.tour-card[data-image-quality="placeholder"] .tour-image {
-    border: 2px solid #9E9E9E;
-}
-
-.tour-info {
-    padding: 20px;
-}
-
-.tour-category {
-    background: #e9ecef;
-    color: #495057;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 12px;
-    text-transform: uppercase;
-}
-
-.tour-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    margin: 10px 0;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
+/* ========================================
+   커스텀 드롭다운 스타일
+   ======================================== */
 
-.tour-description {
-    color: #666;
-    font-size: 14px;
-    line-height: 1.5;
-    margin: 10px 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+.custom-dropdown-container {
+  position: relative;
 }
 
-.tour-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 15px 0;
-    padding-top: 15px;
-    border-top: 1px solid #f0f0f0;
+.dropdown-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
 }
 
-.tour-location {
-    color: #666;
-    font-size: 13px;
+.dropdown-trigger:hover {
+  border-color: #c1c7cd;
 }
 
-.tour-type {
-    color: #4CAF50;
-    font-size: 12px;
-    font-weight: 600;
+.dropdown-trigger.active {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
-.tour-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
+.dropdown-arrow {
+  transition: transform 0.2s ease;
+  color: #666;
 }
 
-.btn-favorite {
-    background: none;
-    border: 2px solid #e9ecef;
-    padding: 8px 12px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 16px;
+.dropdown-trigger.active .dropdown-arrow {
+  transform: rotate(180deg);
 }
 
-.btn-favorite:hover {
-    border-color: #ff6b6b;
-    color: #ff6b6b;
+.dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e1e5e9;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
 }
 
-.btn-favorite.active {
-    background: #ff6b6b;
-    border-color: #ff6b6b;
-    color: white;
+.dropdown-options.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
-.btn-detail {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    flex: 1;
+.dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e5e9;
+  font-size: 12px;
+  color: #666;
 }
 
-.btn-detail:hover {
-    background: #45a049;
-    transform: translateY(-1px);
+.clear-all-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 
-/* ------------------------------------
-   8) placeholder 및 빈 상태
--------------------------------------*/
-
-.recommendation-placeholder,
-.search-placeholder {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-    background: #f8f9fa;
-    border-radius: 12px;
-    border: 2px dashed #ddd;
+.clear-all-btn:hover {
+  background-color: #fff5f5;
 }
 
-.placeholder-icon {
-    font-size: 48px;
-    margin-bottom: 20px;
+.dropdown-option {
+  padding: 0;
 }
 
-.recommendation-placeholder h3,
-.search-placeholder h3 {
-    margin: 10px 0;
-    color: #333;
+.dropdown-option label {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin: 0;
+  font-weight: normal;
 }
 
-.no-results {
-    text-align: center;
-    padding: 60px 20px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    margin: 20px 0;
+.dropdown-option label:hover {
+  background-color: #f8f9fa;
 }
 
-.no-results-icon {
-    font-size: 64px;
-    margin-bottom: 20px;
+.dropdown-option input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
 }
 
-.retry-search-btn {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 25px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: all 0.3s ease;
+/* 사용자 관심사 기반 드롭다운 스타일 */
+.dropdown-trigger.user-interest-filter {
+  background-color: #f5f5f5;
+  border-color: #4caf50;
+  font-weight: 600;
 }
 
-.retry-search-btn:hover {
-    background: #45a049;
-    transform: translateY(-2px);
+/* 사용자가 수정한 드롭다운 스타일 */
+.dropdown-trigger.user-modified-filter {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  font-weight: 600;
 }
-
 
-/* ------------------------------------
-   10) 버튼 스타일
--------------------------------------*/
+/* ========================================
+   버튼 스타일
+   ======================================== */
 
 .btn-primary {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  background: linear-gradient(135deg, #45a049, #4caf50);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
 }
 
 .btn-secondary {
-    background: #6c757d;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
+  background: #f8f9fa;
+  color: #666;
+  border: 2px solid #e1e5e9;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-    background: #5a6268;
-    transform: translateY(-1px);
+  background: #e9ecef;
+  border-color: #c1c7cd;
 }
 
-/* ------------------------------------
-   11) 페이지네이션
--------------------------------------*/
+/* ========================================
+   관심사 태그 영역
+   ======================================== */
 
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin: 30px 0;
+.interest-tags {
+  margin-top: 20px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
 }
 
-.pagination-btn {
-    background: white;
-    border: 2px solid #e9ecef;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.interest-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  margin: 4px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.pagination-btn:hover:not(:disabled) {
-    border-color: #4CAF50;
-    background: #f8f9fa;
+.interest-tag.reference {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
 }
 
-.pagination-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.interest-tag.current-filter {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
 }
 
-.pagination-numbers {
-    display: flex;
-    gap: 5px;
+/* ========================================
+   투어 섹션 스타일
+   ======================================== */
+
+.tours-section {
+  margin-bottom: 40px;
 }
 
-.pagination-number {
-    background: white;
-    border: 2px solid #e9ecef;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 40px;
-    text-align: center;
+.section-header {
+  text-align: center;
+  margin-bottom: 25px;
 }
 
-.pagination-number:hover {
-    border-color: #4CAF50;
-    background: #f8f9fa;
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
 }
 
-.pagination-number.active {
-    background: #4CAF50;
-    border-color: #4CAF50;
-    color: white;
+.section-subtitle {
+  font-size: 14px;
+  color: #666;
 }
 
-/* ------------------------------------
-   12) 모달
--------------------------------------*/
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
+.tour-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
 
-.modal-content {
-    background: white;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
-    overflow-y: auto;
+/* ========================================
+   투어 카드 스타일
+   ======================================== */
+
+.tour-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #eee;
+.tour-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #999;
+.tour-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
 }
 
-.modal-body {
-    padding: 20px;
+.tour-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
 }
 
-/* ------------------------------------
-   13) 로딩 스피너
--------------------------------------*/
-
-.loading-spinner {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(255,255,255,0.8);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
+.tour-card:hover .tour-image img {
+  transform: scale(1.05);
 }
 
-.loading-spinner.active {
-    display: flex;
+.tour-info {
+  padding: 20px;
 }
 
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f0f0f0;
-    border-top: 4px solid #4CAF50;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+.tour-category {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.tour-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  height: 44px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
-/* ------------------------------------
-   14) 토스트 알림 애니메이션
--------------------------------------*/
-
-@keyframes slideInRight {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+.tour-description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  height: 42px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
-@keyframes slideOutRight {
-    from { transform: translateX(0); }
-    to { transform: translateX(100%); }
+.tour-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 12px;
+  color: #888;
 }
 
-/* ------------------------------------
-   15) 반응형 디자인
--------------------------------------*/
-
-@media (max-width: 768px) {
-    .tour-search-container {
-        padding: 15px;
-    }
-
-    .page-header {
-        padding: 25px 15px;
-    }
-
-    .page-title {
-        font-size: 22px;
-    }
-
-    .page-subtitle {
-        font-size: 14px;
-    }
-
-    .search-filters {
-        padding: 20px;
-    }
-
-    .filter-row {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-
-    .current-filter-display {
-        padding: 15px;
-        margin: 15px 0;
-    }
-
-    .display-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .filter-tags-container {
-        gap: 8px;
-    }
-
-    .filter-tag {
-        font-size: 12px;
-        padding: 6px 10px;
-    }
-
-    .filter-label,
-    .filter-value {
-        font-size: 11px;
-    }
-
-    /* 사이드 메뉴 모바일 최적화 */
-    .menu-content {
-        flex-direction: column;
-        height: auto;
-        max-height: 350px;
-    }
-
-    .region-list,
-    .sigungu-list {
-        width: 100%;
-        max-height: 120px;
-        border-right: none;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .sigungu-list {
-        border-bottom: none;
-    }
-
-    .main-category-list,
-    .middle-category-list,
-    .small-category-list {
-        width: 100%;
-        max-height: 120px;
-        border-right: none;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .small-category-list {
-        border-bottom: none;
-    }
-
-    .quick-filter-buttons {
-        grid-template-columns: 1fr;
-    }
-
-    .tour-list {
-        grid-template-columns: 1fr;
-    }
-
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .tour-actions {
-        flex-direction: column;
-    }
-    .fallback-icon {
-        font-size: 36px;
-    }
-    
-    .fallback-text {
-        font-size: 12px;
-    }
-    
-    .tour-image {
-        height: 180px;
-    }
-
-
+.tour-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-@media (max-width: 480px) {
-    .current-filter-display {
-        padding: 12px;
-        border-radius: 8px;
-    }
-
-    .display-header h3 {
-        font-size: 14px;
-    }
-
-    .filter-source {
-        font-size: 11px;
-        padding: 3px 8px;
-    }
-
-    .filter-tag {
-        font-size: 11px;
-        padding: 5px 8px;
-        gap: 4px;
-    }
-
-    .filter-indicator {
-        font-size: 12px;
-    }
-
-    .no-filters {
-        font-size: 12px;
-        padding: 12px;
-    }
-
-    .tour-card {
-        margin-bottom: 15px;
-    }
-
-    .tour-info {
-        padding: 15px;
-    }
-
-    .section-title {
-        font-size: 18px;
-    }
+.btn-favorite {
+  background: none;
+  border: 2px solid #e1e5e9;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ------------------------------------
-   16) 다크 모드 지원
--------------------------------------*/
-
-@media (prefers-color-scheme: dark) {
-    .current-filter-display {
-        background: linear-gradient(135deg, #2d2d2d, #3a3a3a);
-        border-color: #404040;
-        color: #fff;
-    }
-
-    .display-header {
-        border-color: #404040;
-    }
-
-    .display-header h3 {
-        color: #fff;
-    }
-
-    .no-filters {
-        background: #3a3a3a;
-        border-color: #505050;
-        color: #ccc;
-    }
-
-    .side-menu-container,
-    .theme-menu-container {
-        background: #2d2d2d;
-        border-color: #404040;
-    }
-
-    .region-list {
-        background: #3a3a3a;
-    }
-
-    .middle-category-list {
-        background: #363636;
-    }
-
-    .region-trigger-button,
-    .theme-trigger-button {
-        background: #2d2d2d;
-        border-color: #404040;
-        color: #fff;
-    }
-
-    .tour-card {
-        background: #2d2d2d;
-        border-color: #404040;
-    }
-
-    .tour-title {
-        color: #fff;
-    }
-
-    .tour-description {
-        color: #ccc;
-    }
-
-     .tour-image.no-image {
-        color: #fff;
-    }
-    
-    .tour-image.loading {
-        background: linear-gradient(90deg, #3a3a3a 25%, #2a2a2a 50%, #3a3a3a 75%);
-        background-size: 200% 100%;
-    }
+.btn-favorite:hover {
+  border-color: #ff4757;
+  background: #fff5f5;
 }
 
-/* ------------------------------------
-   17) 접근성 및 애니메이션 제어
--------------------------------------*/
-
-/* 접근성: 포커스 표시 */
-.region-trigger-button:focus,
-.theme-trigger-button:focus {
-    outline: 3px solid #4CAF50;
-    outline-offset: 2px;
+.btn-favorite.active {
+  border-color: #ff4757;
+  background: #ff4757;
+  color: white;
 }
 
-.filter-tag:focus {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
+.btn-detail {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.filter-select:focus {
-    outline: none;
-    border-color: #4CAF50;
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+.btn-detail:hover {
+  background: linear-gradient(135deg, #1976d2, #2196f3);
+  transform: translateY(-1px);
 }
 
-.btn-primary:focus,
-.btn-secondary:focus {
-    outline: 3px solid rgba(76, 175, 80, 0.3);
-    outline-offset: 2px;
+/* ========================================
+   플레이스홀더 스타일
+   ======================================== */
+
+.recommendation-placeholder,
+.search-placeholder {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #ddd;
 }
 
-/* 애니메이션 감소 모드 */
-@media (prefers-reduced-motion: reduce) {
-    .current-filter-display,
-    .filter-tag,
-    .filter-icon {
-        animation: none !important;
-    }
-    
-    .side-menu-container,
-    .theme-menu-container {
-        transition: none !important;
-    }
-    
-    .filter-tag:hover,
-    .tour-card:hover {
-        transform: none !important;
-    }
-    
-    .spinner {
-        animation: none !important;
-    }
+.placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.7;
 }
 
-/* 고대비 모드 */
-@media (prefers-contrast: high) {
-    .current-filter-display {
-        border-width: 3px;
-    }
-    
-    .filter-tag {
-        border: 2px solid currentColor;
-    }
-    
-    .region-trigger-button,
-    .theme-trigger-button {
-        border-width: 3px;
-    }
-    
-    .tour-card {
-        border-width: 2px;
-    }
+.recommendation-placeholder h3,
+.search-placeholder h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
 }
 
-/* ------------------------------------
-   20) 맞춤 투어 섹션 스타일
--------------------------------------*/
-
-/* 맞춤 투어 카드 */
-.recommended-tour-card {
-    position: relative;
-    border: 2px solid #4CAF50;
-    background: linear-gradient(135deg, #ffffff, #f8fff8);
+.recommendation-placeholder p,
+.search-placeholder p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
 }
 
-.recommended-tour-card::before {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, #4CAF50, #81C784, #4CAF50);
-    border-radius: 14px;
-    z-index: -1;
-    opacity: 0.3;
+.improvement-note {
+  background: #e8f5e8;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-top: 15px;
 }
 
-.recommended-tour-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 30px rgba(76, 175, 80, 0.3);
+.improvement-note small {
+  color: #2e7d32;
+  font-weight: 500;
 }
 
-/* 맞춤 추천 배지 */
-.recommended-badge {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-    color: white;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 8px;
-    animation: pulse-glow 2s infinite;
+/* ========================================
+   검색 힌트 스타일
+   ======================================== */
+
+.search-hint {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
 }
 
-/* 투어 개수 표시 */
-.tour-count {
-    background: #4CAF50;
-    color: white;
-    font-size: 12px;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-left: 8px;
+.hint-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* 검색 결과 카드 */
-.search-result-card {
-    border: 1px solid #e9ecef;
-    transition: all 0.3s ease;
+.hint-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #4caf50;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 12px;
+  flex-shrink: 0;
 }
 
-.search-result-card:hover {
-    border-color: #2196F3;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(33, 150, 243, 0.2);
-}
-/* ------------------------------------
-   21) 애니메이션 효과
--------------------------------------*/
-
-/* 페이드 인 업 애니메이션 */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.hint-text {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.4;
 }
 
-.fade-in-up {
-    animation: fadeInUp 0.6s ease-out forwards;
-    opacity: 0;
-}
-
-/* 페이드 인 스케일 애니메이션 */
-@keyframes fadeInScale {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.fade-in-scale {
-    animation: fadeInScale 0.5s ease-out forwards;
-    opacity: 0;
-}
-/* 펄스 글로우 애니메이션 */
-@keyframes pulse-glow {
-    0%, 100% {
-        box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-    }
-    50% {
-        box-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
-    }
-}
-
-/* 필터 태그 등장 애니메이션 */
-@keyframes filterTagAppear {
-    from {
-        opacity: 0;
-        transform: translateX(-20px) scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-.filter-tag {
-    animation: filterTagAppear 0.4s ease-out forwards;
-}
-/* ------------------------------------
-   22) 관심사 태그 개선
--------------------------------------*/
-
-.interest-tag.clickable {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.interest-tag.clickable::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-
-.interest-tag.clickable:hover::before {
-    left: 100%;
-}
-
-.interest-tag.clickable:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
-    background: linear-gradient(135deg, #5a6268, #6c757d);
-}
-
-.interest-tag.clickable:active {
-    transform: translateY(0) scale(0.98);
-}
-
-/* ------------------------------------
-   23) 필터 상태 표시 개선
--------------------------------------*/
-
-.current-filters-summary {
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-top: 15px;
-    font-size: 13px;
-    color: #495057;
-    font-weight: 500;
-}
-
-.filter-source.modified {
-    background: linear-gradient(135deg, #2196F3, #1976D2);
-    animation: filterSourcePulse 2s infinite;
-}
-
-.filter-source.interest-based {
-    background: linear-gradient(135deg, #4CAF50, #45a049);
-}
-
-@keyframes filterSourcePulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.05);
-        opacity: 0.9;
-    }
-}
-
-/* ------------------------------------
-   24) 로딩 및 상태 표시 개선
--------------------------------------*/
-
-.recommendation-placeholder {
-    position: relative;
-    overflow: hidden;
-}
-
-.recommendation-placeholder::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.1), transparent);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% {
-        left: -100%;
-    }
-    100% {
-        left: 100%;
-    }
-}
-
-/* 검색 버튼 로딩 상태 */
-.btn-primary.loading {
-    position: relative;
-    color: transparent;
-}
-
-.btn-primary.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 16px;
-    height: 16px;
-    margin: -8px 0 0 -8px;
-    border: 2px solid #ffffff;
-    border-radius: 50%;
-    border-top-color: transparent;
-    animation: spin 0.8s linear infinite;
-}
-
-/* ------------------------------------
-   25) 결과 없음 상태 개선
--------------------------------------*/
-
-.no-results {
-    background: linear-gradient(135deg, #f8f9fa, #ffffff);
-    border: 2px dashed #dee2e6;
-    position: relative;
-}
-
-.no-results::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="%23dee2e6" opacity="0.3"/><circle cx="80" cy="40" r="2" fill="%23dee2e6" opacity="0.3"/><circle cx="40" cy="80" r="2" fill="%23dee2e6" opacity="0.3"/></svg>') repeat;
-    opacity: 0.5;
-    pointer-events: none;
-}
+/* ========================================
+   빠른 필터 제안 버튼
+   ======================================== */
 
 .main-category-suggestions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
 }
 
 .suggestion-btn {
-    background: linear-gradient(135deg, #ffffff, #f8f9fa);
-    border: 2px solid #e9ecef;
-    color: #495057;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 2px solid #e1e5e9;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
 }
 
 .suggestion-btn:hover {
-    border-color: #4CAF50;
-    background: linear-gradient(135deg, #f8fff8, #e8f5e8);
-    color: #2E7D32;
-    transform: translateY(-2px);
+  background: linear-gradient(135deg, #e9ecef, #dee2e6);
+  border-color: #4caf50;
+  transform: translateY(-1px);
 }
 
-/* ------------------------------------
-   26) 모바일 최적화
--------------------------------------*/
-
-@media (max-width: 768px) {
-    .recommended-tour-card::before {
-        display: none; /* 모바일에서 복잡한 효과 제거 */
-    }
-    
-    .recommended-badge {
-        font-size: 10px;
-        padding: 3px 6px;
-    }
-    
-    .tour-count {
-        font-size: 11px;
-        padding: 1px 6px;
-    }
-    
-    .current-filters-summary {
-        font-size: 12px;
-        padding: 10px 12px;
-    }
-    
-    .main-category-suggestions {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .suggestion-btn {
-        width: 100%;
-        max-width: 200px;
-    }
+.retry-search-btn {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 15px;
 }
 
-/* ------------------------------------
-   27) 고대비 및 접근성
--------------------------------------*/
-
-@media (prefers-contrast: high) {
-    .recommended-tour-card {
-        border-width: 3px;
-        border-color: #000000;
-    }
-    
-    .recommended-badge {
-        background: #000000;
-        color: #ffffff;
-        border: 2px solid #ffffff;
-    }
-    
-    .filter-tag {
-        border: 2px solid currentColor;
-    }
+.retry-search-btn:hover {
+  background: linear-gradient(135deg, #45a049, #4caf50);
+  transform: translateY(-1px);
 }
 
-/* 포커스 표시 개선 */
-.interest-tag.clickable:focus,
-.suggestion-btn:focus {
-    outline: 3px solid #4CAF50;
-    outline-offset: 2px;
+/* ========================================
+   로딩 스피너
+   ======================================== */
+
+.loading-spinner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
 }
 
-/* 애니메이션 감소 모드 */
-@media (prefers-reduced-motion: reduce) {
-    .fade-in-up,
-    .fade-in-scale,
-    .filter-tag,
-    .recommended-badge {
-        animation: none !important;
-    }
-    
-    .recommended-tour-card:hover,
-    .search-result-card:hover,
-    .interest-tag.clickable:hover {
-        transform: none !important;
-    }
+.loading-spinner.active {
+  opacity: 1;
+  visibility: visible;
 }
-/* ------------------------------------
-   18) 추가 유틸리티 클래스
--------------------------------------*/
 
-.text-center {
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4caf50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========================================
+   모달 스타일
+   ======================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.modal-footer {
+  padding: 15px 25px;
+  border-top: 1px solid #e1e5e9;
+  text-align: center;
+  background: #f8f9fa;
+}
+
+.modal-footer small {
+  color: #666;
+}
+
+/* ========================================
+   투어 상세 정보 스타일
+   ======================================== */
+
+.tour-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tour-detail-image img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.tour-detail-info h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.tour-detail-info p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.tour-overview {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+/* ========================================
+   페이지네이션
+   ======================================== */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 40px;
+}
+
+.pagination-btn {
+  background: white;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #666;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 5px;
+}
+
+.pagination-number {
+  background: white;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #666;
+  min-width: 40px;
+  text-align: center;
+}
+
+.pagination-number:hover {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.pagination-number.active {
+  background: #4caf50;
+  border-color: #4caf50;
+  color: white;
+}
+
+/* ========================================
+   코스 섹션 스타일
+   ======================================== */
+
+.course-section {
+  margin-bottom: 35px;
+}
+
+.course-section-title {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.course-icon {
+  font-size: 20px;
+  margin-right: 10px;
+}
+
+/* ========================================
+   애니메이션
+   ======================================== */
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   로그인 프롬프트 스타일
+   ======================================== */
+
+.login-prompt {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.login-prompt-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.login-prompt-text {
+  flex: 1;
+}
+
+.login-prompt-text strong {
+  color: #856404;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.login-prompt-text small {
+  color: #856404;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.login-prompt-link {
+  color: #4caf50;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.login-prompt-link:hover {
+  color: #45a049;
+}
+
+/* ========================================
+   결과 없음 스타일
+   ======================================== */
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #ddd;
+}
+
+.no-results-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.7;
+}
+
+.no-results h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.no-results p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* ========================================
+   🆕 이미지 fallback 스타일 (개선)
+   ======================================== */
+
+.tour-image.no-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  color: #666;
+  text-align: center;
+  position: relative;
+}
+
+.tour-image.no-image.nature {
+  background: linear-gradient(135deg, #e8f5e8, #c8e6c8);
+  color: #2e7d32;
+}
+
+.tour-image.no-image.culture {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  color: #1565c0;
+}
+
+.tour-image.no-image.sports {
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  color: #e65100;
+}
+
+.tour-image.no-image.food {
+  background: linear-gradient(135deg, #ffebee, #ffcdd2);
+  color: #c62828;
+}
+
+.tour-image.no-image.course {
+  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+  color: #7b1fa2;
+}
+
+.fallback-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.fallback-text {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.no-image-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+/* ========================================
+   추가 반응형 스타일
+   ======================================== */
+
+@media (max-width: 480px) {
+  .tour-list {
+    grid-template-columns: 1fr;
+  }
+
+  .search-hint {
+    grid-template-columns: 1fr;
+  }
+
+  .main-category-suggestions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .tour-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-detail {
+    width: 100%;
     text-align: center;
+  }
 }
 
-.text-left {
-    text-align: left;
+/* ========================================
+   인쇄 스타일
+   ======================================== */
+
+@media print {
+  .search-filters,
+  .loading-spinner,
+  .modal-overlay,
+  .pagination {
+    display: none !important;
+  }
+
+  .tour-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  .tour-actions {
+    display: none;
+  }
 }
-
-.text-right {
-    text-align: right;
-}
-
-.mb-0 { margin-bottom: 0; }
-.mb-1 { margin-bottom: 0.25rem; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mb-3 { margin-bottom: 1rem; }
-.mb-4 { margin-bottom: 1.5rem; }
-.mb-5 { margin-bottom: 3rem; }
-
-.mt-0 { margin-top: 0; }
-.mt-1 { margin-top: 0.25rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mt-3 { margin-top: 1rem; }
-.mt-4 { margin-top: 1.5rem; }
-.mt-5 { margin-top: 3rem; }
-
-.p-0 { padding: 0; }
-.p-1 { padding: 0.25rem; }
-.p-2 { padding: 0.5rem; }
-.p-3 { padding: 1rem; }
-.p-4 { padding: 1.5rem; }
-.p-5 { padding: 3rem; }
-
-.d-none { display: none; }
-.d-block { display: block; }
-.d-flex { display: flex; }
-.d-grid { display: grid; }
-
-.w-100 { width: 100%; }
-.h-100 { height: 100%; }
-
-.border-radius-sm { border-radius: 4px; }
-.border-radius-md { border-radius: 8px; }
-.border-radius-lg { border-radius: 12px; }
-.border-radius-xl { border-radius: 16px; }
