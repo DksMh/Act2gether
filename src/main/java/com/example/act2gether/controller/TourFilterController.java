@@ -8,6 +8,7 @@ package com.example.act2gether.controller;
 import java.util.Map;
 import java.util.HashMap;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,16 @@ public class TourFilterController {
     private final TourFilterService tourFilterService;
     private final UserRepository userRepository;
 
+    // 🆕 설정값으로 기본값 관리
+    @Value("${tour.search.default.numOfRows:6}")
+    private int defaultNumOfRows;
+
+    @Value("${tour.search.max.numOfRows:50}")
+    private int maxNumOfRows;
+
+    @Value("${tour.search.min.numOfRows:1}")
+    private int minNumOfRows;
+    
     /**
      * 개선된 필터 옵션 조회 (5개 질문 구조)
      */
@@ -120,27 +131,30 @@ public class TourFilterController {
 
         return ResponseEntity.ok(result);
     }
-
+    
     /**
-     * ✅ 수정된 검색 파라미터 유효성 검증 및 정규화
-     * 핵심 개선: 지역명을 지역코드로 자동 변환
+     * ✅ 개선된 검색 파라미터 유효성 검증 및 정규화
+     * 설정값 기반 기본값 사용으로 유연성 향상
      */
     private Map<String, String> validateAndNormalizeSearchParams(Map<String, String> params) {
         Map<String, String> normalized = new HashMap<>();
 
-        // 방문지 수 검증
-        int numOfRows = 6;
+        // 🔧 설정값 기반 방문지 수 검증
+        int numOfRows = defaultNumOfRows; // 설정값에서 기본값 가져오기
         int pageNo = 1;
 
         try {
             if (params.containsKey("numOfRows")) {
-                numOfRows = Math.min(Math.max(Integer.parseInt(params.get("numOfRows")), 1), 50);
+                numOfRows = Math.min(Math.max(Integer.parseInt(params.get("numOfRows")), minNumOfRows), maxNumOfRows);
+                log.debug("방문지 수 설정: {} (범위: {}-{})", numOfRows, minNumOfRows, maxNumOfRows);
+            } else {
+                log.debug("기본 방문지 수 사용: {}", defaultNumOfRows);
             }
             if (params.containsKey("pageNo")) {
                 pageNo = Math.max(Integer.parseInt(params.get("pageNo")), 1);
             }
         } catch (NumberFormatException e) {
-            log.warn("잘못된 숫자 파라미터: {}", e.getMessage());
+            log.warn("잘못된 숫자 파라미터, 기본값 사용 - numOfRows: {}, pageNo: {}", defaultNumOfRows, pageNo);
         }
 
         normalized.put("numOfRows", String.valueOf(numOfRows));
@@ -151,11 +165,9 @@ public class TourFilterController {
         String areaCode = params.get("areaCode");
 
         if (areaCode != null && !areaCode.trim().isEmpty()) {
-            // 이미 지역코드가 있는 경우 직접 사용
             normalized.put("areaCode", areaCode.trim());
             log.info("✅ 지역코드 직접 사용: {}", areaCode);
         } else if (region != null && !region.trim().isEmpty()) {
-            // 지역명을 지역코드로 변환
             String convertedAreaCode = tourFilterService.getAreaCodeByName(region);
             if (!convertedAreaCode.isEmpty()) {
                 normalized.put("areaCode", convertedAreaCode);
@@ -165,7 +177,7 @@ public class TourFilterController {
             }
         }
 
-        // ✅ 2. 시군구 처리 - 코드 직접 사용
+        // ✅ 2. 시군구 처리
         String sigunguCode = params.get("sigunguCode");
         if (sigunguCode != null && !sigunguCode.trim().isEmpty()) {
             normalized.put("sigunguCode", sigunguCode.trim());
@@ -195,11 +207,13 @@ public class TourFilterController {
             log.info("✅ 소분류 카테고리 설정: {}", cat3);
         }
 
-        // ✅ 4. 테마 처리 (다중 선택, JSON 배열 또는 콤마 구분)
+        // 🔥 4. 테마 처리 (다중 선택) - 핵심 수정!
         String themes = params.get("themes");
         if (themes != null && !themes.trim().isEmpty()) {
             normalized.put("themes", themes.trim());
             log.info("✅ 테마 설정: {}", themes);
+        } else {
+            log.info("ℹ️ themes 파라미터 없음. 사용 가능한 파라미터: {}", params.keySet());
         }
 
         // ✅ 5. 활동 처리 (다중 선택)
@@ -207,6 +221,8 @@ public class TourFilterController {
         if (activities != null && !activities.trim().isEmpty()) {
             normalized.put("activities", activities.trim());
             log.info("✅ 활동 설정: {}", activities);
+        } else {
+            log.info("ℹ️ 활동 파라미터 없음");
         }
 
         // ✅ 6. 장소 처리 (다중 선택)
@@ -216,21 +232,21 @@ public class TourFilterController {
             log.info("✅ 장소 설정: {}", places);
         }
 
-        // ✅ 7. 편의시설 처리 (단일 선택)
+        // ✅ 7. 편의시설 처리
         String needs = params.get("needs");
         if (needs != null && !needs.trim().isEmpty() && !"해당없음".equals(needs.trim())) {
             normalized.put("needs", needs.trim());
             log.info("✅ 편의시설 설정: {}", needs);
         }
 
-        // ✅ 8. 키워드 처리 (기존 키워드 파라미터 유지)
+        // ✅ 8. 키워드 처리
         String keyword = params.get("keyword");
         if (keyword != null && !keyword.trim().isEmpty()) {
             normalized.put("keyword", keyword.trim());
             log.info("✅ 키워드 설정: {}", keyword);
         }
 
-        log.debug("파라미터 정규화 완료: {} → {}", params, normalized);
+        log.debug("파라미터 정규화 완료 - 입력: {}, 출력: {}", params.size(), normalized.size());
 
         return normalized;
     }

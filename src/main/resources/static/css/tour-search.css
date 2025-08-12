@@ -734,6 +734,60 @@
   }
 }
 
+/**
+ * 🎯 tour-search.css에 추가할 스타일
+ * 장소 옵션 그룹 헤더 스타일링
+ */
+
+/* 옵션 그룹 헤더 스타일 */
+.option-group-header {
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+    background-color: #f8f9fa;
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-left: 3px solid #4CAF50;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* 그룹별 색상 구분 */
+.option-group-header:nth-of-type(1) { border-left-color: #4CAF50; } /* 자연 - 초록 */
+.option-group-header:nth-of-type(2) { border-left-color: #2196F3; } /* 문화 - 파랑 */
+.option-group-header:nth-of-type(3) { border-left-color: #FF9800; } /* 휴양 - 주황 */
+.option-group-header:nth-of-type(4) { border-left-color: #9C27B0; } /* 레저 - 보라 */
+.option-group-header:nth-of-type(5) { border-left-color: #607D8B; } /* 기타 - 회색 */
+
+/* 드롭다운 옵션 높이 조정 (더 많은 옵션 수용) */
+.dropdown-options {
+    max-height: 400px; /* 기존 300px에서 증가 */
+    overflow-y: auto;
+}
+
+/* 옵션 간격 조정 */
+.dropdown-option {
+    padding: 6px 12px; /* 기존보다 약간 줄임 */
+}
+
+/* 스크롤바 스타일링 */
+.dropdown-options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-options::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
 /* ========================================
    모달 스타일
    ======================================== */
