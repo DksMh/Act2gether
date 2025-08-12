@@ -42,15 +42,20 @@ public class TourFilterController {
 
     @Value("${tour.search.min.numOfRows:1}")
     private int minNumOfRows;
-    
+
     /**
-     * 개선된 필터 옵션 조회 (5개 질문 구조)
+     * 개선된 필터 옵션 조회 (7그룹 장소 구조)
      */
     @GetMapping("/filter-options")
     public ResponseEntity<Map<String, Object>> getFilterOptions() {
-        log.info("필터 옵션 조회 요청 - 5개 질문 구조");
+        log.info("필터 옵션 조회 요청 - 7그룹 장소 구조");
 
         Map<String, Object> options = tourFilterService.getFilterOptions();
+
+        // 응답에 버전 정보 추가
+        options.put("version", "v2.3");
+        options.put("placeGroupCount", 7);
+        options.put("placeSystemType", "7그룹 중분류 기반");
 
         return ResponseEntity.ok(Map.of("success", true, "data", options));
     }
@@ -131,7 +136,7 @@ public class TourFilterController {
 
         return ResponseEntity.ok(result);
     }
-    
+
     /**
      * ✅ 개선된 검색 파라미터 유효성 검증 및 정규화
      * 설정값 기반 기본값 사용으로 유연성 향상
@@ -442,7 +447,7 @@ public class TourFilterController {
     }
 
     /**
-     * API 상태 확인 (헬스체크)
+     * API 상태 확인 (헬스체크) - 버전 업데이트
      */
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> healthCheck() {
@@ -456,9 +461,10 @@ public class TourFilterController {
                     "timestamp", System.currentTimeMillis(),
                     "api", isHealthy ? "정상" : "오류",
                     "database", "정상",
-                    "version", "2.1-fixed", // 지역 파라미터 수정 버전
-                    "structure", "5개 질문 구조 + 지역 파라미터 누락 수정",
-                    "fixes", "areaCode, sigunguCode 전달 문제 해결");
+                    "version", "v2.3-7groups", // 버전 업데이트
+                    "structure", "7그룹 장소 시스템 + 올바른 계층 구조",
+                    "features", "3개 테마 + 7개 활동 + 7그룹 장소",
+                    "placeGroups", "자연관광지,역사관광지,휴양관광지,체험관광지,문화시설,육상레포츠,수상레포츠");
 
             return ResponseEntity.ok(Map.of("success", true, "data", health));
 
@@ -469,7 +475,7 @@ public class TourFilterController {
                     "status", "DOWN",
                     "timestamp", System.currentTimeMillis(),
                     "error", e.getMessage(),
-                    "version", "2.1-fixed");
+                    "version", "v2.3-7groups");
 
             return ResponseEntity.ok(Map.of("success", false, "data", health));
         }
