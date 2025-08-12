@@ -359,7 +359,11 @@ public class TourFilterService {
             List<String> places) {
         List<SearchParam> combinations = new ArrayList<>();
 
-        log.info("🔄 조합 생성 시작 - 테마:{}개, 활동:{}개, 장소:{}개", themes.size(), activities.size(), places.size());
+        log.info("🔄 조합 생성 시작");
+        log.info("  지역: {} / 시군구: {}", areaCode, sigunguCode);
+        log.info("  테마: {} ({}개)", themes, themes.size());
+        log.info("  활동: {} ({}개)", activities, activities.size());
+        log.info("  장소: {} ({}개)", places, places.size());
 
         // 테마 × 활동 × 장소 조합 생성 (논리적 검증 포함)
         int combinationCount = 0;
@@ -440,12 +444,11 @@ public class TourFilterService {
         if (cat2 == null || cat3 == null) {
             return true;
         }
-
         // 🎯 테마-활동 조합 검증
         Map<String, List<String>> themeActivityMap = new HashMap<>();
         themeActivityMap.put("A01", List.of("A0101")); // 자연 → 자연관광지
-        themeActivityMap.put("A02", List.of("A0201", "A0202", "A0203", "A0206")); // 문화 → 역사관광지, 휴양관광지, 체험관광지, 문화시설
-        themeActivityMap.put("A03", List.of("A0302", "A0303")); // 레포츠 → 육상레포츠, 수상레포츠
+        themeActivityMap.put("A02", List.of("A0201", "A0202", "A0203", "A0206")); // 문화 → 4가지
+        themeActivityMap.put("A03", List.of("A0302", "A0303")); // 레포츠 → 육상/수상
 
         List<String> validActivities = themeActivityMap.get(cat1);
         if (validActivities != null && !validActivities.contains(cat2)) {
