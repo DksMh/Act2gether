@@ -115,6 +115,7 @@ public class LoginService {
             // 비밀번호 암호화 후 업데이트
             String encodedPassword = passwordEncoder.encode(resetPasswordDTO.getNewPassword());
             user.resetPassword(encodedPassword); 
+            user.setStatus("Active");
             return true;
         }
 
