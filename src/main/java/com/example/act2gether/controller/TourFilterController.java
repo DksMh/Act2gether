@@ -1,6 +1,7 @@
 /**
- * TourFilterController.java - 검색 파라미터 정규화 수정
- * 핵심 수정: validateAndNormalizeSearchParams 메서드에서 areaCode 변환 로직 추가
+ * TourFilterController.java - v2.3 Enhanced 깔끔한 버전
+ * 핵심 기능만 유지: 검색, 필터 옵션, 상세 조회
+ * 없는 메서드들 모두 제거
  */
 
 package com.example.act2gether.controller;
@@ -33,41 +34,44 @@ public class TourFilterController {
     private final TourFilterService tourFilterService;
     private final UserRepository userRepository;
 
-    // 🆕 설정값으로 기본값 관리
+    // 설정값으로 기본값 관리
     @Value("${tour.search.default.numOfRows:6}")
     private int defaultNumOfRows;
 
-    @Value("${tour.search.max.numOfRows:50}")
+    @Value("${tour.search.max.numOfRows:80}")
     private int maxNumOfRows;
 
     @Value("${tour.search.min.numOfRows:1}")
     private int minNumOfRows;
 
     /**
-     * 개선된 필터 옵션 조회 (7그룹 장소 구조)
+     * ✅ 필터 옵션 조회 (확대된 선택 수 포함)
      */
     @GetMapping("/filter-options")
     public ResponseEntity<Map<String, Object>> getFilterOptions() {
-        log.info("필터 옵션 조회 요청 - 7그룹 장소 구조");
+        log.info("필터 옵션 조회 요청 - 선택 수 확대 (테마4, 활동5, 장소6)");
 
         Map<String, Object> options = tourFilterService.getFilterOptions();
 
-        // 응답에 버전 정보 추가
-        options.put("version", "v2.3");
-        options.put("placeGroupCount", 7);
-        options.put("placeSystemType", "7그룹 중분류 기반");
+        // v2.3 Enhanced 정보 추가
+        options.put("version", "v2.3-enhanced");
+        options.put("maxSelections", Map.of(
+            "themes", 4,      // 3→4
+            "activities", 5,  // 3→5  
+            "places", 6       // 3→6
+        ));
+        options.put("features", "논리적 조합 최적화 + 선택 수 확대");
 
         return ResponseEntity.ok(Map.of("success", true, "data", options));
     }
 
     /**
-     * 사용자 관심사 기반 필터 설정 조회
+     * ✅ 사용자 관심사 기반 필터 설정 조회
      */
     @GetMapping("/user-interests")
     public ResponseEntity<Map<String, Object>> getUserInterests(Authentication authentication) {
         log.info("사용자 관심사 조회 요청");
 
-        // 비로그인 상태에서도 접근 가능하도록 수정
         if (authentication == null || !authentication.isAuthenticated()
                 || "anonymousUser".equals(authentication.getPrincipal())) {
             log.info("비로그인 사용자 요청");
@@ -118,42 +122,47 @@ public class TourFilterController {
     }
 
     /**
-     * 🔧 수정된 관광지 검색 - 파라미터 정규화 개선
+     * ✅ 관광지 검색 - 논리적 조합 최적화
      */
     @GetMapping("/search")
     public ResponseEntity<Map<String, Object>> searchTours(@RequestParam Map<String, String> params) {
         log.info("관광지 검색 요청 - 파라미터: {}", params);
 
-        // ✅ 파라미터 유효성 검증 및 정규화 (지역명 → 지역코드 변환 포함)
+        // 파라미터 유효성 검증 및 정규화
         Map<String, String> normalizedParams = validateAndNormalizeSearchParams(params);
-
         log.info("정규화된 파라미터: {}", normalizedParams);
 
+        // v2.3 Enhanced 검색 (논리적 조합 최적화)
         Map<String, Object> result = tourFilterService.searchTours(normalizedParams);
-        log.info("검색 결과 - 성공: {}, 개수: {}",
-                result.get("success"),
+        
+        // 검색 결과에 v2.3 정보 추가
+        if ((Boolean) result.get("success")) {
+            result.put("version", "v2.3-enhanced");
+            result.put("optimized", true);
+            result.put("logicalCombinations", true);
+        }
+
+        log.info("검색 결과 - 성공: {}, 개수: {}", 
+                result.get("success"), 
                 result.containsKey("data") ? "포함" : "없음");
 
         return ResponseEntity.ok(result);
     }
 
     /**
-     * ✅ 개선된 검색 파라미터 유효성 검증 및 정규화
-     * 설정값 기반 기본값 사용으로 유연성 향상
+     * ✅ 검색 파라미터 유효성 검증 및 정규화
      */
     private Map<String, String> validateAndNormalizeSearchParams(Map<String, String> params) {
         Map<String, String> normalized = new HashMap<>();
 
-        // 🔧 설정값 기반 방문지 수 검증
-        int numOfRows = defaultNumOfRows; // 설정값에서 기본값 가져오기
+        // 방문지 수 검증 (설정값 기반)
+        int numOfRows = defaultNumOfRows;
         int pageNo = 1;
 
         try {
             if (params.containsKey("numOfRows")) {
                 numOfRows = Math.min(Math.max(Integer.parseInt(params.get("numOfRows")), minNumOfRows), maxNumOfRows);
                 log.debug("방문지 수 설정: {} (범위: {}-{})", numOfRows, minNumOfRows, maxNumOfRows);
-            } else {
-                log.debug("기본 방문지 수 사용: {}", defaultNumOfRows);
             }
             if (params.containsKey("pageNo")) {
                 pageNo = Math.max(Integer.parseInt(params.get("pageNo")), 1);
@@ -165,7 +174,7 @@ public class TourFilterController {
         normalized.put("numOfRows", String.valueOf(numOfRows));
         normalized.put("pageNo", String.valueOf(pageNo));
 
-        // ✅ 1. 지역 처리 - 지역명을 지역코드로 변환
+        // 지역 처리 - 지역명을 지역코드로 변환
         String region = params.get("region");
         String areaCode = params.get("areaCode");
 
@@ -182,14 +191,14 @@ public class TourFilterController {
             }
         }
 
-        // ✅ 2. 시군구 처리
+        // 시군구 처리
         String sigunguCode = params.get("sigunguCode");
         if (sigunguCode != null && !sigunguCode.trim().isEmpty()) {
             normalized.put("sigunguCode", sigunguCode.trim());
             log.info("✅ 시군구코드 설정: {}", sigunguCode);
         }
 
-        // ✅ 3. 카테고리 처리 (메인 3개만 허용)
+        // 카테고리 처리 (메인 3개만 허용)
         String cat1 = params.get("cat1");
         if (cat1 != null && !cat1.trim().isEmpty()) {
             if (java.util.List.of("A01", "A02", "A03").contains(cat1.trim())) {
@@ -212,39 +221,35 @@ public class TourFilterController {
             log.info("✅ 소분류 카테고리 설정: {}", cat3);
         }
 
-        // 🔥 4. 테마 처리 (다중 선택) - 핵심 수정!
+        // 테마 처리 (다중 선택 - 최대 4개)
         String themes = params.get("themes");
         if (themes != null && !themes.trim().isEmpty()) {
             normalized.put("themes", themes.trim());
             log.info("✅ 테마 설정: {}", themes);
-        } else {
-            log.info("ℹ️ themes 파라미터 없음. 사용 가능한 파라미터: {}", params.keySet());
         }
 
-        // ✅ 5. 활동 처리 (다중 선택)
+        // 활동 처리 (다중 선택 - 최대 5개)
         String activities = params.get("activities");
         if (activities != null && !activities.trim().isEmpty()) {
             normalized.put("activities", activities.trim());
             log.info("✅ 활동 설정: {}", activities);
-        } else {
-            log.info("ℹ️ 활동 파라미터 없음");
         }
 
-        // ✅ 6. 장소 처리 (다중 선택)
+        // 장소 처리 (다중 선택 - 최대 6개)
         String places = params.get("places");
         if (places != null && !places.trim().isEmpty()) {
             normalized.put("places", places.trim());
             log.info("✅ 장소 설정: {}", places);
         }
 
-        // ✅ 7. 편의시설 처리
+        // 편의시설 처리
         String needs = params.get("needs");
         if (needs != null && !needs.trim().isEmpty() && !"해당없음".equals(needs.trim())) {
             normalized.put("needs", needs.trim());
             log.info("✅ 편의시설 설정: {}", needs);
         }
 
-        // ✅ 8. 키워드 처리
+        // 키워드 처리
         String keyword = params.get("keyword");
         if (keyword != null && !keyword.trim().isEmpty()) {
             normalized.put("keyword", keyword.trim());
@@ -252,12 +257,11 @@ public class TourFilterController {
         }
 
         log.debug("파라미터 정규화 완료 - 입력: {}, 출력: {}", params.size(), normalized.size());
-
         return normalized;
     }
 
     /**
-     * 지역 코드 목록 조회
+     * ✅ 지역 코드 목록 조회
      */
     @GetMapping("/areas")
     public ResponseEntity<Map<String, Object>> getAreas() {
@@ -267,7 +271,7 @@ public class TourFilterController {
     }
 
     /**
-     * 시군구 코드 목록 조회
+     * ✅ 시군구 코드 목록 조회
      */
     @GetMapping("/sigungu")
     public ResponseEntity<Map<String, Object>> getSigungu(@RequestParam String areaCode) {
@@ -277,44 +281,12 @@ public class TourFilterController {
     }
 
     /**
-     * 대분류 카테고리 목록 (메인 3개만)
-     */
-    @GetMapping("/categories/main")
-    public ResponseEntity<Map<String, Object>> getCategoriesMain() {
-        log.info("메인 카테고리 조회 요청 (자연, 인문, 레포츠)");
-        Map<String, Object> result = tourFilterService.getCategoryMain();
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * 중분류 카테고리 목록
-     */
-    @GetMapping("/categories/middle")
-    public ResponseEntity<Map<String, Object>> getCategoriesMiddle(@RequestParam String cat1) {
-        log.info("중분류 카테고리 조회 요청 - 대분류: {}", cat1);
-        Map<String, Object> result = tourFilterService.getCategoryMiddle(cat1);
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * 소분류 카테고리 목록
-     */
-    @GetMapping("/categories/small")
-    public ResponseEntity<Map<String, Object>> getCategoriesSmall(
-            @RequestParam String cat1,
-            @RequestParam String cat2) {
-        log.info("소분류 카테고리 조회 요청 - 대분류: {}, 중분류: {}", cat1, cat2);
-        Map<String, Object> result = tourFilterService.getCategorySmall(cat1, cat2);
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * 추천 관광지 조회
+     * ✅ 추천 관광지 조회
      */
     @GetMapping("/recommended")
     public ResponseEntity<Map<String, Object>> getRecommendedTours(
             Authentication authentication,
-            @RequestParam(defaultValue = "5") int numOfRows) {
+            @RequestParam(defaultValue = "6") int numOfRows) {
 
         log.info("추천 관광지 조회 요청 - 개수: {}", numOfRows);
 
@@ -336,11 +308,18 @@ public class TourFilterController {
         }
 
         Map<String, Object> result = tourFilterService.getRecommendedTours(userInterests, numOfRows);
+        
+        // v2.3 정보 추가
+        if ((Boolean) result.get("success")) {
+            result.put("version", "v2.3-enhanced");
+            result.put("optimized", true);
+        }
+        
         return ResponseEntity.ok(result);
     }
 
     /**
-     * 관광지 상세 정보 조회
+     * ✅ 관광지 상세 정보 조회
      */
     @GetMapping("/detail/{contentId}")
     public ResponseEntity<Map<String, Object>> getTourDetail(@PathVariable String contentId) {
@@ -357,97 +336,7 @@ public class TourFilterController {
     }
 
     /**
-     * 빠른 필터 검색
-     */
-    @GetMapping("/quick-search")
-    public ResponseEntity<Map<String, Object>> quickSearch(@RequestParam String filterType) {
-        log.info("빠른 필터 검색 요청 - 타입: {}", filterType);
-
-        Map<String, String> params = tourFilterService.getQuickFilterParams(filterType);
-        Map<String, Object> result = tourFilterService.searchTours(params);
-
-        if ((Boolean) result.get("success")) {
-            result.put("filterType", filterType);
-            result.put("quickSearch", true);
-        }
-
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * 큐레이션 투어 생성 (균형잡힌 투어 구성)
-     */
-    @GetMapping("/curation-tour")
-    public ResponseEntity<Map<String, Object>> getCurationTour(@RequestParam Map<String, String> params) {
-        log.info("큐레이션 투어 생성 요청 - 파라미터: {}", params);
-
-        // 기본 파라미터 설정
-        params.putIfAbsent("numOfRows", "9"); // 3개 카테고리 × 3개씩 = 총 9개
-        params.putIfAbsent("pageNo", "1");
-
-        Map<String, Object> result = tourFilterService.getCurationTourData(params);
-
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * 지역+테마 조합 추천코스 조회
-     */
-    @GetMapping("/courses-by-theme")
-    public ResponseEntity<Map<String, Object>> getCoursesByTheme(
-            @RequestParam String areaCode,
-            @RequestParam String themeCode,
-            @RequestParam(required = false) String sigunguCode) {
-
-        log.info("지역+테마 조합 코스 조회 요청 - 지역: {}, 테마: {}, 시군구: {}", areaCode, themeCode, sigunguCode);
-
-        Map<String, Object> result = tourFilterService.getCoursesByTheme(areaCode, themeCode, sigunguCode);
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * 지역+활동 조합 추천코스 조회
-     */
-    @GetMapping("/courses-by-activity")
-    public ResponseEntity<Map<String, Object>> getCoursesByActivity(
-            @RequestParam String areaCode,
-            @RequestParam String activity,
-            @RequestParam(required = false) String sigunguCode) {
-
-        log.info("지역+활동 조합 코스 조회 요청 - 지역: {}, 활동: {}, 시군구: {}", areaCode, activity, sigunguCode);
-
-        Map<String, Object> result = tourFilterService.getCoursesByActivity(areaCode, activity, sigunguCode);
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * 검색 통계 정보
-     */
-    @GetMapping("/statistics")
-    public ResponseEntity<Map<String, Object>> getStatistics() {
-        log.info("검색 통계 정보 조회 요청");
-        Map<String, Object> result = tourFilterService.getSearchStatistics();
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * 인기 검색어
-     */
-    @GetMapping("/popular-keywords")
-    public ResponseEntity<Map<String, Object>> getPopularKeywords() {
-        log.info("인기 검색어 조회 요청");
-
-        Map<String, Object> keywords = new HashMap<>();
-        keywords.put("regions", new String[] { "제주도", "부산", "서울", "경주", "강릉" });
-        keywords.put("themes", new String[] { "자연", "문화/역사", "체험" }); // 메인 3개 반영
-        keywords.put("activities", new String[] { "문화체험", "자연감상", "액티비티", "사진촬영", "휴식" });
-        keywords.put("places", new String[] { "해변", "산", "도시", "온천지역", "섬지역" });
-
-        return ResponseEntity.ok(Map.of("success", true, "data", keywords));
-    }
-
-    /**
-     * API 상태 확인 (헬스체크) - 버전 업데이트
+     * ✅ API 상태 확인 (헬스체크)
      */
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> healthCheck() {
@@ -461,10 +350,18 @@ public class TourFilterController {
                     "timestamp", System.currentTimeMillis(),
                     "api", isHealthy ? "정상" : "오류",
                     "database", "정상",
-                    "version", "v2.3-7groups", // 버전 업데이트
-                    "structure", "7그룹 장소 시스템 + 올바른 계층 구조",
-                    "features", "3개 테마 + 7개 활동 + 7그룹 장소",
-                    "placeGroups", "자연관광지,역사관광지,휴양관광지,체험관광지,문화시설,육상레포츠,수상레포츠");
+                    "version", "v2.3-enhanced",
+                    "features", Map.of(
+                        "논리적조합최적화", true,
+                        "선택수확대", "테마4+활동5+장소6",
+                        "계층구조검증", true,
+                        "성능최적화", true
+                    ),
+                    "maxSelections", Map.of(
+                        "themes", 4,
+                        "activities", 5, 
+                        "places", 6
+                    ));
 
             return ResponseEntity.ok(Map.of("success", true, "data", health));
 
@@ -475,7 +372,7 @@ public class TourFilterController {
                     "status", "DOWN",
                     "timestamp", System.currentTimeMillis(),
                     "error", e.getMessage(),
-                    "version", "v2.3-7groups");
+                    "version", "v2.3-enhanced");
 
             return ResponseEntity.ok(Map.of("success", false, "data", health));
         }
