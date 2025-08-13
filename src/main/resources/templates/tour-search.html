@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>여기부터 - 투어 검색 v2.1</title>
+    <title>여기부터 - 투어 검색 v2.3 Enhanced</title>
     <!-- CSS 파일들 -->
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/tour-search.css" />
@@ -30,25 +30,26 @@
       <!-- Page Header -->
       <div class="page-header">
         <h1 class="page-title">
-          🎯 어떤 여행을 떠나볼까요? <span class="version-badge">v2.1</span>
+          🎯 어떤 여행을 떠나볼까요? 
+          <span class="version-badge">v2.3 Enhanced</span>
         </h1>
         <p class="page-subtitle">
-          ✨ <strong>v2.1 개선됨!</strong> 5개 질문 구조로 더 간단해졌습니다.
-          <span style="color: #4caf50; font-weight: 600">회색 박스</span>는
-          회원님의 관심사,
-          <span style="color: #2196f3; font-weight: 600">파란 박스</span>는 직접
-          변경하신 값입니다! <br /><small
-            >🎯 지역 1개 + 테마/활동/장소 각각 최대 3개까지 선택 가능</small
-          >
+          🚀 <strong>선택 수 확대!</strong> 논리적 조합만 검색하여 더 정확한 결과!
+          <br>
+          <span style="color: #4caf50; font-weight: 600">테마 4개</span> + 
+          <span style="color: #2196f3; font-weight: 600">활동 5개</span> + 
+          <span style="color: #ff9800; font-weight: 600">장소 6개</span>까지 선택 가능! 
+          <br>
+          <small>🎯 더 많이 선택할수록 더 풍부한 결과를 얻을 수 있어요!</small>
         </p>
       </div>
 
       <!-- Search Filters -->
       <div class="search-filters">
         <div class="filter-row">
-          <!-- 지역 선택기 - 가로 배치로 변경 -->
+          <!-- 지역 선택기 -->
           <div class="filter-group">
-            <label>여행지역</label>
+            <label>여행지역 <small class="required">*</small></label>
             <div class="region-selector-container">
               <select class="filter-select" id="regionFilter">
                 <option value="">여행지역</option>
@@ -63,9 +64,9 @@
             </div>
           </div>
 
-          <!-- 선호테마 다중선택 드롭다운 -->
+          <!-- 선호테마 (4개로 확대) -->
           <div class="filter-group">
-            <label>선호테마</label>
+            <label>선호테마 <span class="selection-count">최대 4개</span></label>
             <div class="custom-dropdown-container" id="themeFilterContainer">
               <div class="dropdown-trigger" data-target="themeOptions">
                 <span class="dropdown-label">선호테마</span>
@@ -77,9 +78,9 @@
             </div>
           </div>
 
-          <!-- 선호활동 다중선택 드롭다운 -->
+          <!-- 선호활동 (5개로 확대) -->
           <div class="filter-group">
-            <label>선호활동</label>
+            <label>선호활동 <span class="selection-count">최대 5개</span></label>
             <div class="custom-dropdown-container" id="activityFilterContainer">
               <div class="dropdown-trigger" data-target="activityOptions">
                 <span class="dropdown-label">선호활동</span>
@@ -91,21 +92,21 @@
             </div>
           </div>
 
-          <!-- 장소 다중선택 드롭다운 -->
+          <!-- 장소 (6개로 확대) -->
           <div class="filter-group">
-            <label>장소</label>
+            <label>장소 <span class="selection-count">최대 6개</span> <small class="group-info">(7그룹)</small></label>
             <div class="custom-dropdown-container" id="placeFilterContainer">
               <div class="dropdown-trigger" data-target="placeOptions">
                 <span class="dropdown-label">장소</span>
                 <span class="dropdown-arrow">▼</span>
               </div>
-              <div class="dropdown-options" id="placeOptions">
-                <!-- JavaScript에서 동적 생성 -->
+              <div class="dropdown-options grouped-options" id="placeOptions">
+                <!-- JavaScript에서 7그룹 동적 생성 -->
               </div>
             </div>
           </div>
 
-          <!-- 편의시설 단일선택 -->
+          <!-- 편의시설 -->
           <div class="filter-group">
             <label>편의시설</label>
             <select class="filter-select" id="needsFilter">
@@ -126,8 +127,11 @@
             </select>
           </div>
 
+          <!-- 검색 버튼 -->
           <div class="filter-group">
-            <button id="doSearchBtn" class="btn-primary">🔍 검색하기</button>
+            <button id="doSearchBtn" class="btn-primary">
+              🔍 검색하기
+            </button>
             <button id="clearFiltersBtn" class="btn-secondary">
               🔄 초기화
             </button>
@@ -136,11 +140,14 @@
 
         <!-- Interest Tags -->
         <div class="interest-tags" id="interestTags">
-          <div
-            class="text-center"
-            style="color: #666; font-size: 14px; font-style: italic"
-          >
-            v2.1 개선: 로그인 후 설정된 관심사가 여기에 표시됩니다
+          <div class="text-center">
+            <div class="placeholder-icon">🎯</div>
+            <h3>선택 수가 확대되었어요!</h3>
+            <p>
+              <strong>테마 4개 + 활동 5개 + 장소 6개</strong>까지 선택 가능
+              <br>
+              <small>논리적 조합만 검색되어 더 정확한 결과를 제공합니다</small>
+            </p>
           </div>
         </div>
       </div>
@@ -148,22 +155,37 @@
       <!-- Recommended Tours Section -->
       <div class="tours-section">
         <div class="section-header">
-          <h2 class="section-title">📌 회원님을 위한 맞춤 투어</h2>
-          <div class="section-subtitle">관심사 기반 추천 콘텐츠 (v2.1)</div>
+          <h2 class="section-title">
+            📌 회원님을 위한 맞춤 투어
+          </h2>
+          <div class="section-subtitle">
+            논리적 조합 최적화 + 선택 수 확대로 더 정확하고 풍부한 결과 (v2.3)
+          </div>
         </div>
         <div class="tour-list" id="recommendedTours">
           <div class="recommendation-placeholder">
-            <div class="placeholder-icon">🎯</div>
-            <h3>v2.1 맞춤 추천을 준비 중입니다</h3>
-            <p>검색 조건을 설정하고 검색버튼을 눌러주세요!</p>
-            <div class="improvement-note">
-              <small>🎨 메인 3개 카테고리 기반 균형잡힌 추천</small>
+            <div class="placeholder-icon">🔍</div>
+            <h3>v2.3 Enhanced 검색을 시작해보세요!</h3>
+            <p>확대된 선택 옵션으로 더 정확한 맞춤 투어를 찾아보세요.<br>
+               필터를 설정한 후 <strong>🔍 검색하기</strong> 버튼을 눌러주세요!</p>
+            <div class="search-hint">
+              <div class="hint-item">
+                <span class="hint-number">1</span>
+                <span class="hint-text">지역 1개 선택 (17개 광역시도)</span>
+              </div>
+              <div class="hint-item">
+                <span class="hint-number">2</span>
+                <span class="hint-text">테마 최대 4개, 활동 최대 5개, 장소 최대 6개 선택</span>
+              </div>
+              <div class="hint-item">
+                <span class="hint-number">3</span>
+                <span class="hint-text">🔍 검색하기 버튼으로 논리적 조합만 검색</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- 추천 코스 섹션 -->
+       <!-- 추천 코스 섹션 -->
       <div class="tours-section">
         <div class="section-header">
           <h2 class="section-title">🔍 이런 코스는 어떠세요?</h2>
@@ -208,7 +230,7 @@
           <div class="no-results-icon">😅</div>
           <h3>추천 코스가 없습니다</h3>
           <p>
-            다른 지역이나 테마/활동을 선택해보시거나 메인 3개 카테고리를
+            다른 지역이나 테마/활동을 선택해보시거나 7그룹 장소에서 다른 옵션을
             확인해주세요
           </p>
           <div class="main-category-suggestions">
@@ -247,11 +269,63 @@
         <button class="pagination-btn next" id="nextBtn">&gt;</button>
       </div>
     </div>
+      <!-- 논리적 조합 안내 -->
+      <div class="tours-section">
+        <div class="section-header">
+          <h2 class="section-title">💡 논리적 조합 예시</h2>
+          <div class="section-subtitle">
+            이런 조합들이 올바른 검색 결과를 제공합니다
+          </div>
+        </div>
+        
+        <div class="logical-combination-guide">
+          <div class="combination-examples">
+            <div class="example-item valid">
+              <span class="example-icon">✅</span>
+              <div class="example-text">
+                <strong>자연 + 자연감상 + 해변</strong>
+                <small>완벽한 논리적 조합</small>
+              </div>
+            </div>
+            <div class="example-item valid">
+              <span class="example-icon">✅</span>
+              <div class="example-text">
+                <strong>문화/역사 + 역사탐방 + 사찰</strong>
+                <small>완벽한 논리적 조합</small>
+              </div>
+            </div>
+            <div class="example-item valid">
+              <span class="example-icon">✅</span>
+              <div class="example-text">
+                <strong>레포츠 + 육상레포츠 + 골프장</strong>
+                <small>완벽한 논리적 조합</small>
+              </div>
+            </div>
+            <div class="example-item invalid">
+              <span class="example-icon">❌</span>
+              <div class="example-text">
+                <strong>문화/역사 + 역사탐방 + 해변</strong>
+                <small>논리적으로 맞지 않는 조합 (검색 안됨)</small>
+              </div>
+            </div>
+          </div>
+          
+          <div class="combination-tip">
+            <h4>💡 검색 팁</h4>
+            <ul>
+              <li><strong>테마, 활동, 장소</strong>가 서로 연관되도록 선택하세요</li>
+              <li><strong>자연</strong> 테마라면 <strong>자연감상</strong> 활동과 <strong>해변/산</strong> 장소를 선택</li>
+              <li><strong>문화/역사</strong> 테마라면 <strong>역사탐방</strong> 활동과 <strong>사찰/고궁</strong> 장소를 선택</li>
+              <li>논리적으로 맞지 않는 조합은 자동으로 제외되어 더 정확한 결과를 제공합니다</li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
     <!-- Footer -->
     <div th:replace="~{footer :: footer}"></div>
 
-    <!-- 모달 - 상세 정보 -->
+    <!-- Modal -->
     <div class="modal-overlay" id="tourDetailModal" style="display: none">
       <div class="modal-content">
         <div class="modal-header">
@@ -262,7 +336,9 @@
         </div>
         <div class="modal-body" id="modalBody"></div>
         <div class="modal-footer">
-          <small>🎯 v2.1: 메인 3개 카테고리 기반 투어 정보</small>
+          <small>
+            🚀 v2.3 Enhanced: 논리적 조합 + 선택 확대로 더 정확한 투어 정보
+          </small>
         </div>
       </div>
     </div>
@@ -270,5 +346,13 @@
     <!-- JavaScript 파일들 -->
     <script src="/js/tour-utils.js"></script>
     <script src="/js/tour-search.js"></script>
+    
+    <!-- 간단한 초기화 스크립트 -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Tour Search v2.3 Enhanced 로드 완료');
+        console.log('✨ 핵심 기능: 논리적 조합 최적화 + 선택 수 확대');
+      });
+    </script>
   </body>
 </html>
