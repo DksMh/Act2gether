@@ -47,6 +47,8 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                         if(count >= MAX_FAIL_COUNT){
                             log.error("5번 로그인 실패로 계정이 잠깁니다. 관리자에게 문의하세요.");
                             userEntity.setStatus("Lock");
+                            response.sendRedirect("/login?locked=true"); // ★ 잠김 전용
+                            return;
                         }
                         int nextCount = count + 1;
                         loginAttemptsEntity.setLoginFail(nextCount);

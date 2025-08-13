@@ -116,4 +116,9 @@ public class PageController {
     public String tourSearchPage() {
         return "tour-search";
     }
+
+     @GetMapping("/mypage")
+    public String myPage() {
+        return "mypage";
+    }
 }

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>여행 추천 플랫폼</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/mypage.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap"
+      rel="stylesheet"
+    />
+    <script src="/js/mypage.js"></script>
+  </head>
+  <body>
+    <!-- Header -->
+    <div th:replace="header :: header"></div>
+
+    <main class="container">
+
+    <span id="emailSpan" th:text="${email}" style="display:none">없음</span>
+    <!-- 상단 프로필 -->
+    <div class="profile">
+      <div class="avatar"></div>
+      <div class="user-meta">
+        <h1><span id="nickname"></span>님</h1>
+        <div class="sub">
+        <span id="ageGroup"></span> | 
+        <span id="gender"></span> | 
+        <span id="location"></span> 거주
+        </div>
+      </div>
+      <div style="margin-left:auto" class="row">
+        <span class="chip">선호 투어 정보 수정</span>
+        <button class="btn-sm">설정</button>
+      </div>
+    </div>
+
+    <!-- 선호하는 여행 -->
+    <section>
+        <h2 class="section-title">선호하는 여행</h2>
+
+        <div style="margin:10px 0 6px; color:var(--muted); font-weight:600; font-size:13px">선호 지역</div>
+        <div class="subtabs" id="prefRegions"></div>
+
+        <div style="margin:10px 0 6px; color:var(--muted); font-weight:600; font-size:13px">선호 여행지</div>
+        <div class="subtabs" id="prefPlaces"></div>
+
+        <div style="margin:10px 0 6px; color:var(--muted); font-weight:600; font-size:13px">선호 시설</div>
+        <div class="subtabs" id="prefFacilities"></div>
+
+        <div style="margin:10px 0 6px; color:var(--muted); font-weight:600; font-size:13px">선호 테마</div>
+        <div class="subtabs" id="prefThemes"></div>
+    </section>
+
+    <!-- 현재 가입된 모임 -->
+    <section>
+      <div class="row" style="justify-content:space-between; align-items:baseline">
+        <h2 class="section-title">현재 가입된 모임</h2>
+        <div class="row" style="gap:8px">
+          <span class="pill">여행 전 모임</span>
+          <span class="pill">종료된 모임</span>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <article class="card">
+          <div class="thumb"></div>
+          <div class="card-body">
+            <h3 class="card-title">강원도 동해로 새벽 새찰하러 가요 서울 출발 당일</h3>
+            <div class="meta">
+              <span>여행 일정 00.00~00.00</span>
+              <span>출발 지역 서울</span>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="thumb"></div>
+          <div class="card-body">
+            <h3 class="card-title">중년 여성끼리 소박하게 국내 여행 가요</h3>
+            <div class="meta">
+              <span>여행 일정 00.00~00.00</span>
+              <span>출발 지역 서울</span>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="thumb"></div>
+          <div class="card-body">
+            <h3 class="card-title">모임명</h3>
+            <div class="meta">
+              <span>여행 일정 00.00~00.00</span>
+              <span>출발 지역 서울</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <button class="see-all">전체 보기</button>
+    </section>
+
+    <!-- 찜 목록 -->
+    <section>
+      <h2 class="section-title">찜목록</h2>
+      <div class="grid-like">
+        <article class="card">
+          <div class="thumb"></div>
+          <div class="card-body">
+            <h3 class="card-title">[관광 상품] 오로라와 맛의 신세계</h3>
+            <div class="rev-text">짧은 설명이 들어갑니다. 여행지/상품 안내 등</div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="thumb"></div>
+          <div class="card-body">
+            <h3 class="card-title">[관광 상품] 휴가의 정석</h3>
+            <div class="rev-text">짧은 설명이 들어갑니다. 여행지/상품 안내 등</div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="thumb"></div>
+          <div class="card-body">
+            <h3 class="card-title">[관광 상품] 오로라와 맛의 신세계</h3>
+            <div class="rev-text">짧은 설명이 들어갑니다. 여행지/상품 안내 등</div>
+          </div>
+        </article>
+      </div>
+      <button class="see-all">전체 보기</button>
+    </section>
+
+    <!-- 나의 리뷰 -->
+    <section class="reviews">
+      <h2 class="section-title">나의 리뷰</h2>
+
+      <div class="review">
+        <div class="stars">★★★★★ <span class="date">2025.05.06</span></div>
+        <div class="rev-title">평점이 1만점이라면? 2만점!</div>
+        <div class="rev-text">[관광 상품] 팀라보 전시.</div>
+      </div>
+
+      <div class="review">
+        <div class="stars">★★★★★ <span class="date">2025.03.05</span></div>
+        <div class="rev-title">맛집 대탐험</div>
+        <div class="rev-text">[관광 상품] 행복여행 단체 투어</div>
+      </div>
+
+      <div class="review">
+        <div class="stars">★★★★★ <span class="date">2025.02.05</span></div>
+        <div class="rev-title">최고의 힐링</div>
+        <div class="rev-text">[관광 상품] 오로라 투어</div>
+      </div>
+
+      <button class="see-all">전체 보기</button>
+    </section>
+
+  </main>
+
+    <!-- Footer -->
+     <div th:replace="footer :: footer"></div>
+  </body>
+</html>

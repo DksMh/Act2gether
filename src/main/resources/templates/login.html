@@ -25,6 +25,11 @@
                 <p>서비스 이용을 위해 로그인해주세요</p>
             </div>
 
+            <!-- 로그인 5번 이상 표시 영역 -->
+            <div class="error-message" id="errorMessage" th:if="${param.locked}">
+                <p th:if="${param.locked}">로그인 시도 횟수가 5회를 초과하여 계정이 잠겼습니다.<br>
+                    비밀번호 찾기를 통해 새 비밀번호를 설정한 후 다시 로그인해 주세요.</p>
+            </div>
             <!-- 에러 메시지 표시 영역 -->
             <div class="error-message" id="errorMessage" th:if="${param.error}">
                 <p th:if="${param.error}">아이디 또는 비밀번호가 올바르지 않습니다.</p>
