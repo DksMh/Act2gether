@@ -16,8 +16,8 @@ public class CustomerSupportDTO {
     private String inquiry_type;
     private String status;
     private Boolean isPrivate;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String createdAt;
+    private String updatedAt;
     // private String image_path;
     // private Integer view_count;
 

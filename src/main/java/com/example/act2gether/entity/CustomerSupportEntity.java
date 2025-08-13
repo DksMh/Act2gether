@@ -1,6 +1,7 @@
 package com.example.act2gether.entity;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -62,10 +63,10 @@ public class CustomerSupportEntity {
     private Boolean isPrivate;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private String updatedAt;
 
     // 🎯 기존 image_path 필드 그대로 (JSON 배열도 저장 가능)
     private String image_path;
@@ -157,8 +158,8 @@ public class CustomerSupportEntity {
                 .inquiry_type(dto.getInquiry_type())
                 .status("답변 대기")
                 .isPrivate(dto.getIsPrivate() != null ? dto.getIsPrivate() : true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .updatedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .image_path(dto.getImage_path()) // 🎯 기존 방식 유지
                 .view_count(0)
                 .build();
@@ -172,7 +173,7 @@ public class CustomerSupportEntity {
             this.inquiry_type = dto.getInquiry_type();
             this.isPrivate = dto.getIsPrivate();
             // this.image_path = dto.getImage_path(); // 🎯 기존 방식 유지
-            this.updatedAt = LocalDateTime.now();
+            this.updatedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             System.out.println("🎯 updateFromDTO 완료"); // 🎯 추가!
         } catch (Exception e) {
             System.err.println("🚨 updateFromDTO 오류: " + e.getMessage()); // 🎯 추가!
@@ -184,7 +185,7 @@ public class CustomerSupportEntity {
         this.responder = responder;
         this.response = response;
         this.status = "답변 완료";
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
     public void incrementViewCount() {
