@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>여기부터 - 투어 검색 v2.3 Enhanced</title>
+    <title>여기부터 - 투어 검색 v2.4 무장애여행 통합</title>
     <!-- CSS 파일들 -->
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/tour-search.css" />
@@ -31,16 +31,16 @@
       <div class="page-header">
         <h1 class="page-title">
           🎯 어떤 여행을 떠나볼까요? 
-          <span class="version-badge">v2.3 Enhanced</span>
+          <span class="version-badge">v2.4 무장애여행 통합</span>
         </h1>
         <p class="page-subtitle">
-          🚀 <strong>선택 수 확대!</strong> 논리적 조합만 검색하여 더 정확한 결과!
+          🚀 <strong>무장애여행 통합!</strong> 편의시설 정보로 더 안전한 여행!
           <br>
           <span style="color: #4caf50; font-weight: 600">테마 4개</span> + 
           <span style="color: #2196f3; font-weight: 600">활동 5개</span> + 
           <span style="color: #ff9800; font-weight: 600">장소 6개</span>까지 선택 가능! 
           <br>
-          <small>🎯 더 많이 선택할수록 더 풍부한 결과를 얻을 수 있어요!</small>
+          <small>♿ 액티브 시니어를 위한 편의시설 정보와 접근성 점수 제공!</small>
         </p>
       </div>
 
@@ -106,12 +106,13 @@
             </div>
           </div>
 
-          <!-- 편의시설 -->
+          <!-- 🆕 v2.4: 편의시설 필터 -->
           <div class="filter-group">
-            <label>편의시설</label>
+            <label>편의시설 <span class="accessibility-new">🆕</span></label>
             <select class="filter-select" id="needsFilter">
               <option value="">편의시설</option>
             </select>
+            <small class="filter-help">액티브 시니어 맞춤 편의시설</small>
           </div>
 
           <!-- 방문지 수 -->
@@ -142,11 +143,11 @@
         <div class="interest-tags" id="interestTags">
           <div class="text-center">
             <div class="placeholder-icon">🎯</div>
-            <h3>선택 수가 확대되었어요!</h3>
+            <h3>v2.4 무장애여행 통합으로 더욱 안전해졌어요!</h3>
             <p>
               <strong>테마 4개 + 활동 5개 + 장소 6개</strong>까지 선택 가능
               <br>
-              <small>논리적 조합만 검색되어 더 정확한 결과를 제공합니다</small>
+              <small>♿ 편의시설 정보로 액티브 시니어에게 최적화된 검색 결과를 제공합니다</small>
             </p>
           </div>
         </div>
@@ -156,17 +157,17 @@
       <div class="tours-section">
         <div class="section-header">
           <h2 class="section-title">
-            📌 회원님을 위한 맞춤 투어
+            🎯 회원님을 위한 맞춤 투어
           </h2>
           <div class="section-subtitle">
-            논리적 조합 최적화 + 선택 수 확대로 더 정확하고 풍부한 결과 (v2.3)
+            무장애여행 통합 + 접근성 점수 + 편의시설 필터로 더 안전한 여행 (v2.4)
           </div>
         </div>
         <div class="tour-list" id="recommendedTours">
           <div class="recommendation-placeholder">
             <div class="placeholder-icon">🔍</div>
-            <h3>v2.3 Enhanced 검색을 시작해보세요!</h3>
-            <p>확대된 선택 옵션으로 더 정확한 맞춤 투어를 찾아보세요.<br>
+            <h3>v2.4 무장애여행 검색을 시작해보세요!</h3>
+            <p>편의시설 정보로 더 안전하고 접근성 좋은 관광지를 찾아보세요.<br>
                필터를 설정한 후 <strong>🔍 검색하기</strong> 버튼을 눌러주세요!</p>
             <div class="search-hint">
               <div class="hint-item">
@@ -179,12 +180,63 @@
               </div>
               <div class="hint-item">
                 <span class="hint-number">3</span>
+                <span class="hint-text">🆕 편의시설 필터로 안전한 관광지 검색</span>
+              </div>
+              <div class="hint-item">
+                <span class="hint-number">4</span>
                 <span class="hint-text">🔍 검색하기 버튼으로 논리적 조합만 검색</span>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- 🆕 v2.4: 편의시설 안내 섹션 -->
+      <div class="tours-section">
+        <div class="section-header">
+          <h2 class="section-title">♿ 편의시설 정보 안내</h2>
+          <div class="section-subtitle">
+            액티브 시니어를 위한 무장애여행 정보를 제공합니다
+          </div>
+        </div>
+        
+        <div class="accessibility-guide">
+          <div class="accessibility-categories">
+            <div class="category-item">
+              <span class="category-icon">🅿️</span>
+              <div class="category-text">
+                <strong>주차 편의</strong>
+                <small>장애인 주차장, 대중교통 접근성</small>
+              </div>
+            </div>
+            <div class="category-item">
+              <span class="category-icon">🛤️</span>
+              <div class="category-text">
+                <strong>접근 편의</strong>
+                <small>경사로, 출입통로 접근성</small>
+              </div>
+            </div>
+            <div class="category-item">
+              <span class="category-icon">🚻</span>
+              <div class="category-text">
+                <strong>시설 편의</strong>
+                <small>장애인 화장실, 엘리베이터</small>
+              </div>
+            </div>
+          </div>
+          
+          <div class="accessibility-scoring">
+            <h4>🏆 접근성 점수 시스템</h4>
+            <div class="score-badges">
+              <span class="score-badge high">70점 이상: 우수</span>
+              <span class="score-badge medium">40-69점: 보통</span>
+              <span class="score-badge low">39점 이하: 기본</span>
+            </div>
+            <small>편의시설 정보의 질과 양을 바탕으로 점수를 계산합니다</small>
+          </div>
+        </div>
+      </div>
+
        <!-- 추천 코스 섹션 -->
       <div class="tours-section">
         <div class="section-header">
@@ -224,42 +276,6 @@
             </div>
           </div>
         </div>
-
-        <!-- No Results Message -->
-        <div class="no-results" id="noCourses" style="display: none">
-          <div class="no-results-icon">😅</div>
-          <h3>추천 코스가 없습니다</h3>
-          <p>
-            다른 지역이나 테마/활동을 선택해보시거나 7그룹 장소에서 다른 옵션을
-            확인해주세요
-          </p>
-          <div class="main-category-suggestions">
-            <button
-              class="suggestion-btn"
-              onclick="tourSearchManager.applyQuickFilter('nature')"
-            >
-              🌿 자연 코스
-            </button>
-            <button
-              class="suggestion-btn"
-              onclick="tourSearchManager.applyQuickFilter('culture')"
-            >
-              🏛️ 문화 코스
-            </button>
-            <button
-              class="suggestion-btn"
-              onclick="tourSearchManager.applyQuickFilter('activity')"
-            >
-              🏃‍♂️ 레포츠 코스
-            </button>
-          </div>
-          <button
-            class="retry-search-btn"
-            onclick="tourSearchManager.clearFilters()"
-          >
-            필터 초기화하고 다시 검색
-          </button>
-        </div>
       </div>
 
       <!-- Pagination -->
@@ -269,58 +285,6 @@
         <button class="pagination-btn next" id="nextBtn">&gt;</button>
       </div>
     </div>
-      <!-- 논리적 조합 안내 -->
-      <div class="tours-section">
-        <div class="section-header">
-          <h2 class="section-title">💡 논리적 조합 예시</h2>
-          <div class="section-subtitle">
-            이런 조합들이 올바른 검색 결과를 제공합니다
-          </div>
-        </div>
-        
-        <div class="logical-combination-guide">
-          <div class="combination-examples">
-            <div class="example-item valid">
-              <span class="example-icon">✅</span>
-              <div class="example-text">
-                <strong>자연 + 자연감상 + 해변</strong>
-                <small>완벽한 논리적 조합</small>
-              </div>
-            </div>
-            <div class="example-item valid">
-              <span class="example-icon">✅</span>
-              <div class="example-text">
-                <strong>문화/역사 + 역사탐방 + 사찰</strong>
-                <small>완벽한 논리적 조합</small>
-              </div>
-            </div>
-            <div class="example-item valid">
-              <span class="example-icon">✅</span>
-              <div class="example-text">
-                <strong>레포츠 + 육상레포츠 + 골프장</strong>
-                <small>완벽한 논리적 조합</small>
-              </div>
-            </div>
-            <div class="example-item invalid">
-              <span class="example-icon">❌</span>
-              <div class="example-text">
-                <strong>문화/역사 + 역사탐방 + 해변</strong>
-                <small>논리적으로 맞지 않는 조합 (검색 안됨)</small>
-              </div>
-            </div>
-          </div>
-          
-          <div class="combination-tip">
-            <h4>💡 검색 팁</h4>
-            <ul>
-              <li><strong>테마, 활동, 장소</strong>가 서로 연관되도록 선택하세요</li>
-              <li><strong>자연</strong> 테마라면 <strong>자연감상</strong> 활동과 <strong>해변/산</strong> 장소를 선택</li>
-              <li><strong>문화/역사</strong> 테마라면 <strong>역사탐방</strong> 활동과 <strong>사찰/고궁</strong> 장소를 선택</li>
-              <li>논리적으로 맞지 않는 조합은 자동으로 제외되어 더 정확한 결과를 제공합니다</li>
-            </ul>
-          </div>
-        </div>
-      </div>
 
     <!-- Footer -->
     <div th:replace="~{footer :: footer}"></div>
@@ -337,7 +301,7 @@
         <div class="modal-body" id="modalBody"></div>
         <div class="modal-footer">
           <small>
-            🚀 v2.3 Enhanced: 논리적 조합 + 선택 확대로 더 정확한 투어 정보
+            🚀 v2.4 무장애여행 통합: 편의시설 정보로 더 안전한 투어 정보
           </small>
         </div>
       </div>
@@ -350,8 +314,8 @@
     <!-- 간단한 초기화 스크립트 -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        console.log('🚀 Tour Search v2.3 Enhanced 로드 완료');
-        console.log('✨ 핵심 기능: 논리적 조합 최적화 + 선택 수 확대');
+        console.log('🚀 Tour Search v2.4 무장애여행 통합 로드 완료');
+        console.log('✨ 핵심 기능: 편의시설 필터 + 접근성 점수 + 액티브 시니어 맞춤');
       });
     </script>
   </body>

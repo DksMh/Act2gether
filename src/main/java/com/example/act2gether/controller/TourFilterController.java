@@ -53,16 +53,20 @@ public class TourFilterController {
 
         Map<String, Object> options = tourFilterService.getFilterOptions();
 
-        // v2.3 Enhanced 정보 추가
-        options.put("version", "v2.3-enhanced");
-        options.put("maxSelections", Map.of(
-            "themes", 4,      // 3→4
-            "activities", 5,  // 3→5  
-            "places", 6       // 3→6
-        ));
-        options.put("features", "논리적 조합 최적화 + 선택 수 확대");
+        // v2.4 무장애여행 정보 추가
+        options.put("version", "v2.4");
+        Map<String, Integer> maxSelections = new HashMap<>();
+        maxSelections.put("themes", 4);      // 3→4
+        maxSelections.put("activities", 5);  // 3→5  
+        maxSelections.put("places", 6);      // 3→6
+        options.put("maxSelections", maxSelections);
+        options.put("features", "무장애여행 통합 + 논리적 조합 최적화 + 선택 수 확대");
 
-        return ResponseEntity.ok(Map.of("success", true, "data", options));
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("data", options);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -122,7 +126,7 @@ public class TourFilterController {
     }
 
     /**
-     * ✅ 관광지 검색 - 논리적 조합 최적화
+     * ✅ 관광지 검색 - 논리적 조합 최적화 - v2.4 무장애여행 통합
      */
     @GetMapping("/search")
     public ResponseEntity<Map<String, Object>> searchTours(@RequestParam Map<String, String> params) {
@@ -132,21 +136,27 @@ public class TourFilterController {
         Map<String, String> normalizedParams = validateAndNormalizeSearchParams(params);
         log.info("정규화된 파라미터: {}", normalizedParams);
 
-        // v2.3 Enhanced 검색 (논리적 조합 최적화)
+         // v2.4 무장애여행 통합 검색
         Map<String, Object> result = tourFilterService.searchTours(normalizedParams);
         
-        // 검색 결과에 v2.3 정보 추가
-        if ((Boolean) result.get("success")) {
-            result.put("version", "v2.3-enhanced");
-            result.put("optimized", true);
-            result.put("logicalCombinations", true);
+        // 🔧 수정: 불변 Map 문제 해결 - 새로운 HashMap으로 복사
+        Map<String, Object> response = new HashMap<>();
+        if (result != null) {
+            response.putAll(result);  // 기존 결과 복사
+        }
+        
+        // 검색 결과에 v2.4 정보 추가
+        if ((Boolean) response.getOrDefault("success", false)) {
+            response.put("version", "v2.4");
+            response.put("optimized", true);
+            response.put("barrierFreeIntegration", true);
         }
 
         log.info("검색 결과 - 성공: {}, 개수: {}", 
-                result.get("success"), 
-                result.containsKey("data") ? "포함" : "없음");
+                response.get("success"), 
+                response.containsKey("data") ? "포함" : "없음");
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -309,13 +319,19 @@ public class TourFilterController {
 
         Map<String, Object> result = tourFilterService.getRecommendedTours(userInterests, numOfRows);
         
-        // v2.3 정보 추가
-        if ((Boolean) result.get("success")) {
-            result.put("version", "v2.3-enhanced");
-            result.put("optimized", true);
+        // 🔧 수정: 불변 Map 문제 해결
+        Map<String, Object> response = new HashMap<>();
+        if (result != null) {
+            response.putAll(result);
         }
         
-        return ResponseEntity.ok(result);
+        // v2.4 정보 추가
+        if ((Boolean) response.getOrDefault("success", false)) {
+            response.put("version", "v2.4");
+            response.put("optimized", true);
+        }
+        
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -345,36 +361,46 @@ public class TourFilterController {
             Map<String, Object> areaResult = tourFilterService.getAreaCodes();
             boolean isHealthy = (Boolean) areaResult.get("success");
 
-            Map<String, Object> health = Map.of(
-                    "status", isHealthy ? "UP" : "DOWN",
-                    "timestamp", System.currentTimeMillis(),
-                    "api", isHealthy ? "정상" : "오류",
-                    "database", "정상",
-                    "version", "v2.3-enhanced",
-                    "features", Map.of(
-                        "논리적조합최적화", true,
-                        "선택수확대", "테마4+활동5+장소6",
-                        "계층구조검증", true,
-                        "성능최적화", true
-                    ),
-                    "maxSelections", Map.of(
-                        "themes", 4,
-                        "activities", 5, 
-                        "places", 6
-                    ));
+            Map<String, Object> health = new HashMap<>();
+            health.put("status", isHealthy ? "UP" : "DOWN");
+            health.put("timestamp", System.currentTimeMillis());
+            health.put("api", isHealthy ? "정상" : "오류");
+            health.put("database", "정상");
+            health.put("version", "v2.4");
+            
+            Map<String, Object> features = new HashMap<>();
+            features.put("무장애여행통합", true);
+            features.put("선택수확대", "테마4+활동5+장소6");
+            features.put("논리적조합검증", true);
+            features.put("성능최적화", true);
+            health.put("features", features);
+            
+            Map<String, Integer> maxSelections = new HashMap<>();
+            maxSelections.put("themes", 4);
+            maxSelections.put("activities", 5);
+            maxSelections.put("places", 6);
+            health.put("maxSelections", maxSelections);
 
-            return ResponseEntity.ok(Map.of("success", true, "data", health));
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", health);
+
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             log.error("헬스체크 실패: {}", e.getMessage());
 
-            Map<String, Object> health = Map.of(
-                    "status", "DOWN",
-                    "timestamp", System.currentTimeMillis(),
-                    "error", e.getMessage(),
-                    "version", "v2.3-enhanced");
+            Map<String, Object> health = new HashMap<>();
+            health.put("status", "DOWN");
+            health.put("timestamp", System.currentTimeMillis());
+            health.put("error", e.getMessage());
+            health.put("version", "v2.4");
 
-            return ResponseEntity.ok(Map.of("success", false, "data", health));
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("data", health);
+
+            return ResponseEntity.ok(response);
         }
     }
 }
