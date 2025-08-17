@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>여기부터 - 커뮤니티</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/community.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="/js/community.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="header :: header"></div>
+
+    <section class="community-section">
+        <!-- 메인 컨테이너 -->
+        <div class="main-container">
+            <!-- 왼쪽 사이드바 -->
+            <aside class="sidebar">
+                <!-- 모임 정보 -->
+                <div class="group-info">
+                    <h2>모임 정보</h2>
+                    <div class="group-item">
+                        <span class="label">모임 이름</span>
+                        <span class="value">중년 여성끼리 소박하게 국내 여행 기로~</span>
+                    </div>
+                    <div class="group-item">
+                        <span class="label">멤버 현황</span>
+                        <span class="value">16명</span>
+                    </div>
+                    <div class="group-item">
+                        <span class="label">모임 장소</span>
+                        <span class="value">서울</span>
+                    </div>
+                    <div class="group-item">
+                        <span class="label">모임 일정</span>
+                        <span class="value">2024.11.30~2024.12.10 (10박11일)</span>
+                    </div>
+                    <div class="group-item">
+                        <span class="label">음성 채팅</span>
+                        <span class="value">사용</span>
+                    </div>
+                    <div class="group-item">
+                        <span class="label">모임 성별</span>
+                        <span class="value">여성만</span>
+                    </div>
+                    <div class="group-item">
+                        <span class="label">연령대</span>
+                        <span class="value">40~60대</span>
+                    </div>
+                    <div class="group-item">
+                        <span class="label">모임 분류</span>
+                        <span class="value">국내여행</span>
+                    </div>
+                    <div class="group-item description-item">
+                        <span class="label">모임 주제 설명</span>
+                        <div class="description">
+                            친근하고 자유로운 분위기로 30대 중반부터 60대 중후반까지의 다양한 연령대가 함께하는 모임입니다. 국내의 맛있는 음식들을 즐기고 서로 좋은 정보를 나누며 친목을 도모하는 것이 목표입니다.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 모임 멤버 -->
+                <div class="group-members">
+                    <div class="members-header">
+                        <h3>모임 멤버 (총 16명)</h3>
+                        <!-- 호스트만 보이는 멤버 관리 버튼 -->
+                        <button class="btn-member-manage" th:if="${isHost}" style="display: none;">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                    <div class="member-list">
+                        <div class="member-item" data-member-id="1" data-role="leader">
+                            <div class="member-avatar">👩</div>
+                            <div class="member-info">
+                                <span class="member-name">멤버닉네임1</span>
+                                <span class="member-status">리더, 여</span>
+                            </div>
+                        </div>
+                        <div class="member-item" data-member-id="2" data-role="member">
+                            <div class="member-avatar">👩</div>
+                            <div class="member-info">
+                                <span class="member-name">멤버닉네임2</span>
+                                <span class="member-status">멤버, 여</span>
+                            </div>
+                        </div>
+                        <div class="member-item" data-member-id="3" data-role="member">
+                            <div class="member-avatar">👩</div>
+                            <div class="member-info">
+                                <span class="member-name">멤버닉네임3</span>
+                                <span class="member-status">멤버, 여</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-more">전체 멤버 보기</button>
+                </div>
+            </aside>
+
+            <!-- 메인 콘텐츠 -->
+            <main class="main-content">
+                <!-- 게시글 작성 영역 -->
+                <div class="post-write-area">
+                    <div class="write-header">
+                        <span>16개의 글</span>
+                        <div class="sort-options">
+                            <button class="sort-btn active" data-sort="latest">최신순</button>
+                            <button class="sort-btn" data-sort="popular">인기순</button>
+                            <button class="sort-btn" data-sort="oldest">오래된순</button>
+                        </div>
+                    </div>
+                    <div class="write-box">
+                        <div class="write-profile">
+                            <div class="profile-avatar">👩</div>
+                            <span class="profile-name">현재로그인사람</span>
+                        </div>
+                        <div class="write-content">
+                            <textarea placeholder="이곳 국내여 정보공유 좋았다 추천이나 기타등등 국내여 모음의 다양한 이야기를 나눠주세요."></textarea>
+                            <div class="write-actions">
+                                <div class="write-options">
+                                    <button class="btn-option" title="이미지 첨부">📷</button>
+                                    <button class="btn-option" title="파일 첨부">📁</button>
+                                    <button class="btn-option" title="위치 태그">📍</button>
+                                </div>
+                                <button class="btn-post">게시</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 게시글 목록 -->
+                <div class="post-list">
+                    <!-- 게시글 1 -->
+                    <article class="post-item">
+                        <div class="post-header">
+                            <div class="post-profile">
+                                <div class="profile-avatar">👩</div>
+                                <div class="profile-info">
+                                    <span class="profile-name">현재로그인사람</span>
+                                    <span class="post-time">10분 전</span>
+                                </div>
+                            </div>
+                            <button class="btn-menu">⋯</button>
+                        </div>
+                        <div class="post-content">
+                            <p>오늘 국내여 산간지역 둘러봤는데 정말 가을 풍경이 일품이더라고요. 특히나 계곡이 아직도 시원해서 더위가 가시지 않던 몸도 시원하게 식힐 수 있어서 좋더라구요 오늘 좋은 곳 알게되어 제가 알고 있던 정보 수능 후 갈수 있는 정보들을 나눔 공유해볼게요~.</p>
+                            
+                            <div class="post-images">
+                                <div class="image-placeholder">📷</div>
+                                <div class="image-placeholder">📷</div>
+                                <div class="image-placeholder">📷</div>
+                            </div>
+                        </div>
+                        <div class="post-actions">
+                            <button class="action-btn like-btn">❤️ 좋아요 6개</button>
+                            <button class="action-btn comment-btn">💬 댓글 20개</button>
+                        </div>
+                        <div class="post-time-info">
+                            <span>시작하시며</span>
+                            <span>11월 11일 00시에 방화재정리돌기</span>
+                        </div>
+                    </article>
+
+                    <!-- 게시글 2 -->
+                    <article class="post-item">
+                        <div class="post-header">
+                            <div class="post-profile">
+                                <div class="profile-avatar">👩</div>
+                                <div class="profile-info">
+                                    <span class="profile-name">현재로그인사람</span>
+                                    <span class="post-time">10분 전</span>
+                                </div>
+                            </div>
+                            <button class="btn-menu">⋯</button>
+                        </div>
+                        <div class="post-content">
+                            <p>오늘 국내여 산간지역 둘러봤는데 정말 가을 풍경이 일품이더라고요. 특히나 계곡이 아직도 시원해서 더위가 가시지 않던 몸도 시원하게 식힐 수 있어서 좋더라구요 오늘 좋은 곳 알게되어 제가 알고 있던 정보 수능 후 갈수 있는 정보들을 나눔 공유해볼게요~.</p>
+                            
+                            <div class="post-images">
+                                <div class="image-placeholder">📷</div>
+                                <div class="image-placeholder">📷</div>
+                                <div class="image-placeholder">📷</div>
+                            </div>
+                        </div>
+                        <div class="post-actions">
+                            <button class="action-btn like-btn">❤️ 좋아요 6개</button>
+                            <button class="action-btn comment-btn">💬 댓글 20개</button>
+                        </div>
+                        <div class="post-time-info">
+                            <span>시작하시며</span>
+                            <span>11월 11일 00시에 방화재정리돌기</span>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <div class="pagination">
+                    <button class="page-btn prev" disabled>이전</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn next">다음</button>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <!-- 알림 토스트 -->
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <i id="toastIcon" class="toast-icon"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <!-- 확인 다이얼로그 -->
+    <div id="confirmDialog" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle">확인</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmCancel" class="btn btn-outline">취소</button>
+                <button id="confirmOk" class="btn btn-danger">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 멤버 목록 팝업 모달 -->
+    <div id="memberListModal" class="modal member-modal">
+        <div class="modal-content member-modal-content">
+            <div class="modal-header">
+                <h3>모임 멤버</h3>
+                <div class="modal-header-actions">
+                    <!-- 호스트만 보이는 관리 버튼 -->
+                    <button class="btn-member-admin" th:if="${isHost}" style="display: none;">
+                        <i class="fas fa-cog"></i>
+                        관리
+                    </button>
+                    <button class="modal-close">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="member-search">
+                    <input type="text" placeholder="멤버 검색..." class="search-input">
+                    <button class="search-btn">🔍</button>
+                </div>
+                
+                <div class="member-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">전체 멤버</span>
+                        <span class="stat-value" id="totalMembers">16명</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">온라인</span>
+                        <span class="stat-value online">8명</span>
+                    </div>
+                </div>
+                
+                <div class="member-list-full">
+                    <div class="member-section">
+                        <h4 class="section-title">리더</h4>
+                        <div class="member-grid">
+                            <div class="member-card" data-member-id="1" data-role="leader">
+                                <div class="member-avatar-large">👩</div>
+                                <div class="member-card-info">
+                                    <span class="member-name">멤버닉네임1</span>
+                                    <span class="member-meta">리더 • 여성</span>
+                                    <span class="member-online online">온라인</span>
+                                </div>
+                                <button class="member-card-menu" th:if="${isHost}" style="display: none;">⋯</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="member-section">
+                        <h4 class="section-title">멤버 (15명)</h4>
+                        <div class="member-grid">
+                            <div class="member-card" data-member-id="2" data-role="member">
+                                <div class="member-avatar-large">👩</div>
+                                <div class="member-card-info">
+                                    <span class="member-name">멤버닉네임2</span>
+                                    <span class="member-meta">멤버 • 여성</span>
+                                    <span class="member-online online">온라인</span>
+                                </div>
+                                <button class="member-card-menu" th:if="${isHost}" style="display: none;">⋯</button>
+                            </div>
+                            <div class="member-card" data-member-id="3" data-role="member">
+                                <div class="member-avatar-large">👩</div>
+                                <div class="member-card-info">
+                                    <span class="member-name">멤버닉네임3</span>
+                                    <span class="member-meta">멤버 • 여성</span>
+                                    <span class="member-online">오프라인</span>
+                                </div>
+                                <button class="member-card-menu" th:if="${isHost}" style="display: none;">⋯</button>
+                            </div>
+                            <div class="member-card" data-member-id="4" data-role="member">
+                                <div class="member-avatar-large">👩</div>
+                                <div class="member-card-info">
+                                    <span class="member-name">멤버닉네임4</span>
+                                    <span class="member-meta">멤버 • 여성</span>
+                                    <span class="member-online online">온라인</span>
+                                </div>
+                                <button class="member-card-menu" th:if="${isHost}" style="display: none;">⋯</button>
+                            </div>
+                            <div class="member-card" data-member-id="5" data-role="member">
+                                <div class="member-avatar-large">👩</div>
+                                <div class="member-card-info">
+                                    <span class="member-name">멤버닉네임5</span>
+                                    <span class="member-meta">멤버 • 여성</span>
+                                    <span class="member-online">오프라인</span>
+                                </div>
+                                <button class="member-card-menu" th:if="${isHost}" style="display: none;">⋯</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 멤버 관리 모달 (호스트 전용) -->
+    <div id="memberManageModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>멤버 관리</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="member-manage-tabs">
+                    <button class="tab-btn active" data-tab="manage-members">멤버 관리</button>
+                    <button class="tab-btn" data-tab="pending-requests">가입 신청</button>
+                    <button class="tab-btn" data-tab="banned-members">차단된 멤버</button>
+                </div>
+                
+                <div class="tab-content" id="manage-members-tab">
+                    <div class="member-manage-list">
+                        <!-- 멤버 관리 목록이 동적으로 추가됨 -->
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="pending-requests-tab" style="display: none;">
+                    <div class="pending-list">
+                        <!-- 가입 신청 목록이 동적으로 추가됨 -->
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="banned-members-tab" style="display: none;">
+                    <div class="banned-list">
+                        <!-- 차단된 멤버 목록이 동적으로 추가됨 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 멤버 메뉴 -->
+    <div id="memberMenu" class="context-menu" style="display: none;">
+        <button class="menu-item kick-btn">추방</button>
+        <button class="menu-item ban-btn">차단</button>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="footer :: footer"></div>
+</body>
+</html>

@@ -36,7 +36,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/signup", "/forgot-loginfo", "/users/**", "/onboarding", "/qna", "/faq", "/tour-search").permitAll()
+                .requestMatchers("/", "/login", "/signup", "/forgot-loginfo", "/users/**", "/onboarding", "/qna", "/faq", "/tour-search", "/community-search", "/tour-community").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                 .requestMatchers("/qna/api/inquiry-types", "/qna/api/statuses").permitAll()
                 .requestMatchers("/api/tours/**").permitAll()

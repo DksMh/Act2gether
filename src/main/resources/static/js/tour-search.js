@@ -1,7 +1,8 @@
 /**
- * 투어 검색 시스템 v2.3 Enhanced - 깔끔한 버전
+ * 투어 검색 시스템 v2.4
  * 핵심 기능만 유지: 검색 + 필터 + 결과 표시
  * 제거된 기능: 오지랖 자동화, 스마트 힌트, 자동 조건 변경
+ * 새로운 기능: 편의시설 필터, 접근성 점수, 액티브 시니어 맞춤
  */
 
 let tourSearchManager = {
@@ -18,7 +19,7 @@ let tourSearchManager = {
   // ========================================
 
   async init() {
-    console.log("🚀 투어 검색 매니저 v2.3 Enhanced 초기화 시작");
+    console.log("🚀 투어 검색 매니저 v2.4 무장애여행 통합 시작");
 
     try {
       await this.loadFilterOptions();
@@ -31,7 +32,7 @@ let tourSearchManager = {
         this.updateInterestTags();
       }, 500);
 
-      console.log("✅ 투어 검색 매니저 v2.3 Enhanced 초기화 완료");
+      console.log("✅ 투어 검색 매니저 v2.4 초기화 완료");
     } catch (error) {
       console.error("❌ 초기화 실패:", error);
       window.tourUtils?.showToast("시스템 초기화에 실패했습니다", "error");
@@ -45,7 +46,7 @@ let tourSearchManager = {
 
       if (result.success) {
         this.filterOptions = result.data;
-        console.log("✅ 필터 옵션 로드:", this.filterOptions);
+        console.log("✅ v2.4 필터 옵션 로드:", this.filterOptions);
         this.populateFilters();
       }
     } catch (error) {
@@ -74,7 +75,7 @@ let tourSearchManager = {
   },
 
   // ========================================
-  // 2. 필터 생성 (선택 수 확대)
+  // 2. 필터 생성 (선택 수 확대 / 편의시설 지원 추가)
   // ========================================
 
   populateFilters() {
@@ -90,7 +91,7 @@ let tourSearchManager = {
       });
     }
 
-    // 편의시설
+    // v2.4: 액티브 시니어 맞춤 편의시설
     const needsSelect = document.getElementById("needsFilter");
     if (needsSelect && this.filterOptions.needs) {
       needsSelect.innerHTML = '<option value="">편의시설</option>';
@@ -98,11 +99,18 @@ let tourSearchManager = {
         const option = document.createElement("option");
         option.value = need;
         option.textContent = need;
+        
+        // 편의시설별 아이콘 추가
+        const icon = this.getAccessibilityIcon(need);
+        if (icon) {
+          option.textContent = `${icon} ${need}`;
+        }
+        
         needsSelect.appendChild(option);
       });
     }
 
-    // ✅ 선택 수 확대된 드롭다운들
+    // 선택 수 확대된 드롭다운들
     this.createCustomDropdown(
       "themeFilterContainer",
       this.filterOptions.themes,
@@ -124,7 +132,7 @@ let tourSearchManager = {
       6 // 3→6으로 증가
     );
 
-    console.log("✅ 필터 생성 완료 - 선택 수 확대 (테마4, 활동5, 장소6)");
+    console.log("✅ v2.4 필터 생성 완료 - 무장애여행 지원 + 선택 수 확대 (테마4, 활동5, 장소6)");
   },
 
   createGroupedPlaceDropdown(containerId, placeGroups, labelText, maxSelections = 6) {
@@ -192,6 +200,16 @@ let tourSearchManager = {
       문화시설: "🖼️", 육상레포츠: "🏃", 수상레포츠: "🏊"
     };
     return icons[groupName] || "📍";
+  },
+  // 편의시설별 아이콘 반환
+   getAccessibilityIcon(need) {
+    const icons = {
+      "주차 편의": "🅿️",
+      "접근 편의": "🛤️", 
+      "시설 편의": "🚻",
+      "필요없음": ""
+    };
+    return icons[need] || "🔧";
   },
 
   createCustomDropdown(containerId, options, labelText, maxSelections = 3) {
@@ -488,7 +506,7 @@ let tourSearchManager = {
   },
 
   // ========================================
-  // 6. 핵심 검색 메서드
+  // 6. 핵심 검색 메서드 (v2.4 무장애여행 지원)
   // ========================================
 
   async performSearch() {
@@ -501,7 +519,7 @@ let tourSearchManager = {
     try {
       const searchParams = new URLSearchParams();
 
-      console.log("🔍 현재 필터:", this.currentFilters);
+      console.log("🔍 v2.4 현재 필터:", this.currentFilters);
 
       // 지역 파라미터
       if (this.currentFilters.region) {
@@ -545,8 +563,8 @@ let tourSearchManager = {
         console.log("✅ 장소 설정:", this.currentFilters.places);
       }
 
-      // 편의시설 파라미터
-      if (this.currentFilters.needs && this.currentFilters.needs !== "해당없음") {
+      // v2.4: 편의시설 파라미터
+      if (this.currentFilters.needs && this.currentFilters.needs !== "필요없음") {
         searchParams.append("needs", this.currentFilters.needs);
         console.log("✅ 편의시설 설정:", this.currentFilters.needs);
       }
@@ -556,25 +574,32 @@ let tourSearchManager = {
       searchParams.append("pageNo", this.currentPage.toString());
 
       const finalUrl = `/api/tours/search?${searchParams.toString()}`;
-      console.log("🔍 최종 검색 URL:", finalUrl);
+      console.log("🔍 v2.4 최종 검색 URL:", finalUrl);
 
       const response = await fetch(finalUrl);
       const result = await response.json();
 
-      console.log("🔍 검색 결과:", result);
+      console.log("🔍 v2.4 검색 결과:", result);
 
       if (result.success) {
-        this.updateRecommendedSection(result.data, "맞춤 검색 결과");
+        this.updateRecommendedSection(result.data, "맞춤 검색 결과", result);
         this.totalCount = result.totalCount || 0;
 
         const filterSummary = this.getFilterSummary();
-        window.tourUtils?.showToast(`${filterSummary} 맞춤 투어 검색 완료!`, "success");
+        
+        // 🆕 v2.4: 무장애여행 정보 포함 알림
+        let successMessage = `${filterSummary} 맞춤 투어 검색 완료!`;
+        if (result.barrierFreeCount > 0) {
+          successMessage += ` (편의시설 정보 포함: ${result.barrierFreeCount}개)`;
+        }
+        
+        window.tourUtils?.showToast(successMessage, "success");
       } else {
         this.showNoResults(result.message);
         window.tourUtils?.showToast("검색 결과가 없습니다", "warning");
       }
     } catch (error) {
-      console.error("💥 검색 실패:", error);
+      console.error("💥 v2.4 검색 실패:", error);
       this.showNoResults("검색 중 오류가 발생했습니다.");
       window.tourUtils?.showToast("검색에 실패했습니다", "error");
     } finally {
@@ -857,10 +882,10 @@ let tourSearchManager = {
   },
 
   // ========================================
-  // 10. 결과 표시
+  // 10. 결과 표시 (v2.4 무장애여행 정보 포함)
   // ========================================
 
-  updateRecommendedSection(tours, source = "맞춤 검색 결과") {
+  updateRecommendedSection(tours, source = "맞춤 검색 결과", searchResult = null) {
     const recommendedContainer = document.getElementById("recommendedTours");
     if (!recommendedContainer) return;
 
@@ -881,14 +906,21 @@ let tourSearchManager = {
     const displayTours = tours.slice(0, parseInt(this.currentFilters.numOfRows) || 6);
     recommendedContainer.innerHTML = "";
 
-    // 섹션 헤더 업데이트
+    // 섹션 헤더 업데이트 (v2.4 정보 추가)
     const sectionHeader = document
       .querySelector("#recommendedTours")
       .parentElement.querySelector(".section-header");
     if (sectionHeader) {
       const titleElement = sectionHeader.querySelector(".section-title");
       if (titleElement) {
-        titleElement.innerHTML = `🎯 회원님을 위한 맞춤 투어 <span class="tour-count">(${displayTours.length}개)</span>`;
+        let titleHtml = `🎯 회원님을 위한 맞춤 투어 <span class="tour-count">(${displayTours.length}개)</span>`;
+        
+        //  v2.4: 무장애여행 정보 통계 표시
+        if (searchResult?.barrierFreeCount > 0) {
+          titleHtml += ` <span class="accessibility-badge">♿ 편의시설 ${searchResult.barrierFreeCount}개</span>`;
+        }
+        
+        titleElement.innerHTML = titleHtml;
       }
     }
 
@@ -910,12 +942,27 @@ let tourSearchManager = {
     if (!imageUrl || imageUrl.trim() === "") {
       imageUrl = "/uploads/tour/no-image.png";
     }
+    
+    // v2.4: 접근성 점수 표시
+    const accessibilityScore = tour.accessibilityScore || 0;
+    const hasBarrierFreeInfo = tour.hasBarrierFreeInfo || false;
+    
+    let accessibilityBadge = "";
+    if (hasBarrierFreeInfo) {
+      const badgeClass = accessibilityScore >= 70 ? "high" : accessibilityScore >= 40 ? "medium" : "low";
+      accessibilityBadge = `
+        <div class="accessibility-badge ${badgeClass}">
+          ♿ 편의시설 ${accessibilityScore}점
+        </div>
+      `;
+    }
 
     card.innerHTML = `
       <div class="tour-image">
         <img src="${imageUrl}" 
              alt="${tour.cleanTitle || tour.title}" 
              onerror="this.src='/uploads/tour/no-image.png'">
+        ${accessibilityBadge}
       </div>
       <div class="tour-info">
         <span class="tour-category">${tour.categoryName || "관광지"}</span>
@@ -925,6 +972,7 @@ let tourSearchManager = {
           <span class="tour-location">${tour.areaname || ""} ${tour.sigunguname || ""}</span>
           <span class="tour-type">${this.getCategoryName(tour.contenttypeid)}</span>
         </div>
+        ${this.createAccessibilityInfo(tour)}
         <div class="tour-actions">
           <button class="btn-favorite" data-contentid="${tour.contentid}">
             <i class="heart-icon">♡</i>
@@ -945,6 +993,50 @@ let tourSearchManager = {
 
     return card;
   },
+  
+  /**
+   * v2.4: 편의시설 정보 표시
+   */
+  createAccessibilityInfo(tour) {
+    if (!tour.hasBarrierFreeInfo) {
+      return "";
+    }
+    
+    try {
+      const barrierFreeInfo = JSON.parse(tour.barrierFreeInfo || "{}");
+      const features = [];
+      
+      // 주요 편의시설만 표시
+      const keyFeatures = {
+        "parking": "🅿️ 주차",
+        "route": "🛤️ 경사로", 
+        "exit": "🚪 출입구",
+        "restroom": "🚻 화장실",
+        "elevator": "🛗 엘리베이터"
+      };
+      
+      Object.entries(keyFeatures).forEach(([key, label]) => {
+        if (barrierFreeInfo[key]) {
+          features.push(label);
+        }
+      });
+      
+      if (features.length > 0) {
+        return `
+          <div class="accessibility-info">
+            <small class="accessibility-features">
+              ${features.slice(0, 3).join(" ")}${features.length > 3 ? " 외" : ""}
+            </small>
+          </div>
+        `;
+      }
+    } catch (e) {
+      console.warn("편의시설 정보 파싱 실패:", tour.contentid);
+    }
+    
+    return "";
+  },
+
 
   getCategoryName(contentTypeId) {
     const categories = {
@@ -1283,7 +1375,7 @@ let tourSearchManager = {
 // ========================================
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🚀 투어 검색 페이지 v2.3 Enhanced 로드됨 - 깔끔한 버전");
+  console.log("🚀 투어 검색 페이지 v2.4 무장애여행 통합 로드됨");
   tourSearchManager.init();
 });
 
