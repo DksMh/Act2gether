@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 🆕 v2.4 무장애여행 API 통합 서비스
+ * 🆕 v2.4 무장애여행 API 통합 서비스 (수정됨)
  * 한국관광공사 무장애여행 API (areaBasedSyncList2 + detailWithTour2)를 사용하여
  * 액티브 시니어를 위한 편의시설 정보를 제공
  */
@@ -45,15 +45,11 @@ public class BarrierFreeService {
     // 병렬 처리를 위한 스레드 풀 (성능 최적화)
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
-    // 액티브 시니어 핵심 6개 편의시설 필드
-    private static final String[] CORE_ACCESSIBILITY_FIELDS = {
-            "parking", // 주차장 (장애인 주차장 포함)
-            "route", // 접근로 (경사로 설치)
-            "exit", // 출입통로 (휠체어 접근)
-            "elevator", // 엘리베이터
-            "restroom", // 화장실 (장애인 화장실 포함)
-            "publictransport" // 대중교통 접근성
-    };
+    // 액티브 시니어 핵심 3개 편의시설 그룹
+    private static final Map<String, String[]> ACCESSIBILITY_GROUPS = Map.of(
+            "주차 편의", new String[] { "parking", "publictransport" },
+            "접근 편의", new String[] { "route", "exit" },
+            "시설 편의", new String[] { "restroom", "elevator" });
 
     // 액티브 시니어 중요도 기반 가중치
     private static final Map<String, Integer> ACCESSIBILITY_WEIGHTS = Map.of(
@@ -79,97 +75,74 @@ public class BarrierFreeService {
             return new ArrayList<>();
         }
 
-        log.info("🔄 무장애여행 정보 통합 시작: {}개 관광지", tourNodes.size());
+        log.info("📄 무장애여행 정보 통합 시작: {}개 관광지", tourNodes.size());
 
-        // 1단계: 해당 지역의 무장애 관광지 목록 사전 조회 (성능 최적화)
+        // 1단계: areaBasedSyncList2로 무장애 관광지 목록 조회
         Set<String> barrierFreeContentIds = getBarrierFreeContentIds(areaCode, sigunguCode);
         log.info("📋 무장애 정보 보유 관광지: {}개", barrierFreeContentIds.size());
 
-        // 2단계: Tour API 결과와 교집합 찾기
+        // 2단계: 교집합 찾기 (공통분모)
         List<JsonNode> barrierFreeCandidates = tourNodes.stream()
                 .filter(node -> barrierFreeContentIds.contains(node.path("contentid").asText()))
                 .collect(Collectors.toList());
 
-        List<JsonNode> regularTours = tourNodes.stream()
-                .filter(node -> !barrierFreeContentIds.contains(node.path("contentid").asText()))
-                .collect(Collectors.toList());
+        log.info("🎯 교집합 발견: {}개 (Tour API {}개 × 무장애 API {}개)",
+                barrierFreeCandidates.size(), tourNodes.size(), barrierFreeContentIds.size());
 
-        log.info("🎯 무장애 정보 조회 대상: {}개, 일반 관광지: {}개",
-                barrierFreeCandidates.size(), regularTours.size());
-
-        List<JsonNode> allResults = new ArrayList<>();
-
-        // 3단계: 무장애 정보가 있는 관광지만 상세 조회 (병렬 처리)
-        if (!barrierFreeCandidates.isEmpty()) {
-            List<CompletableFuture<JsonNode>> futures = barrierFreeCandidates.stream()
-                    .map(node -> CompletableFuture.supplyAsync(() -> {
-                        try {
-                            String contentId = node.path("contentid").asText();
-
-                            // 무장애여행 정보 조회
-                            Map<String, String> barrierFreeInfo = getBarrierFreeInfo(contentId);
-
-                            // 접근성 점수 계산
-                            int accessibilityScore = calculateAccessibilityScore(barrierFreeInfo);
-
-                            // JsonNode에 무장애 정보 추가
-                            ObjectNode enrichedNode = (ObjectNode) node.deepCopy();
-                            enrichedNode.put("accessibilityScore", accessibilityScore);
-                            enrichedNode.put("hasBarrierFreeInfo", !barrierFreeInfo.isEmpty());
-
-                            // 편의시설 정보를 JSON 문자열로 저장
-                            try {
-                                enrichedNode.put("barrierFreeInfo", objectMapper.writeValueAsString(barrierFreeInfo));
-                            } catch (Exception e) {
-                                enrichedNode.put("barrierFreeInfo", "{}");
-                            }
-
-                            log.debug("✅ {} 무장애 정보 통합 완료 - 점수: {}", contentId, accessibilityScore);
-                            return (JsonNode) enrichedNode;
-
-                        } catch (Exception e) {
-                            log.warn("⚠️ 무장애여행 정보 조회 실패 - contentId: {}",
-                                    node.path("contentid").asText());
-
-                            // 실패한 경우 기본값 설정
-                            ObjectNode enrichedNode = (ObjectNode) node.deepCopy();
-                            enrichedNode.put("accessibilityScore", 0);
-                            enrichedNode.put("hasBarrierFreeInfo", false);
-                            enrichedNode.put("barrierFreeInfo", "{}");
-                            return (JsonNode) enrichedNode;
-                        }
-                    }, executorService))
-                    .collect(Collectors.toList());
-
-            // 무장애 정보 조회 완료 대기
-            List<JsonNode> barrierFreeResults = futures.stream()
-                    .map(CompletableFuture::join)
-                    .collect(Collectors.toList());
-
-            allResults.addAll(barrierFreeResults);
+        if (barrierFreeCandidates.isEmpty()) {
+            log.warn("⚠️ 교집합이 없음 - 편의시설 필터 조건에 맞는 관광지가 없습니다");
+            return new ArrayList<>();
         }
 
-        // 4단계: 일반 관광지는 기본 정보만 설정
-        List<JsonNode> regularResults = regularTours.stream()
-                .map(node -> {
-                    ObjectNode enrichedNode = (ObjectNode) node.deepCopy();
-                    enrichedNode.put("accessibilityScore", 0);
-                    enrichedNode.put("hasBarrierFreeInfo", false);
-                    enrichedNode.put("barrierFreeInfo", "{}");
-                    return (JsonNode) enrichedNode;
-                })
+        // 3단계: 교집합에 대해서만 detailWithTour2 호출 (병렬 처리)
+        List<CompletableFuture<JsonNode>> futures = barrierFreeCandidates.stream()
+                .map(node -> CompletableFuture.supplyAsync(() -> {
+                    try {
+                        String contentId = node.path("contentid").asText();
+
+                        // detailWithTour2로 편의시설 정보 조회
+                        Map<String, String> barrierFreeInfo = getBarrierFreeInfo(contentId);
+
+                        // 접근성 점수 계산
+                        int accessibilityScore = calculateAccessibilityScore(barrierFreeInfo);
+
+                        // JsonNode에 무장애 정보 추가
+                        ObjectNode enrichedNode = (ObjectNode) node.deepCopy();
+                        enrichedNode.put("accessibilityScore", accessibilityScore);
+                        enrichedNode.put("hasBarrierFreeInfo", !barrierFreeInfo.isEmpty());
+
+                        // 편의시설 정보를 JSON 문자열로 저장
+                        try {
+                            enrichedNode.put("barrierFreeInfo", objectMapper.writeValueAsString(barrierFreeInfo));
+                        } catch (Exception e) {
+                            enrichedNode.put("barrierFreeInfo", "{}");
+                        }
+
+                        log.debug("✅ {} 무장애 정보 통합 완료 - 점수: {}", contentId, accessibilityScore);
+                        return (JsonNode) enrichedNode;
+
+                    } catch (Exception e) {
+                        log.warn("⚠️ 무장애여행 정보 조회 실패 - contentId: {}",
+                                node.path("contentid").asText());
+                        return null; // 실패한 경우 제외
+                    }
+                }, executorService))
                 .collect(Collectors.toList());
 
-        allResults.addAll(regularResults);
+        // 모든 detailWithTour2 호출 완료 대기
+        List<JsonNode> enrichedResults = futures.stream()
+                .map(CompletableFuture::join)
+                .filter(node -> node != null) // 실패한 것 제외
+                .collect(Collectors.toList());
 
-        int barrierFreeCount = (int) allResults.stream()
+        int barrierFreeCount = (int) enrichedResults.stream()
                 .mapToInt(node -> node.path("hasBarrierFreeInfo").asBoolean() ? 1 : 0)
                 .sum();
 
-        log.info("✅ 무장애여행 정보 통합 완료: 전체 {}개, 무장애 정보 포함 {}개",
-                allResults.size(), barrierFreeCount);
+        log.info("✅ 무장애여행 정보 통합 완료: 교집합 {}개 → 성공 {}개, 무장애 정보 포함 {}개",
+                barrierFreeCandidates.size(), enrichedResults.size(), barrierFreeCount);
 
-        return allResults;
+        return enrichedResults;
     }
 
     /**
@@ -201,7 +174,7 @@ public class BarrierFreeService {
                 urlBuilder.append("&sigunguCode=").append(sigunguCode);
             }
 
-            log.info("🌐 무장애여행 API 호출: {}", urlBuilder.toString());
+            log.info("무장애여행 API 호출 areaBasedSyncList2: {}", urlBuilder.toString());
 
             ResponseEntity<String> response = restTemplate.getForEntity(urlBuilder.toString(), String.class);
             JsonNode root = objectMapper.readTree(response.getBody());
@@ -239,58 +212,132 @@ public class BarrierFreeService {
     }
 
     /**
-     * 📍 무장애여행 API 호출하여 편의시설 정보 조회
+     * 🔍 무장애여행 API 호출하여 편의시설 정보 조회 (수정됨)
      * 
      * @param contentId 관광지 콘텐츠 ID
      * @return 편의시설 정보 Map (필드명 -> 값)
      */
     private Map<String, String> getBarrierFreeInfo(String contentId) throws Exception {
-        // 🔧 수정: 올바른 무장애여행 상세 API 엔드포인트 사용
         String url = "https://apis.data.go.kr/B551011/KorWithService2/detailWithTour2" +
                 "?serviceKey=" + serviceKey +
                 "&contentId=" + contentId +
                 "&MobileOS=ETC&MobileApp=Act2gether&_type=json";
 
         try {
-            log.debug("🌐 무장애여행 상세 API 호출: contentId={}", contentId);
+            log.info("🌐 detailWithTour2 API 호출 시작: contentId={}", contentId);
 
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            log.info("📥 detailWithTour2 응답 받음: contentId={}, 응답크기={}바이트",
+                    contentId, response.getBody().length());
+
+            // 🔍 디버깅: 실제 응답 내용 로깅
+            log.debug("📋 실제 응답 내용: {}", response.getBody());
+
             JsonNode root = objectMapper.readTree(response.getBody());
 
-            // 응답 코드 확인 (공식 API 스펙 기준)
+            // 응답 코드 확인
             JsonNode resultCode = root.path("response").path("header").path("resultCode");
             String code = resultCode.asText();
 
             if (!"0000".equals(code)) {
                 String errorMsg = getErrorMessage(code);
                 if ("03".equals(code)) {
-                    // 데이터 없음은 정상적인 경우 (모든 관광지에 무장애 정보가 있는 건 아님)
-                    log.debug("무장애여행 정보 없음 - contentId: {}", contentId);
+                    log.info("📋 무장애 정보 없음: contentId={}", contentId);
                     return new HashMap<>();
                 } else {
+                    log.error("❌ detailWithTour2 API 오류: contentId={}, code={}, msg={}",
+                            contentId, code, errorMsg);
                     throw new RuntimeException("무장애여행 API 오류: " + code + " - " + errorMsg);
                 }
             }
 
-            JsonNode item = root.path("response").path("body").path("items").path("item");
+            // 🔥 핵심 수정: 배열 처리 로직 개선
+            JsonNode items = root.path("response").path("body").path("items").path("item");
+            JsonNode item = null;
+
+            if (items.isArray() && items.size() > 0) {
+                // 배열인 경우 첫 번째 요소 사용
+                item = items.get(0);
+                log.info("✅ 배열 형태 응답: contentId={}, 배열크기={}", contentId, items.size());
+            } else if (!items.isMissingNode()) {
+                // 단일 객체인 경우
+                item = items;
+                log.info("✅ 객체 형태 응답: contentId={}", contentId);
+            } else {
+                log.warn("⚠️ item 노드를 찾을 수 없음: contentId={}", contentId);
+                return new HashMap<>();
+            }
 
             Map<String, String> barrierFreeInfo = new HashMap<>();
 
-            // 액티브 시니어 핵심 6개 필드만 추출
-            for (String field : CORE_ACCESSIBILITY_FIELDS) {
+            // 🔥 핵심 수정: 편의시설 정보 추출 로직 개선
+            String[] coreFields = { "parking", "route", "exit", "elevator", "restroom", "publictransport" };
+
+            for (String field : coreFields) {
                 String value = item.path(field).asText("");
-                if (!value.isEmpty() && !"0".equals(value)) {
-                    barrierFreeInfo.put(field, value);
+                log.info("🔍 편의시설 체크: contentId={}, field={}, value='{}'", contentId, field, value);
+
+                // 🔥 중요: 빈 값이 아니고 의미있는 정보가 있는 경우만 추가
+                if (!value.isEmpty() && !value.equals("0") && !value.trim().isEmpty() && !value.equals("null")) {
+                    // 추가 검증: 실제 편의시설 정보인지 확인
+                    if (containsValidBarrierFreeInfo(value)) {
+                        barrierFreeInfo.put(field, value);
+                        log.info("✅ 편의시설 발견: contentId={}, {}={}", contentId, field, value);
+                    } else {
+                        log.debug("⚠️ 무의미한 정보 스킵: contentId={}, {}={}", contentId, field, value);
+                    }
                 }
             }
 
-            log.debug("✅ 무장애여행 정보 조회 성공: contentId={}, 필드수={}", contentId, barrierFreeInfo.size());
+            log.info("📊 detailWithTour2 완료: contentId={}, 편의시설수={}", contentId, barrierFreeInfo.size());
+
+            // 🔍 디버깅: 최종 결과 로깅
+            if (!barrierFreeInfo.isEmpty()) {
+                log.info("🎯 최종 편의시설 정보: contentId={}, 정보={}", contentId, barrierFreeInfo);
+            }
+
             return barrierFreeInfo;
 
         } catch (Exception e) {
-            log.warn("무장애여행 API 호출 실패 - contentId: {}, 오류: {}", contentId, e.getMessage());
+            log.error("💥 detailWithTour2 호출 실패: contentId={}, 오류={}", contentId, e.getMessage(), e);
             return new HashMap<>();
         }
+    }
+
+    /**
+     * 🔍 유효한 편의시설 정보인지 검증
+     */
+    private boolean containsValidBarrierFreeInfo(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return false;
+        }
+
+        String lowerValue = value.toLowerCase().trim();
+
+        // 의미없는 기본값들 제외
+        if (lowerValue.equals("없음") || lowerValue.equals("no") ||
+                lowerValue.equals("해당없음") || lowerValue.equals("n/a") ||
+                lowerValue.equals("-") || lowerValue.equals(".") ||
+                lowerValue.equals("정보없음") || lowerValue.equals("미확인")) {
+            return false;
+        }
+
+        // 긍정적인 편의시설 정보 키워드 포함 확인
+        String[] positiveKeywords = {
+                "가능", "있음", "설치", "완비", "지원", "제공",
+                "대여", "운영", "이용가능", "편의", "접근가능",
+                "휠체어", "엘리베이터", "화장실", "주차"
+        };
+
+        for (String keyword : positiveKeywords) {
+            if (value.contains(keyword)) {
+                return true;
+            }
+        }
+
+        // 최소 길이 확인 (너무 짧은 정보는 제외)
+        return value.trim().length() >= 2;
     }
 
     /**
@@ -327,6 +374,66 @@ public class BarrierFreeService {
     }
 
     /**
+     * 🎯 편의시설 그룹별 필터링 (수정됨)
+     */
+    public List<JsonNode> filterByAccessibilityNeeds(List<JsonNode> results, String needs) {
+        if (needs == null || needs.isEmpty() || "필요없음".equals(needs)) {
+            return results;
+        }
+
+        log.info("🎯 편의시설 필터 적용: {} 조건", needs);
+
+        // 편의시설 그룹에서 해당 필드들 가져오기
+        String[] requiredFields = ACCESSIBILITY_GROUPS.get(needs);
+        if (requiredFields == null) {
+            log.warn("⚠️ 알 수 없는 편의시설 그룹: {}", needs);
+            return results;
+        }
+
+        List<JsonNode> filteredResults = results.stream()
+                .filter(node -> {
+                    try {
+                        String barrierFreeInfoJson = node.path("barrierFreeInfo").asText("{}");
+                        JsonNode barrierFreeInfo = objectMapper.readTree(barrierFreeInfoJson);
+
+                        // 해당 그룹의 편의시설 중 하나라도 있는지 확인
+                        boolean hasRequiredFeature = hasAnyFeature(barrierFreeInfo, requiredFields);
+
+                        if (hasRequiredFeature) {
+                            log.debug("✅ 편의시설 조건 만족: {} - {}", node.path("contentid").asText(), needs);
+                        } else {
+                            log.debug("❌ 편의시설 조건 불만족: {} - {}", node.path("contentid").asText(), needs);
+                        }
+
+                        return hasRequiredFeature;
+
+                    } catch (Exception e) {
+                        log.warn("편의시설 정보 파싱 실패: {}", node.path("contentid").asText());
+                        return false;
+                    }
+                })
+                .collect(Collectors.toList());
+
+        log.info("🎯 편의시설 필터 적용 완료 - {}개 → {}개", results.size(), filteredResults.size());
+        return filteredResults;
+    }
+
+    /**
+     * 편의시설 그룹 내 편의시설 중 하나라도 있는지 확인 (수정됨)
+     */
+    private boolean hasAnyFeature(JsonNode barrierFreeInfo, String... features) {
+        for (String feature : features) {
+            String value = barrierFreeInfo.path(feature).asText("");
+            if (!value.isEmpty() && !value.equals("0") && !value.trim().isEmpty()) {
+                log.debug("✅ 편의시설 발견: {} = {}", feature, value);
+                return true;
+            }
+        }
+        log.debug("❌ 해당 그룹 편의시설 없음: {}", String.join(", ", features));
+        return false;
+    }
+
+    /**
      * 🚨 API 오류 코드별 메시지 반환
      */
     private String getErrorMessage(String code) {
@@ -334,8 +441,8 @@ public class BarrierFreeService {
                 "03", "데이터없음에러(NODATA_ERROR)",
                 "02", "데이터베이스에러(DB_ERROR)",
                 "05", "서비스연결실패에러(SERVICETIMEOUT_ERROR)",
-                "10", "잘못된요청파라미터에러(INVALID_REQUEST_PARAMETER_ERROR)",
-                "11", "필수요청파라미터가없음(NO_MANDATORY_REQUEST_PARAMETERS_ERROR)",
+                "10", "잘못된요청파라메터에러(INVALID_REQUEST_PARAMETER_ERROR)",
+                "11", "필수요청파라메터가없음(NO_MANDATORY_REQUEST_PARAMETERS_ERROR)",
                 "21", "일시적으로서비스를사용할수없습니다(TEMPORARILY_DISABLE_THE_SERVICEKEY_ERROR)",
                 "33", "서명되지않은호출(UNSIGNED_CALL_ERROR)");
         return errorMessages.getOrDefault(code, "알 수 없는 오류");
