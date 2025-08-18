@@ -122,12 +122,12 @@ public class PageController {
         return "community-search";
     }
 
-    @GetMapping("/tour-community")
+    @GetMapping("/community")
     public String tourCommunityPage() {
         return "community";
     }
 
-     @GetMapping("/mypage")
+    @GetMapping("/mypage")
     public String myPage() {
         return "mypage";
     }
