@@ -60,11 +60,12 @@ public class TourFilterService {
             List<String> activities = extractSelectedActivities(params);
             List<String> places = extractSelectedPlaces(params);
 
-            log.info("📋 선택된 값들 - 테마: {}, 활동: {}, 장소: {}, 편의시설: {}", 
-                     themes, activities, places, needs);
+            log.info("📋 선택된 값들 - 테마: {}, 활동: {}, 장소: {}, 편의시설: {}",
+                    themes, activities, places, needs);
 
             // 3. 논리적 조합 생성
-            List<SearchParam> searchParams = generateSearchCombinations(areaCode, sigunguCode, themes, activities, places);
+            List<SearchParam> searchParams = generateSearchCombinations(areaCode, sigunguCode, themes, activities,
+                    places);
             log.info("🔄 생성된 검색 조합: {}개", searchParams.size());
 
             // 4. 각 조합별로 API 호출 (기존 방식)
@@ -99,18 +100,18 @@ public class TourFilterService {
             // 🆕 6. 무장애여행 정보 통합 (사용자가 편의시설을 선택한 경우에만)
             List<JsonNode> enrichedResults = allResults;
             boolean hasAccessibilityFilter = (needs != null && !needs.isEmpty() && !"필요없음".equals(needs));
-            
+
             if (hasAccessibilityFilter || shouldEnrichWithBarrierFree()) {
                 log.info("🆕 무장애여행 정보 통합 시작");
                 enrichedResults = barrierFreeService.enrichWithBarrierFreeInfo(allResults, areaCode, sigunguCode);
-                
+
                 // 편의시설 필터 적용
                 if (hasAccessibilityFilter) {
                     enrichedResults = filterByAccessibilityNeeds(enrichedResults, needs);
-                    log.info("🎯 편의시설 필터 적용 완료 - {}개 → {}개", 
-                             allResults.size(), enrichedResults.size());
+                    log.info("🎯 편의시설 필터 적용 완료 - {}개 → {}개",
+                            allResults.size(), enrichedResults.size());
                 }
-                
+
                 // 접근성 점수 기준 정렬
                 enrichedResults.sort((a, b) -> {
                     int scoreA = a.path("accessibilityScore").asInt(0);
@@ -134,11 +135,11 @@ public class TourFilterService {
             result.put("successfulCalls", successfulCalls);
             result.put("version", "v2.4");
             result.put("features", Arrays.asList("무장애여행통합", "논리적조합", "균형선별"));
-            
+
             // 무장애여행 정보 통계 추가
             int barrierFreeCount = (int) finalResults.stream()
-                .mapToInt(node -> node.path("hasBarrierFreeInfo").asBoolean() ? 1 : 0)
-                .sum();
+                    .mapToInt(node -> node.path("hasBarrierFreeInfo").asBoolean() ? 1 : 0)
+                    .sum();
             result.put("barrierFreeCount", barrierFreeCount);
             result.put("hasAccessibilityFilter", hasAccessibilityFilter);
 
@@ -155,45 +156,60 @@ public class TourFilterService {
     // ========================================
     private List<JsonNode> filterByAccessibilityNeeds(List<JsonNode> results, String needs) {
         if (needs == null || needs.isEmpty() || "필요없음".equals(needs)) {
+            log.info("🎯 편의시설 필터 없음 - 모든 결과 반환: {}개", results.size());
             return results;
         }
-        
-        return results.stream()
-            .filter(node -> {
-                boolean hasBarrierFreeInfo = node.path("hasBarrierFreeInfo").asBoolean(false);
-                if (!hasBarrierFreeInfo) {
-                    return false; // 무장애 정보가 없으면 제외
-                }
-                
-                try {
-                    String barrierFreeInfoJson = node.path("barrierFreeInfo").asText("{}");
-                    JsonNode barrierFreeInfo = objectMapper.readTree(barrierFreeInfoJson);
-                    
-                    // 편의시설 그룹별 매칭
-                    switch (needs) {
-                        case "주차 편의":
-                            return hasAnyFeature(barrierFreeInfo, "parking", "publictransport");
-                        case "접근 편의":
-                            return hasAnyFeature(barrierFreeInfo, "route", "exit");
-                        case "시설 편의":
-                            return hasAnyFeature(barrierFreeInfo, "restroom", "elevator");
-                        default:
-                            return true;
+
+        log.info("🎯 편의시설 필터 적용 시작: {} 조건으로 {}개 결과 필터링", needs, results.size());
+
+        List<JsonNode> filteredResults = results.stream()
+                .filter(node -> {
+                    boolean hasBarrierFreeInfo = node.path("hasBarrierFreeInfo").asBoolean(false);
+
+                    // 무장애 정보가 없으면 제외
+                    if (!hasBarrierFreeInfo) {
+                        return false;
                     }
-                } catch (Exception e) {
-                    log.warn("편의시설 정보 파싱 실패: {}", node.path("contentid").asText());
-                    return false;
-                }
-            })
-            .collect(Collectors.toList());
+
+                    try {
+                        String barrierFreeInfoJson = node.path("barrierFreeInfo").asText("{}");
+                        JsonNode barrierFreeInfo = objectMapper.readTree(barrierFreeInfoJson);
+
+                        // 편의시설 그룹별 매칭 - 단순히 필드 존재 여부만 확인
+                        switch (needs) {
+                            case "주차 편의":
+                                return hasAnyFeature(barrierFreeInfo, "parking")
+                                        || hasAnyFeature(barrierFreeInfo, "publictransport");
+                            case "접근 편의":
+                                return hasAnyFeature(barrierFreeInfo, "route")
+                                        || hasAnyFeature(barrierFreeInfo, "exit");
+                            case "시설 편의":
+                                return hasAnyFeature(barrierFreeInfo, "restroom")
+                                        || hasAnyFeature(barrierFreeInfo, "elevator");
+                            default:
+                                return true;
+                        }
+
+                    } catch (Exception e) {
+                        log.warn("편의시설 정보 파싱 실패: {}", node.path("contentid").asText());
+                        return false;
+                    }
+                })
+                .collect(Collectors.toList());
+
+        log.info("✅ 편의시설 필터 적용 완료 - {}개 → {}개", results.size(), filteredResults.size());
+
+        return filteredResults;
     }
+
     // ========================================
     // 편의시설 그룹별 매칭 내 편의시설 중 하나라도 있는지 확인
     // ========================================
     private boolean hasAnyFeature(JsonNode barrierFreeInfo, String... features) {
         for (String feature : features) {
             String value = barrierFreeInfo.path(feature).asText("");
-            if (!value.isEmpty() && !value.equals("0")) {
+            if (!value.isEmpty() && !value.equals("0") && !value.equals("없음")) {
+                log.debug("✅ 편의시설 발견: {} = {}", feature, value);
                 return true; // 값이 있으면 편의시설 존재
             }
         }
@@ -234,7 +250,7 @@ public class TourFilterService {
 
         // 카테고리 우선순위 계산
         Map<String, Double> categoryPriority = calculateCategoryPriority(themes, activities, places, categories);
-        
+
         List<String> sortedCategories = categories.stream()
                 .sorted((cat1, cat2) -> Double.compare(
                         categoryPriority.getOrDefault(cat2, 0.0),
@@ -254,15 +270,15 @@ public class TourFilterService {
                 // 접근성 점수 고려 (가중치 20%)
                 int accessibilityA = a.path("accessibilityScore").asInt(0);
                 int accessibilityB = b.path("accessibilityScore").asInt(0);
-                
+
                 // 관련성 점수 (가중치 80%)
                 int relevanceA = calculateRelevanceScore(a, themes, activities, places);
                 int relevanceB = calculateRelevanceScore(b, themes, activities, places);
-                
+
                 // 총 점수 계산
-                int totalScoreA = (int)(accessibilityA * 0.2 + relevanceA * 0.8);
-                int totalScoreB = (int)(accessibilityB * 0.2 + relevanceB * 0.8);
-                
+                int totalScoreA = (int) (accessibilityA * 0.2 + relevanceA * 0.8);
+                int totalScoreB = (int) (accessibilityB * 0.2 + relevanceB * 0.8);
+
                 return Integer.compare(totalScoreB, totalScoreA);
             });
 
@@ -282,7 +298,7 @@ public class TourFilterService {
     // 공정한 점수 계산
     // ========================================
 
-    private int calculateRelevanceScore(JsonNode item, List<String> themes, 
+    private int calculateRelevanceScore(JsonNode item, List<String> themes,
             List<String> activities, List<String> places) {
         int score = 0;
 
@@ -318,10 +334,14 @@ public class TourFilterService {
         }
 
         // 품질 점수 (17점)
-        if (!item.path("firstimage").asText().isEmpty()) score += 5;
-        if (!item.path("addr1").asText().isEmpty()) score += 3;
-        if (!item.path("addr2").asText().isEmpty()) score += 2;
-        if (!item.path("tel").asText().isEmpty()) score += 2;
+        if (!item.path("firstimage").asText().isEmpty())
+            score += 5;
+        if (!item.path("addr1").asText().isEmpty())
+            score += 3;
+        if (!item.path("addr2").asText().isEmpty())
+            score += 2;
+        if (!item.path("tel").asText().isEmpty())
+            score += 2;
 
         String modifiedTime = item.path("modifiedtime").asText();
         if (modifiedTime.startsWith("2024") || modifiedTime.startsWith("2025")) {
@@ -424,9 +444,9 @@ public class TourFilterService {
     // ========================================
 
     private List<SearchParam> generateSearchCombinations(String areaCode, String sigunguCode,
-        List<String> themes, List<String> activities, List<String> places) {
+            List<String> themes, List<String> activities, List<String> places) {
         List<SearchParam> combinations = new ArrayList<>();
-        
+
         // 전체 가능한 조합 수 계산
         int totalPossible = themes.size() * activities.size() * places.size();
         int validCombinations = 0;
@@ -440,7 +460,7 @@ public class TourFilterService {
                         SearchParam param = new SearchParam(areaCode, sigunguCode, theme, activity, place);
                         combinations.add(param);
                         validCombinations++;
-                        
+
                         log.debug("✅ 유효한 조합: {} + {} + {}", theme, activity, place);
                     } else {
                         skippedCombinations++;
@@ -450,9 +470,9 @@ public class TourFilterService {
             }
         }
 
-        log.info("🎯 조합 생성 완료 - 전체 {}개 중 유효 {}개, 스킵 {}개", 
+        log.info("🎯 조합 생성 완료 - 전체 {}개 중 유효 {}개, 스킵 {}개",
                 totalPossible, validCombinations, skippedCombinations);
-        
+
         // 조합 수 제한 (기존 30에서 80으로 증가)
         int maxCombinations = 80;
         if (combinations.size() > maxCombinations) {
@@ -467,84 +487,85 @@ public class TourFilterService {
         // 새로운 메서드로 위임
         return isValidHierarchyCombination(cat1, cat2, cat3);
     }
+
     /**
      * ✅ 완전한 계층 구조 검증 로직
      */
     private boolean isValidHierarchyCombination(String cat1, String cat2, String cat3) {
-        if (cat2 == null || cat3 == null) return true; // null인 경우는 허용
-        
+        if (cat2 == null || cat3 == null)
+            return true; // null인 경우는 허용
+
         // 완전한 한국관광공사 API 계층 구조 정의
         Map<String, Map<String, List<String>>> validHierarchy = new HashMap<>();
-        
+
         // A01 자연관광지 계층
         Map<String, List<String>> natureHierarchy = new HashMap<>();
         natureHierarchy.put("A0101", Arrays.asList(
-            "A01010100", "A01010200", "A01010300", "A01010400", // 산, 공원
-            "A01010500", "A01010600", "A01010700",             // 생태, 휴양림, 수목원  
-            "A01010800", "A01010900",                          // 계곡, 폭포
-            "A01011100", "A01011200", "A01011400",             // 해변, 해수욕장
-            "A01011700", "A01011800"                           // 호수, 강
+                "A01010100", "A01010200", "A01010300", "A01010400", // 산, 공원
+                "A01010500", "A01010600", "A01010700", // 생태, 휴양림, 수목원
+                "A01010800", "A01010900", // 계곡, 폭포
+                "A01011100", "A01011200", "A01011400", // 해변, 해수욕장
+                "A01011700", "A01011800" // 호수, 강
         ));
         validHierarchy.put("A01", natureHierarchy);
-        
+
         // A02 문화/역사 계층
         Map<String, List<String>> cultureHierarchy = new HashMap<>();
         // 역사관광지
         cultureHierarchy.put("A0201", Arrays.asList(
-            "A02010100", "A02010200", "A02010300",             // 고궁, 성
-            "A02010400", "A02010500", "A02010600",             // 민속마을, 가옥
-            "A02010700", "A02010800", "A02010900"              // 유적지, 사찰, 종교성지
+                "A02010100", "A02010200", "A02010300", // 고궁, 성
+                "A02010400", "A02010500", "A02010600", // 민속마을, 가옥
+                "A02010700", "A02010800", "A02010900" // 유적지, 사찰, 종교성지
         ));
-        // 휴양관광지  
+        // 휴양관광지
         cultureHierarchy.put("A0202", Arrays.asList(
-            "A02020200", "A02020300", "A02020400",             // 관광단지, 온천, 찜질방
-            "A02020600", "A02020800"                           // 테마파크, 유람선
+                "A02020200", "A02020300", "A02020400", // 관광단지, 온천, 찜질방
+                "A02020600", "A02020800" // 테마파크, 유람선
         ));
         // 체험관광지
         cultureHierarchy.put("A0203", Arrays.asList(
-            "A02030100", "A02030200", "A02030300", "A02030400" // 농어촌체험, 전통체험
+                "A02030100", "A02030200", "A02030300", "A02030400" // 농어촌체험, 전통체험
         ));
         // 문화시설
         cultureHierarchy.put("A0206", Arrays.asList(
-            "A02060100", "A02060200", "A02060300", "A02060500" // 박물관, 미술관
+                "A02060100", "A02060200", "A02060300", "A02060500" // 박물관, 미술관
         ));
         validHierarchy.put("A02", cultureHierarchy);
-        
+
         // A03 레포츠 계층
         Map<String, List<String>> sportsHierarchy = new HashMap<>();
         // 육상레포츠
         sportsHierarchy.put("A0302", Arrays.asList(
-            "A03020700", "A03021200", "A03021300", "A03021400", // 골프, 스키
-            "A03021700", "A03022700"                            // 캠핑, 트래킹
+                "A03020700", "A03021200", "A03021300", "A03021400", // 골프, 스키
+                "A03021700", "A03022700" // 캠핑, 트래킹
         ));
-        // 수상레포츠  
+        // 수상레포츠
         sportsHierarchy.put("A0303", Arrays.asList(
-            "A03030500", "A03030600"                           // 낚시
+                "A03030500", "A03030600" // 낚시
         ));
         validHierarchy.put("A03", sportsHierarchy);
-        
+
         // 계층 구조 검증
         if (!validHierarchy.containsKey(cat1)) {
             log.debug("❌ 잘못된 대분류: {}", cat1);
             return false;
         }
-        
+
         Map<String, List<String>> middleCategories = validHierarchy.get(cat1);
         if (!middleCategories.containsKey(cat2)) {
             log.debug("❌ 대분류 {}에 중분류 {} 없음", cat1, cat2);
             return false;
         }
-        
+
         List<String> smallCategories = middleCategories.get(cat2);
         if (!smallCategories.contains(cat3)) {
             log.debug("❌ 중분류 {}에 소분류 {} 없음", cat2, cat3);
             return false;
         }
-        
+
         log.debug("✅ 유효한 계층: {} → {} → {}", cat1, cat2, cat3);
         return true;
     }
-
 
     private List<JsonNode> callTourApiForCombination(SearchParam searchParam) {
         try {
@@ -609,7 +630,8 @@ public class TourFilterService {
     // ========================================
 
     private String mapThemeToCategory(String theme) {
-        if (theme == null || theme.isEmpty()) return null;
+        if (theme == null || theme.isEmpty())
+            return null;
 
         Map<String, String> themeMapping = new HashMap<>();
         themeMapping.put("자연", "A01");
@@ -627,7 +649,7 @@ public class TourFilterService {
 
     private String mapActivityToCat2(String activityName) {
         Map<String, String> activityMapping = new HashMap<>();
-        
+
         activityMapping.put("자연관광지", "A0101");
         activityMapping.put("역사관광지", "A0201");
         activityMapping.put("휴양관광지", "A0202");
@@ -858,7 +880,7 @@ public class TourFilterService {
     }
 
     // ========================================
-    // 🚨 필수 메서드들 (컨트롤러에서 호출됨) -  편의시설 옵션에 무장애여행 관련 추가
+    // 🚨 필수 메서드들 (컨트롤러에서 호출됨) - 편의시설 옵션에 무장애여행 관련 추가
     // ========================================
 
     public Map<String, Object> getFilterOptions() {
@@ -885,57 +907,75 @@ public class TourFilterService {
         placeGroups.put("수상레포츠", new String[] { "낚시" });
 
         options.put("placeGroups", placeGroups);
-    
+
         // 선택 제한 정보 추가
         options.put("maxSelections", Map.of(
-            "themes", 4,      // 3→4
-            "activities", 5,  // 3→5
-            "places", 6       // 3→6
+                "themes", 4, // 3→4
+                "activities", 5, // 3→5
+                "places", 6 // 3→6
         ));
 
         // v2.4: 액티브 시니어 편의시설 3그룹
-        options.put("needs", new String[] { 
-            "주차 편의", "접근 편의", "시설 편의", "필요없음" 
+        options.put("needs", new String[] {
+                "주차 편의", "접근 편의", "시설 편의", "필요없음"
         });
 
-         // v2.4 정보 추가
+        // v2.4 정보 추가
         options.put("version", "v2.4");
         options.put("features", Map.of(
-            "barrierFreeIntegration", true,
-            "accessibilityScoring", true,
-            "seniorFriendly", true
-        ));
+                "barrierFreeIntegration", true,
+                "accessibilityScoring", true,
+                "seniorFriendly", true));
 
         return options;
     }
 
     public boolean isMetropolitanCity(String areaCode) {
-        if (areaCode == null || areaCode.isEmpty()) return false;
+        if (areaCode == null || areaCode.isEmpty())
+            return false;
         List<String> metropolitanCities = List.of("1", "2", "3", "4", "5", "6", "7");
         return metropolitanCities.contains(areaCode);
     }
 
     public String getAreaCodeByName(String areaName) {
-        if (areaName == null || areaName.trim().isEmpty()) return "";
+        if (areaName == null || areaName.trim().isEmpty())
+            return "";
 
         Map<String, String> areaMap = new HashMap<>();
-        areaMap.put("서울", "1"); areaMap.put("서울특별시", "1");
-        areaMap.put("인천", "2"); areaMap.put("인천광역시", "2");
-        areaMap.put("대전", "3"); areaMap.put("대전광역시", "3");
-        areaMap.put("대구", "4"); areaMap.put("대구광역시", "4");
-        areaMap.put("광주", "5"); areaMap.put("광주광역시", "5");
-        areaMap.put("부산", "6"); areaMap.put("부산광역시", "6");
-        areaMap.put("울산", "7"); areaMap.put("울산광역시", "7");
-        areaMap.put("세종", "8"); areaMap.put("세종특별자치시", "8");
-        areaMap.put("경기", "31"); areaMap.put("경기도", "31");
-        areaMap.put("강원", "32"); areaMap.put("강원특별자치도", "32");
-        areaMap.put("충북", "33"); areaMap.put("충청북도", "33");
-        areaMap.put("충남", "34"); areaMap.put("충청남도", "34");
-        areaMap.put("경북", "35"); areaMap.put("경상북도", "35");
-        areaMap.put("경남", "36"); areaMap.put("경상남도", "36");
-        areaMap.put("전북", "37"); areaMap.put("전북특별자치도", "37");
-        areaMap.put("전남", "38"); areaMap.put("전라남도", "38");
-        areaMap.put("제주", "39"); areaMap.put("제주특별자치도", "39");
+        areaMap.put("서울", "1");
+        areaMap.put("서울특별시", "1");
+        areaMap.put("인천", "2");
+        areaMap.put("인천광역시", "2");
+        areaMap.put("대전", "3");
+        areaMap.put("대전광역시", "3");
+        areaMap.put("대구", "4");
+        areaMap.put("대구광역시", "4");
+        areaMap.put("광주", "5");
+        areaMap.put("광주광역시", "5");
+        areaMap.put("부산", "6");
+        areaMap.put("부산광역시", "6");
+        areaMap.put("울산", "7");
+        areaMap.put("울산광역시", "7");
+        areaMap.put("세종", "8");
+        areaMap.put("세종특별자치시", "8");
+        areaMap.put("경기", "31");
+        areaMap.put("경기도", "31");
+        areaMap.put("강원", "32");
+        areaMap.put("강원특별자치도", "32");
+        areaMap.put("충북", "33");
+        areaMap.put("충청북도", "33");
+        areaMap.put("충남", "34");
+        areaMap.put("충청남도", "34");
+        areaMap.put("경북", "35");
+        areaMap.put("경상북도", "35");
+        areaMap.put("경남", "36");
+        areaMap.put("경상남도", "36");
+        areaMap.put("전북", "37");
+        areaMap.put("전북특별자치도", "37");
+        areaMap.put("전남", "38");
+        areaMap.put("전라남도", "38");
+        areaMap.put("제주", "39");
+        areaMap.put("제주특별자치도", "39");
 
         return areaMap.getOrDefault(areaName.trim(), "");
     }
@@ -998,7 +1038,7 @@ public class TourFilterService {
 
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
             JsonNode header = jsonNode.path("response").path("header");
-            
+
             if (!"0000".equals(header.path("resultCode").asText())) {
                 return Map.of("success", false, "message", "API 오류: " + header.path("resultMsg").asText());
             }
@@ -1032,7 +1072,7 @@ public class TourFilterService {
 
             JsonNode jsonNode = objectMapper.readTree(response.getBody());
             JsonNode header = jsonNode.path("response").path("header");
-            
+
             if (!"0000".equals(header.path("resultCode").asText())) {
                 return Map.of("success", false, "message", "시군구 정보를 불러오는데 실패했습니다");
             }
@@ -1069,7 +1109,8 @@ public class TourFilterService {
                 Map<String, String> themeMapping = new HashMap<>();
                 int count = 0;
                 for (JsonNode theme : themes) {
-                    if (count >= 3) break;
+                    if (count >= 3)
+                        break;
                     String themeValue = theme.asText();
                     String categoryCode = mapThemeToCategory(themeValue);
                     if (categoryCode != null) {
@@ -1086,7 +1127,8 @@ public class TourFilterService {
                 List<Object> activityList = new ArrayList<>();
                 int count = 0;
                 for (JsonNode activity : activities) {
-                    if (count >= 3) break;
+                    if (count >= 3)
+                        break;
                     String activityValue = activity.asText();
                     if (!"맛집 탐방".equals(activityValue)) {
                         activityList.add(activityValue);
@@ -1102,7 +1144,8 @@ public class TourFilterService {
                 List<Object> placeList = new ArrayList<>();
                 int count = 0;
                 for (JsonNode place : places) {
-                    if (count >= 3) break;
+                    if (count >= 3)
+                        break;
                     placeList.add(place.asText());
                     count++;
                 }
