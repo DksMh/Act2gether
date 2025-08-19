@@ -53,3 +53,224 @@
       .grid-3,.grid-like{grid-template-columns:1fr}
       .subtabs{flex-wrap:wrap}
     }
+
+ /* ===== Modal Base ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: none;
+  z-index: 1000;
+}
+.modal.is-open { display: block; }
+
+.modal__dialog {
+  position: relative;
+  width: min(960px, 92vw);
+  max-height: 88vh;
+  margin: 5vh auto;
+  background: #fff;
+  border-radius: 12px;
+  overflow: auto;
+  padding: 20px 20px 28px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.2);
+}
+.modal__close {
+  position: sticky;
+  top: 0;
+  margin-left: auto;
+  display: inline-block;
+  border: 0;
+  background: transparent;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+body.modal-open { overflow: hidden; }
+
+/* ===== Onboarding Styles (모달 안에서도 동일 적용) ===== */
+
+/* Main Container */
+.onboarding-container {
+  background: #fff;
+  margin: 5% 10% 7%;
+  position: relative;
+}
+
+/* Page Header */
+.page-header {
+  text-align: center;
+  margin-bottom: 8%;
+}
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 2%;
+}
+.page-subtitle {
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+.highlight {
+  color: #667eea;
+  font-weight: 600;
+}
+
+/* Interest Selection Page */
+.interest-selection { display: block; } /* 모달에서는 기본 보이게 */
+.interest-selection.active { display: block; }
+
+.question-section { margin-bottom: 8%; }
+.question-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 3%;
+}
+.question-subtitle {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 4%;
+}
+
+/* Options Grid & Buttons */
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px; /* % 대신 고정 간격이 모달에 안정적 */
+  margin-bottom: 20px;
+}
+.option-button {
+  padding: 12px 10px;
+  border: 2px solid #f0f0f0;
+  border-radius: 25px;
+  background: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-weight: 500;
+  color: #333;
+  user-select: none;
+}
+.option-button:hover {
+  border-color: #667eea;
+  background: #f0f3ff;
+}
+.option-button.selected {
+  border-color: #667eea;
+  background: #667eea;
+  color: #fff;
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+.btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  background: #667eea;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(102,126,234,.25);
+}
+.btn-primary:hover { background: #5568d9; }
+.btn-secondary {
+  background: #f1f3f5;
+  color: #333;
+}
+.btn-secondary:hover { background: #e7eaef; }
+
+/* Messages */
+.message-area { min-height: 60px; margin-top: 16px; }
+.error-message,
+.success-message {
+  display: none;
+  padding: 16px;
+  border-radius: 10px;
+  position: relative;
+  margin-top: 12px;
+  border: 1px solid transparent;
+}
+.error-message.show,
+.success-message.show { display: block; animation: slideInFromBottom .25s ease-out; }
+.error-message {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
+}
+.success-message {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border-color: #c8e6c9;
+}
+.retry-button {
+  background: #f44336;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background .2s ease;
+  margin-top: 10px;
+}
+.retry-button:hover { background: #d32f2f; }
+
+/* Animations */
+@keyframes slideInFromBottom {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Spinner (필요 시 사용) */
+.loading-spinner,
+.modal-loading-spinner {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,.9);
+  z-index: 3000;
+}
+.loading-spinner.active,
+.modal-loading-spinner.active { display: flex; }
+.spinner,
+.modal-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modal__dialog { width: 94vw; padding: 16px; }
+  .onboarding-container { margin: 4% 4% 6%; }
+  .page-title { font-size: 1.5rem; }
+  .options-grid { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+  .option-button { padding: 12px 8px; }
+}
+@media (max-width: 480px) {
+  .page-title { font-size: 1.25rem; }
+  .options-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
