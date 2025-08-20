@@ -18,7 +18,7 @@
         <!-- 페이지 헤더 -->
         <div class="page-header">
           <h1>국내여행 탐색</h1>
-          <p class="page-subtitle">아름다운 우리나라를 함께 여행해요 🇰🇷</p>
+          <p class="page-subtitle">아름다운 우리나라를 함께 여행해요</p>
         </div>
 
         <!-- 검색 및 필터 -->
@@ -43,6 +43,21 @@
             <button class="filter-tab" data-filter="gyeongsang">경상도</button>
           </div>
         </div>
+        <!-- 비로그인 시 회원가입 유도 섹션 -->
+        <section
+          class="signup-cta"
+          th:unless="${isAuthenticated}"
+          style="margin-bottom: 3rem"
+        >
+          <div class="cta-content">
+            <h2>나만의 여행을 시작해보세요!</h2>
+            <p>회원가입하고 더 많은 여행 모임에 참여하세요</p>
+            <div class="cta-buttons">
+              <a href="/signup" class="btn-primary large">회원가입</a>
+              <a href="/login" class="btn-secondary large">로그인</a>
+            </div>
+          </div>
+        </section>
 
         <!-- 내가 가입한 커뮤니티 섹션 -->
         <section class="my-communities-section" th:if="${isAuthenticated}">
@@ -271,18 +286,6 @@
           <!-- 더보기 버튼 -->
           <div class="load-more-section">
             <button class="load-more-btn">더 많은 여행 보기</button>
-          </div>
-        </section>
-
-        <!-- 비로그인 시 회원가입 유도 섹션 -->
-        <section class="signup-cta" th:unless="${isAuthenticated}">
-          <div class="cta-content">
-            <h2>나만의 여행을 시작해보세요!</h2>
-            <p>회원가입하고 더 많은 여행 모임에 참여하세요</p>
-            <div class="cta-buttons">
-              <a href="/signup" class="btn-primary large">회원가입</a>
-              <a href="/login" class="btn-secondary large">로그인</a>
-            </div>
           </div>
         </section>
       </div>
