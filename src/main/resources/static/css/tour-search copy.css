@@ -1,0 +1,1737 @@
+/* ========================================
+   투어 검색 시스템 v2.1 - 지역+시군구 가로 배치
+   ======================================== */
+
+/* 기본 레이아웃 */
+.tour-search-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: "Noto Sans KR", sans-serif;
+}
+
+/* 페이지 헤더 */
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.version-badge {
+  background: linear-gradient(45deg, #4caf50, #2196f3);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-left: 10px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ========================================
+   검색 필터 영역
+   ======================================== */
+
+.search-filters {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.filter-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* ========================================
+   🆕 지역+시군구 가로 배치 스타일
+   ======================================== */
+
+.region-selector-container {
+  display: flex;
+  flex-direction: row; /* 가로 배치 */
+  gap: 10px;
+  align-items: stretch;
+}
+
+.region-selector-container .filter-select {
+  flex: 1;
+  min-width: 0; /* flex item이 줄어들 수 있도록 */
+}
+
+.region-selector-container #regionFilter {
+  flex: 1.2; /* 지역 선택기를 약간 더 넓게 */
+}
+
+.region-selector-container #sigunguFilter {
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+/* 시군구 필터가 보일 때 애니메이션 */
+.region-selector-container #sigunguFilter[style*="block"] {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.region-selector-container #sigunguFilter[style*="none"] {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+/* ========================================
+   📱 반응형 디자인 (768px 이하)
+   ======================================== */
+
+@media (max-width: 768px) {
+  .tour-search-container {
+    padding: 15px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+  }
+
+  .search-filters {
+    padding: 20px;
+  }
+
+  .filter-row {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  /* 🆕 모바일에서는 지역+시군구 세로 배치 */
+  .region-selector-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .region-selector-container .filter-select {
+    flex: none;
+  }
+
+  .region-selector-container #regionFilter,
+  .region-selector-container #sigunguFilter {
+    flex: none;
+    width: 100%;
+  }
+}
+
+/* ========================================
+   필터 요소 공통 스타일
+   ======================================== */
+
+.filter-select {
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.filter-select:hover {
+  border-color: #c1c7cd;
+}
+
+/* 사용자 관심사 기반 필터 스타일 */
+.filter-select.user-interest-filter {
+  background-color: #f5f5f5;
+  border-color: #4caf50;
+  font-weight: 600;
+}
+
+/* 사용자가 수정한 필터 스타일 */
+.filter-select.user-modified-filter {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  font-weight: 600;
+}
+
+/* ========================================
+   커스텀 드롭다운 스타일
+   ======================================== */
+
+.custom-dropdown-container {
+  position: relative;
+}
+
+.dropdown-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.dropdown-trigger:hover {
+  border-color: #c1c7cd;
+}
+
+.dropdown-trigger.active {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.dropdown-arrow {
+  transition: transform 0.2s ease;
+  color: #666;
+}
+
+.dropdown-trigger.active .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e1e5e9;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+}
+
+.dropdown-options.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e5e9;
+  font-size: 12px;
+  color: #666;
+}
+
+.clear-all-btn {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.clear-all-btn:hover {
+  background-color: #fff5f5;
+}
+
+.dropdown-option {
+  padding: 0;
+}
+
+.dropdown-option label {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin: 0;
+  font-weight: normal;
+}
+
+.dropdown-option label:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-option input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+/* 사용자 관심사 기반 드롭다운 스타일 */
+.dropdown-trigger.user-interest-filter {
+  background-color: #f5f5f5;
+  border-color: #4caf50;
+  font-weight: 600;
+}
+
+/* 사용자가 수정한 드롭다운 스타일 */
+.dropdown-trigger.user-modified-filter {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  font-weight: 600;
+}
+
+/* ========================================
+   버튼 스타일
+   ======================================== */
+
+#doSearchBtn {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+#doSearchBtn:hover {
+  background: linear-gradient(135deg, #45a049, #4caf50);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+#clearFiltersBtn {
+  background: #f8f9fa;
+  color: #666;
+  border: 2px solid #e1e5e9;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #e9ecef;
+  border-color: #c1c7cd;
+}
+
+/* ========================================
+   관심사 태그 영역
+   ======================================== */
+
+.interest-tags {
+  margin-top: 20px;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+}
+
+.interest-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  margin: 4px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.interest-tag.reference {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.interest-tag.current-filter {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+}
+
+/* ========================================
+   투어 섹션 스타일
+   ======================================== */
+
+.tours-section {
+  margin-bottom: 40px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.section-subtitle {
+  font-size: 14px;
+  color: #666;
+}
+
+.tour-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* ========================================
+   투어 카드 스타일
+   ======================================== */
+
+.tour-card {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+}
+
+.tour-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.tour-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.tour-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.tour-card:hover .tour-image img {
+  transform: scale(1.05);
+}
+
+.tour-info {
+  padding: 20px;
+}
+
+.tour-category {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.tour-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  height: 44px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.tour-description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  height: 42px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.tour-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 12px;
+  color: #888;
+}
+
+.tour-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-favorite {
+  background: none;
+  border: 2px solid #e1e5e9;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-favorite:hover {
+  border-color: #ff4757;
+  background: #fff5f5;
+}
+
+.btn-favorite.active {
+  border-color: #ff4757;
+  background: #ff4757;
+  color: white;
+}
+
+.btn-detail {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-detail:hover {
+  background: linear-gradient(135deg, #1976d2, #2196f3);
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   플레이스홀더 스타일
+   ======================================== */
+
+.recommendation-placeholder,
+.search-placeholder {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #ddd;
+}
+
+.placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.7;
+}
+
+.recommendation-placeholder h3,
+.search-placeholder h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.recommendation-placeholder p,
+.search-placeholder p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.improvement-note {
+  background: #e8f5e8;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-top: 15px;
+}
+
+.improvement-note small {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+/* ========================================
+   검색 힌트 스타일
+   ======================================== */
+
+.search-hint {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.hint-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hint-number {
+  background: linear-gradient(45deg, #4caf50, #66bb6a);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.hint-text {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* 논리적 조합 가이드 스타일 */
+.logical-combination-guide {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  border: 1px solid #dee2e6;
+}
+
+.combination-examples {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.example-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.example-item.valid {
+  background: #f1f8e9;
+  border-left-color: #4caf50;
+}
+
+.example-item.invalid {
+  background: #ffebee;
+  border-left-color: #f44336;
+}
+
+.example-icon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+}
+
+.example-text strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.example-text small {
+  color: #666;
+  font-size: 12px;
+}
+
+.combination-tip {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px dashed #4caf50;
+}
+
+.combination-tip h4 {
+  margin: 0 0 12px 0;
+  color: #2e7d32;
+}
+
+.combination-tip ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.combination-tip li {
+  margin-bottom: 8px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* ========================================
+   빠른 필터 제안 버튼
+   ======================================== */
+
+.main-category-suggestions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.suggestion-btn {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 2px solid #e1e5e9;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
+}
+
+.suggestion-btn:hover {
+  background: linear-gradient(135deg, #e9ecef, #dee2e6);
+  border-color: #4caf50;
+  transform: translateY(-1px);
+}
+
+.retry-search-btn {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 15px;
+}
+
+.retry-search-btn:hover {
+  background: linear-gradient(135deg, #45a049, #4caf50);
+  transform: translateY(-1px);
+}
+
+/* ========================================
+   로딩 스피너
+   ======================================== */
+
+.loading-spinner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.loading-spinner.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4caf50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/**
+ * 🎯 tour-search.css에 추가할 스타일
+ * 장소 옵션 그룹 헤더 스타일링
+ */
+
+/* 옵션 그룹 헤더 스타일 */
+.option-group-header {
+  font-weight: 600;
+  font-size: 12px;
+  color: #666;
+  background-color: #f8f9fa;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-left: 3px solid #4caf50;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 그룹별 색상 구분 */
+.option-group-header:nth-of-type(1) {
+  border-left-color: #4caf50;
+} /* 자연 - 초록 */
+.option-group-header:nth-of-type(2) {
+  border-left-color: #2196f3;
+} /* 문화 - 파랑 */
+.option-group-header:nth-of-type(3) {
+  border-left-color: #ff9800;
+} /* 휴양 - 주황 */
+.option-group-header:nth-of-type(4) {
+  border-left-color: #9c27b0;
+} /* 레저 - 보라 */
+.option-group-header:nth-of-type(5) {
+  border-left-color: #607d8b;
+} /* 기타 - 회색 */
+
+/* 드롭다운 옵션 높이 조정 (더 많은 옵션 수용) */
+.dropdown-options {
+  max-height: 400px; /* 기존 300px에서 증가 */
+  overflow-y: auto;
+}
+
+/* 옵션 간격 조정 */
+.dropdown-option {
+  padding: 6px 12px; /* 기존보다 약간 줄임 */
+}
+
+/* 스크롤바 스타일링 */
+.dropdown-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-options::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* ========================================
+   모달 스타일
+   ======================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #e1e5e9;
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.modal-footer {
+  padding: 15px 25px;
+  border-top: 1px solid #e1e5e9;
+  text-align: center;
+  background: #f8f9fa;
+}
+
+.modal-footer small {
+  color: #666;
+}
+
+/* ========================================
+   투어 상세 정보 스타일
+   ======================================== */
+
+.tour-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tour-detail-image img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.tour-detail-info h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.tour-detail-info p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.tour-overview {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+}
+
+/* ========================================
+   페이지네이션
+   ======================================== */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 40px;
+}
+
+.pagination-btn {
+  background: white;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #666;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 5px;
+}
+
+.pagination-number {
+  background: white;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: #666;
+  min-width: 40px;
+  text-align: center;
+}
+
+.pagination-number:hover {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.pagination-number.active {
+  background: #4caf50;
+  border-color: #4caf50;
+  color: white;
+}
+
+/* ========================================
+   코스 섹션 스타일
+   ======================================== */
+
+.course-section {
+  margin-bottom: 35px;
+}
+
+.course-section-title {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.course-icon {
+  font-size: 20px;
+  margin-right: 10px;
+}
+
+/* ========================================
+   애니메이션
+   ======================================== */
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   로그인 프롬프트 스타일
+   ======================================== */
+
+.login-prompt {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.login-prompt-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.login-prompt-text {
+  flex: 1;
+}
+
+.login-prompt-text strong {
+  color: #856404;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.login-prompt-text small {
+  color: #856404;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.login-prompt-link {
+  color: #4caf50;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.login-prompt-link:hover {
+  color: #45a049;
+}
+
+/* ========================================
+   결과 없음 스타일
+   ======================================== */
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #ddd;
+}
+
+.no-results-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.7;
+}
+
+.no-results h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.no-results p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* ========================================
+   🆕 이미지 fallback 스타일 (개선)
+   ======================================== */
+
+.tour-image.no-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  color: #666;
+  text-align: center;
+  position: relative;
+}
+
+.tour-image.no-image.nature {
+  background: linear-gradient(135deg, #e8f5e8, #c8e6c8);
+  color: #2e7d32;
+}
+
+.tour-image.no-image.culture {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  color: #1565c0;
+}
+
+.tour-image.no-image.sports {
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  color: #e65100;
+}
+
+.tour-image.no-image.food {
+  background: linear-gradient(135deg, #ffebee, #ffcdd2);
+  color: #c62828;
+}
+
+.tour-image.no-image.course {
+  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+  color: #7b1fa2;
+}
+
+.fallback-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.fallback-text {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.no-image-indicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+/* tour-search.css - 7그룹 장소 드롭다운 스타일링 추가 */
+
+/* 🆕 7그룹 장소 드롭다운 전용 스타일 */
+
+/* 그룹 헤더 스타일 */
+.place-group-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 10px 15px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #495057;
+  border-bottom: 1px solid #dee2e6;
+  margin: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 4px 4px 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.place-group-header:first-child {
+  margin-top: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+/* 그룹별 색상 구분 */
+.place-group-header:nth-child(7n + 1) {
+  border-left: 4px solid #28a745;
+} /* 자연관광지 */
+.place-group-header:nth-child(7n + 2) {
+  border-left: 4px solid #dc3545;
+} /* 역사관광지 */
+.place-group-header:nth-child(7n + 3) {
+  border-left: 4px solid #17a2b8;
+} /* 휴양관광지 */
+.place-group-header:nth-child(7n + 4) {
+  border-left: 4px solid #ffc107;
+} /* 체험관광지 */
+.place-group-header:nth-child(7n + 5) {
+  border-left: 4px solid #6610f2;
+} /* 문화시설 */
+.place-group-header:nth-child(7n + 6) {
+  border-left: 4px solid #fd7e14;
+} /* 육상레포츠 */
+.place-group-header:nth-child(7n + 7) {
+  border-left: 4px solid #20c997;
+} /* 수상레포츠 */
+
+/* 🆕 편의시설 관련 스타일 */
+.accessibility-new {
+  background: linear-gradient(45deg, #4caf50, #2196f3);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  margin-left: 5px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.filter-help {
+  display: block;
+  color: #666;
+  font-size: 11px;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* 접근성 점수 배지 */
+.accessibility-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.accessibility-badge.high {
+  background: linear-gradient(45deg, #4caf50, #66bb6a);
+  border: 1px solid #2e7d32;
+}
+
+.accessibility-badge.medium {
+  background: linear-gradient(45deg, #ff9800, #ffb74d);
+  border: 1px solid #e65100;
+}
+
+.accessibility-badge.low {
+  background: linear-gradient(45deg, #9e9e9e, #bdbdbd);
+  border: 1px solid #424242;
+}
+
+/* 편의시설 정보 표시 */
+.accessibility-info {
+  margin-top: 8px;
+  padding: 6px 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #4caf50;
+}
+
+.accessibility-features {
+  color: #2e7d32;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 편의시설 안내 섹션 */
+.accessibility-guide {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  border: 1px solid #dee2e6;
+}
+
+.accessibility-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #4caf50;
+}
+
+.category-icon {
+  font-size: 24px;
+  width: 40px;
+  text-align: center;
+}
+
+.category-text strong {
+  display: block;
+  color: #2e7d32;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.category-text small {
+  color: #666;
+  font-size: 13px;
+}
+
+.accessibility-scoring {
+  text-align: center;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  border: 2px dashed #4caf50;
+}
+
+.accessibility-scoring h4 {
+  margin: 0 0 12px 0;
+  color: #2e7d32;
+}
+
+.score-badges {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.score-badge {
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.score-badge.high {
+  background: linear-gradient(45deg, #4caf50, #66bb6a);
+}
+
+.score-badge.medium {
+  background: linear-gradient(45deg, #ff9800, #ffb74d);
+}
+
+.score-badge.low {
+  background: linear-gradient(45deg, #9e9e9e, #bdbdbd);
+}
+
+/* 그룹화된 드롭다운 옵션 컨테이너 */
+.grouped-options {
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.place-groups-container {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+/* 그룹 내 장소 옵션 스타일 */
+.place-option {
+  padding: 8px 20px 8px 24px;
+  margin: 0;
+  border-bottom: 1px solid #f8f9fa;
+  transition: all 0.2s ease;
+}
+
+.place-option:hover {
+  background: linear-gradient(90deg, #f8f9fa 0%, #ffffff 100%);
+  padding-left: 28px;
+  transform: translateX(2px);
+}
+
+.place-option label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.place-option input[type="checkbox"] {
+  margin-right: 10px;
+  transform: scale(1.1);
+  accent-color: #007bff;
+}
+
+.place-option .option-text {
+  font-size: 14px;
+  color: #495057;
+  transition: color 0.2s ease;
+}
+
+.place-option:hover .option-text {
+  color: #007bff;
+  font-weight: 500;
+}
+
+/* 선택된 옵션 스타일 */
+.place-option input[type="checkbox"]:checked + .option-text {
+  color: #007bff;
+  font-weight: 600;
+}
+
+.place-option:has(input[type="checkbox"]:checked) {
+  background: linear-gradient(90deg, #e3f2fd 0%, #f8f9fa 100%);
+  border-left: 3px solid #007bff;
+}
+
+/* 드롭다운 헤더 개선 */
+.grouped-options .dropdown-header {
+  background: #ffffff;
+  padding: 12px 15px;
+  border-bottom: 2px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 500;
+  position: sticky;
+  top: 0;
+  z-index: 15;
+}
+
+/* 전체 해제 버튼 스타일 */
+.grouped-options .clear-all-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.grouped-options .clear-all-btn:hover {
+  background: #c82333;
+  transform: scale(1.05);
+}
+
+/* 스크롤바 커스터마이징 */
+.place-groups-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.place-groups-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.place-groups-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.place-groups-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 드롭다운 트리거 개선 (7그룹용) */
+.custom-dropdown-container:has(.grouped-options) .dropdown-trigger {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #dee2e6;
+  transition: all 0.3s ease;
+}
+
+.custom-dropdown-container:has(.grouped-options) .dropdown-trigger:hover {
+  border-color: #007bff;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+}
+
+.custom-dropdown-container:has(.grouped-options) .dropdown-trigger.active {
+  border-color: #007bff;
+  background: linear-gradient(135deg, #e3f2fd 0%, #ffffff 100%);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* 애니메이션 개선 */
+.grouped-options {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.grouped-options.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .place-group-header {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .place-option {
+    padding: 6px 16px 6px 20px;
+  }
+
+  .grouped-options {
+    max-height: 300px;
+  }
+
+  .place-groups-container {
+    max-height: 250px;
+  }
+
+  .accessibility-categories {
+    grid-template-columns: 1fr;
+  }
+
+  .score-badges {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .search-hint {
+    grid-template-columns: 1fr;
+  }
+
+  .combination-examples {
+    grid-template-columns: 1fr;
+  }
+
+  .category-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .accessibility-badge {
+    position: static;
+    display: inline-block;
+    margin-top: 8px;
+  }
+}
+
+/* 접근성 개선 */
+.place-option:focus-within {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.place-group-header[role="separator"] {
+  cursor: default;
+}
+
+/* 로딩 상태 */
+.place-groups-container.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+}
+
+.place-groups-container.loading::after {
+  content: "🔄 그룹 로딩 중...";
+  color: #6c757d;
+  font-size: 14px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ========================================
+   추가 반응형 스타일
+   ======================================== */
+
+@media (max-width: 480px) {
+  .tour-list {
+    grid-template-columns: 1fr;
+  }
+
+  .search-hint {
+    grid-template-columns: 1fr;
+  }
+
+  .main-category-suggestions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .tour-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-detail {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ========================================
+   인쇄 스타일
+   ======================================== */
+
+@media print {
+  .search-filters,
+  .loading-spinner,
+  .modal-overlay,
+  .pagination {
+    display: none !important;
+  }
+
+  .tour-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  .tour-actions {
+    display: none;
+  }
+}

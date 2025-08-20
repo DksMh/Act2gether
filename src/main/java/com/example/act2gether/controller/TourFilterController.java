@@ -7,7 +7,12 @@
 package com.example.act2gether.controller;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.UserRepository;
 import com.example.act2gether.service.TourFilterService;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +40,7 @@ public class TourFilterController {
 
     private final TourFilterService tourFilterService;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     // 설정값으로 기본값 관리
     @Value("${tour.search.default.numOfRows:6}")
@@ -45,28 +53,151 @@ public class TourFilterController {
     private int minNumOfRows;
 
     /**
-     * ✅ 필터 옵션 조회 (확대된 선택 수 포함)
+     * ✅ 필터 옵션 조회 (v3.0 단순화 반영)
      */
     @GetMapping("/filter-options")
     public ResponseEntity<Map<String, Object>> getFilterOptions() {
-        log.info("필터 옵션 조회 요청 - 선택 수 확대 (테마4, 활동5, 장소6)");
+        log.info("🎯 v3.0 필터 옵션 조회 - UI 단순화 (장소 중심)");
 
         Map<String, Object> options = tourFilterService.getFilterOptions();
 
-        // v2.4 무장애여행 정보 추가
-        options.put("version", "v2.4");
+        // v3.0 정보 업데이트
+        options.put("version", "v3.0");
+
+        // v3.0: UI에서 제거된 필터들 (참조용으로만 유지)
+        options.put("uiFilters", Arrays.asList("region", "places", "needs", "numOfRows"));
+        options.put("hiddenFilters", Arrays.asList("themes", "activities")); // 자동 매핑됨
+
         Map<String, Integer> maxSelections = new HashMap<>();
-        maxSelections.put("themes", 4);      // 3→4
-        maxSelections.put("activities", 5);  // 3→5  
-        maxSelections.put("places", 6);      // 3→6
+        maxSelections.put("places", 6); // UI에서 유일한 다중선택
         options.put("maxSelections", maxSelections);
-        options.put("features", "무장애여행 통합 + 논리적 조합 최적화 + 선택 수 확대");
+
+        options.put("features", "UI단순화 + 장소기반 자동매핑 + 액티브시니어 최적화");
+        options.put("simplification", "필터 50% 감소 (7개→4개)");
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("data", options);
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 🆕 v3.0: 장소 기반 테마/활동 자동 매핑
+     */
+    private Map<String, String> autoMapFromPlaces(Map<String, String> params) {
+        Map<String, String> mappedParams = new HashMap<>(params);
+
+        String placesParam = params.get("places");
+        if (placesParam != null && !placesParam.trim().isEmpty()) {
+            try {
+                // JSON 배열 파싱
+                JsonNode placesArray = objectMapper.readTree(placesParam);
+                List<String> placeNames = new ArrayList<>();
+
+                if (placesArray.isArray()) {
+                    for (JsonNode place : placesArray) {
+                        placeNames.add(place.asText().trim());
+                    }
+                }
+
+                // 자동 매핑 수행
+                List<String> mappedThemes = mapPlacesToThemes(placeNames);
+                List<String> mappedActivities = mapPlacesToActivities(placeNames);
+
+                // JSON 형태로 변환하여 파라미터에 추가
+                if (!mappedThemes.isEmpty()) {
+                    mappedParams.put("themes", objectMapper.writeValueAsString(mappedThemes));
+                    log.info("🔄 자동 매핑된 테마: {}", mappedThemes);
+                }
+
+                if (!mappedActivities.isEmpty()) {
+                    mappedParams.put("activities", objectMapper.writeValueAsString(mappedActivities));
+                    log.info("🔄 자동 매핑된 활동: {}", mappedActivities);
+                }
+
+            } catch (Exception e) {
+                log.warn("⚠️ 장소 자동 매핑 실패: {}", e.getMessage());
+            }
+        }
+
+        return mappedParams;
+    }
+
+    /**
+     * 🆕 v3.0: 장소 → 테마 매핑 로직
+     */
+    private List<String> mapPlacesToThemes(List<String> places) {
+        Set<String> themes = new HashSet<>();
+
+        for (String place : places) {
+            // 자연 관련 장소들
+            if (Arrays.asList("해변", "산/공원", "계곡/폭포", "호수/강", "수목원",
+                    "자연휴양림", "자연생태관광지").contains(place)) {
+                themes.add("자연");
+            }
+
+            // 문화/역사 관련 장소들
+            if (Arrays.asList("고궁/문", "민속마을/가옥", "유적지", "사찰", "종교성지",
+                    "박물관", "미술관", "체험", "온천", "테마파크", "관광단지",
+                    "창질방", "유람선/잠수함관광").contains(place)) {
+                themes.add("문화/역사");
+            }
+
+            // 레저 관련 장소들
+            if (Arrays.asList("트래킹", "골프장", "스키장", "캠핑장", "낚시").contains(place)) {
+                themes.add("레포츠");
+            }
+        }
+
+        return new ArrayList<>(themes);
+    }
+
+    /**
+     * 🆕 v3.0: 장소 → 활동 매핑 로직
+     */
+    private List<String> mapPlacesToActivities(List<String> places) {
+        Set<String> activities = new HashSet<>();
+
+        for (String place : places) {
+            // 자연관광지 활동
+            if (Arrays.asList("해변", "산/공원", "계곡/폭포", "호수/강", "수목원",
+                    "자연휴양림", "자연생태관광지").contains(place)) {
+                activities.add("자연관광지");
+            }
+
+            // 역사관광지 활동
+            if (Arrays.asList("고궁/문", "민속마을/가옥", "유적지", "사찰", "종교성지").contains(place)) {
+                activities.add("역사관광지");
+            }
+
+            // 휴양관광지 활동
+            if (Arrays.asList("온천", "테마파크", "관광단지", "창질방", "유람선/잠수함관광").contains(place)) {
+                activities.add("휴양관광지");
+            }
+
+            // 체험관광지 활동
+            if (Arrays.asList("체험").contains(place)) {
+                activities.add("체험관광지");
+            }
+
+            // 문화시설 활동
+            if (Arrays.asList("박물관", "미술관").contains(place)) {
+                activities.add("문화시설");
+            }
+
+            // 육상레포츠 활동
+            if (Arrays.asList("트래킹", "골프장", "스키장", "캠핑장").contains(place)) {
+                activities.add("육상레포츠");
+            }
+
+            // 수상레포츠 활동
+            if (Arrays.asList("낚시").contains(place)) {
+                activities.add("수상레포츠");
+            }
+        }
+
+        return new ArrayList<>(activities);
     }
 
     /**
@@ -126,34 +257,46 @@ public class TourFilterController {
     }
 
     /**
-     * ✅ 관광지 검색 - 논리적 조합 최적화 - v2.4 무장애여행 통합
+     * ✅ 관광지 검색 - v3.0 장소 기반 자동 매핑 지원
      */
     @GetMapping("/search")
     public ResponseEntity<Map<String, Object>> searchTours(@RequestParam Map<String, String> params) {
-        log.info("관광지 검색 요청 - 파라미터: {}", params);
+        log.info("🎯 v3.0 관광지 검색 요청 - 파라미터: {}", params);
+
+        // v3.0: 장소 기반 자동 매핑 수행
+        Map<String, String> enhancedParams = autoMapFromPlaces(params);
 
         // 파라미터 유효성 검증 및 정규화
-        Map<String, String> normalizedParams = validateAndNormalizeSearchParams(params);
-        log.info("정규화된 파라미터: {}", normalizedParams);
+        Map<String, String> normalizedParams = validateAndNormalizeSearchParams(enhancedParams);
+        log.info("정규화된 파라미터 (자동매핑 포함): {}", normalizedParams);
 
-         // v2.4 무장애여행 통합 검색
+        // v3.0 무장애여행 통합 검색 (기존 로직 활용)
         Map<String, Object> result = tourFilterService.searchTours(normalizedParams);
-        
-        // 🔧 수정: 불변 Map 문제 해결 - 새로운 HashMap으로 복사
+
+        // 불변 Map 문제 해결
         Map<String, Object> response = new HashMap<>();
         if (result != null) {
-            response.putAll(result);  // 기존 결과 복사
-        }
-        
-        // 검색 결과에 v2.4 정보 추가
-        if ((Boolean) response.getOrDefault("success", false)) {
-            response.put("version", "v2.4");
-            response.put("optimized", true);
-            response.put("barrierFreeIntegration", true);
+            response.putAll(result);
         }
 
-        log.info("검색 결과 - 성공: {}, 개수: {}", 
-                response.get("success"), 
+        // v3.0 정보 추가
+        if ((Boolean) response.getOrDefault("success", false)) {
+            response.put("version", "v3.0");
+            response.put("uiSimplified", true);
+            response.put("autoMapped", true);
+            response.put("barrierFreeIntegration", true);
+
+            // 자동 매핑 정보 추가 (디버깅용)
+            if (enhancedParams.containsKey("themes") && !params.containsKey("themes")) {
+                response.put("mappedThemes", enhancedParams.get("themes"));
+            }
+            if (enhancedParams.containsKey("activities") && !params.containsKey("activities")) {
+                response.put("mappedActivities", enhancedParams.get("activities"));
+            }
+        }
+
+        log.info("v3.0 검색 결과 - 성공: {}, 개수: {}",
+                response.get("success"),
                 response.containsKey("data") ? "포함" : "없음");
 
         return ResponseEntity.ok(response);
@@ -165,39 +308,35 @@ public class TourFilterController {
     private Map<String, String> validateAndNormalizeSearchParams(Map<String, String> params) {
         Map<String, String> normalized = new HashMap<>();
 
-        // 방문지 수 검증 (설정값 기반)
+        // 방문지 수 검증
         int numOfRows = defaultNumOfRows;
         int pageNo = 1;
 
         try {
             if (params.containsKey("numOfRows")) {
                 numOfRows = Math.min(Math.max(Integer.parseInt(params.get("numOfRows")), minNumOfRows), maxNumOfRows);
-                log.debug("방문지 수 설정: {} (범위: {}-{})", numOfRows, minNumOfRows, maxNumOfRows);
             }
             if (params.containsKey("pageNo")) {
                 pageNo = Math.max(Integer.parseInt(params.get("pageNo")), 1);
             }
         } catch (NumberFormatException e) {
-            log.warn("잘못된 숫자 파라미터, 기본값 사용 - numOfRows: {}, pageNo: {}", defaultNumOfRows, pageNo);
+            log.warn("잘못된 숫자 파라미터, 기본값 사용");
         }
 
         normalized.put("numOfRows", String.valueOf(numOfRows));
         normalized.put("pageNo", String.valueOf(pageNo));
 
-        // 지역 처리 - 지역명을 지역코드로 변환
+        // 지역 처리
         String region = params.get("region");
         String areaCode = params.get("areaCode");
 
         if (areaCode != null && !areaCode.trim().isEmpty()) {
             normalized.put("areaCode", areaCode.trim());
-            log.info("✅ 지역코드 직접 사용: {}", areaCode);
         } else if (region != null && !region.trim().isEmpty()) {
             String convertedAreaCode = tourFilterService.getAreaCodeByName(region);
             if (!convertedAreaCode.isEmpty()) {
                 normalized.put("areaCode", convertedAreaCode);
                 log.info("✅ 지역명 변환: {} → {}", region, convertedAreaCode);
-            } else {
-                log.warn("⚠️ 지역명 변환 실패: {}", region);
             }
         }
 
@@ -205,47 +344,22 @@ public class TourFilterController {
         String sigunguCode = params.get("sigunguCode");
         if (sigunguCode != null && !sigunguCode.trim().isEmpty()) {
             normalized.put("sigunguCode", sigunguCode.trim());
-            log.info("✅ 시군구코드 설정: {}", sigunguCode);
         }
 
-        // 카테고리 처리 (메인 3개만 허용)
-        String cat1 = params.get("cat1");
-        if (cat1 != null && !cat1.trim().isEmpty()) {
-            if (java.util.List.of("A01", "A02", "A03").contains(cat1.trim())) {
-                normalized.put("cat1", cat1.trim());
-                log.info("✅ 대분류 카테고리 설정: {}", cat1);
-            } else {
-                log.warn("⚠️ 허용되지 않은 대분류 카테고리: {}", cat1);
-            }
-        }
-
-        String cat2 = params.get("cat2");
-        if (cat2 != null && !cat2.trim().isEmpty()) {
-            normalized.put("cat2", cat2.trim());
-            log.info("✅ 중분류 카테고리 설정: {}", cat2);
-        }
-
-        String cat3 = params.get("cat3");
-        if (cat3 != null && !cat3.trim().isEmpty()) {
-            normalized.put("cat3", cat3.trim());
-            log.info("✅ 소분류 카테고리 설정: {}", cat3);
-        }
-
-        // 테마 처리 (다중 선택 - 최대 4개)
+        // 🆕 v3.0: 자동 매핑된 테마/활동 처리
         String themes = params.get("themes");
         if (themes != null && !themes.trim().isEmpty()) {
             normalized.put("themes", themes.trim());
-            log.info("✅ 테마 설정: {}", themes);
+            log.info("✅ 테마 설정 (자동매핑): {}", themes);
         }
 
-        // 활동 처리 (다중 선택 - 최대 5개)
         String activities = params.get("activities");
         if (activities != null && !activities.trim().isEmpty()) {
             normalized.put("activities", activities.trim());
-            log.info("✅ 활동 설정: {}", activities);
+            log.info("✅ 활동 설정 (자동매핑): {}", activities);
         }
 
-        // 장소 처리 (다중 선택 - 최대 6개)
+        // 장소 처리 (v3.0 핵심)
         String places = params.get("places");
         if (places != null && !places.trim().isEmpty()) {
             normalized.put("places", places.trim());
@@ -259,14 +373,6 @@ public class TourFilterController {
             log.info("✅ 편의시설 설정: {}", needs);
         }
 
-        // 키워드 처리
-        String keyword = params.get("keyword");
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            normalized.put("keyword", keyword.trim());
-            log.info("✅ 키워드 설정: {}", keyword);
-        }
-
-        log.debug("파라미터 정규화 완료 - 입력: {}, 출력: {}", params.size(), normalized.size());
         return normalized;
     }
 
@@ -298,39 +404,32 @@ public class TourFilterController {
             Authentication authentication,
             @RequestParam(defaultValue = "6") int numOfRows) {
 
-        log.info("추천 관광지 조회 요청 - 개수: {}", numOfRows);
-
         String userInterests = null;
-
         if (authentication != null && authentication.isAuthenticated()
                 && !"anonymousUser".equals(authentication.getPrincipal())) {
             try {
                 String userId = authentication.getName();
                 UserEntity user = userRepository.findById(userId).orElse(null);
-
                 if (user != null && user.getInterests() != null) {
                     userInterests = user.getInterests();
-                    log.info("사용자 관심사 기반 추천: {}", userId);
                 }
             } catch (Exception e) {
-                log.warn("사용자 관심사 로드 실패, 일반 추천으로 대체: {}", e.getMessage());
+                log.warn("사용자 관심사 로드 실패: {}", e.getMessage());
             }
         }
 
         Map<String, Object> result = tourFilterService.getRecommendedTours(userInterests, numOfRows);
-        
-        // 🔧 수정: 불변 Map 문제 해결
         Map<String, Object> response = new HashMap<>();
         if (result != null) {
             response.putAll(result);
         }
-        
-        // v2.4 정보 추가
+
+        // v3.0 정보 추가
         if ((Boolean) response.getOrDefault("success", false)) {
-            response.put("version", "v2.4");
-            response.put("optimized", true);
+            response.put("version", "v3.0");
+            response.put("uiSimplified", true);
         }
-        
+
         return ResponseEntity.ok(response);
     }
 
@@ -357,50 +456,24 @@ public class TourFilterController {
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> healthCheck() {
         try {
-            // 간단한 지역 API 호출로 상태 확인
             Map<String, Object> areaResult = tourFilterService.getAreaCodes();
             boolean isHealthy = (Boolean) areaResult.get("success");
 
             Map<String, Object> health = new HashMap<>();
             health.put("status", isHealthy ? "UP" : "DOWN");
             health.put("timestamp", System.currentTimeMillis());
-            health.put("api", isHealthy ? "정상" : "오류");
-            health.put("database", "정상");
-            health.put("version", "v2.4");
-            
-            Map<String, Object> features = new HashMap<>();
-            features.put("무장애여행통합", true);
-            features.put("선택수확대", "테마4+활동5+장소6");
-            features.put("논리적조합검증", true);
-            features.put("성능최적화", true);
-            health.put("features", features);
-            
-            Map<String, Integer> maxSelections = new HashMap<>();
-            maxSelections.put("themes", 4);
-            maxSelections.put("activities", 5);
-            maxSelections.put("places", 6);
-            health.put("maxSelections", maxSelections);
+            health.put("version", "v3.0");
+            health.put("features", "UI단순화 + 장소기반자동매핑 + 액티브시니어최적화");
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", health);
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of("success", true, "data", health));
 
         } catch (Exception e) {
-            log.error("헬스체크 실패: {}", e.getMessage());
-
-            Map<String, Object> health = new HashMap<>();
-            health.put("status", "DOWN");
-            health.put("timestamp", System.currentTimeMillis());
-            health.put("error", e.getMessage());
-            health.put("version", "v2.4");
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("data", health);
-
-            return ResponseEntity.ok(response);
+            Map<String, Object> health = Map.of(
+                    "status", "DOWN",
+                    "timestamp", System.currentTimeMillis(),
+                    "error", e.getMessage(),
+                    "version", "v3.0");
+            return ResponseEntity.ok(Map.of("success", false, "data", health));
         }
     }
 }
