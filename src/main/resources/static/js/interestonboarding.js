@@ -18,9 +18,9 @@ document.addEventListener("DOMContentLoaded", function () {
 function initializeInterestEventListeners() {
   const optionSections = [
     "regionOptions",
-    "companionOptions", 
-    "themeOptions",
-    "activityOptions",
+    // "companionOptions", 
+    // "themeOptions",
+    // "activityOptions",
     "placeOptions",
     "needsOptions",
   ];
@@ -54,9 +54,9 @@ function handleOptionClick(event) {
 function updateUserInterests() {
   const sections = {
     regionOptions: "preferredRegions",
-    companionOptions: "companions", 
-    themeOptions: "themes",
-    activityOptions: "activities",
+    // companionOptions: "companions", 
+    // themeOptions: "themes",
+    // activityOptions: "activities",
     placeOptions: "places",
     needsOptions: "needs",
   };
