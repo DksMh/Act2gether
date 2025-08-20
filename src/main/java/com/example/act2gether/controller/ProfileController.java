@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.act2gether.dto.EmailDTO;
+import com.example.act2gether.dto.ProfileDTO;
 import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.service.ProfileService;
 
@@ -24,8 +25,9 @@ public class ProfileController {
     @PostMapping("/user")
     public ResponseEntity<?> verifyCode(@RequestBody EmailDTO emailDto) {
         log.info("email : {}", emailDto.getEmail());
-        UserEntity userEntity = profileService.getProfile(emailDto.getEmail());
-        return ResponseEntity.status(HttpStatus.OK).body(userEntity);
+        // UserEntity userEntity = profileService.getProfile(emailDto.getEmail());
+        ProfileDTO profileDto = profileService.getProfile(emailDto.getEmail());
+        return ResponseEntity.status(HttpStatus.OK).body(profileDto);
     }
 }
 

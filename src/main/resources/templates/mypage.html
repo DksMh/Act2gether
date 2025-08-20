@@ -12,6 +12,7 @@
       rel="stylesheet"
     />
     <script src="/js/mypage.js"></script>
+    <!-- <script src="/js/interestonboarding.js"></script> -->
   </head>
   <body>
     <!-- Header -->
@@ -32,7 +33,8 @@
         </div>
       </div>
       <div style="margin-left:auto" class="row">
-        <span class="chip">선호 투어 정보 수정</span>
+        <!-- <span class="chip">선호 투어 정보 수정</span> -->
+        <button class="btn-sm" id="tour">선호 투어 정보 수정</button>
         <button class="btn-sm">설정</button>
       </div>
     </div>
@@ -50,8 +52,6 @@
         <div style="margin:10px 0 6px; color:var(--muted); font-weight:600; font-size:13px">선호 시설</div>
         <div class="subtabs" id="prefFacilities"></div>
 
-        <div style="margin:10px 0 6px; color:var(--muted); font-weight:600; font-size:13px">선호 테마</div>
-        <div class="subtabs" id="prefThemes"></div>
     </section>
 
     <!-- 현재 가입된 모임 -->
@@ -59,102 +59,124 @@
       <div class="row" style="justify-content:space-between; align-items:baseline">
         <h2 class="section-title">현재 가입된 모임</h2>
         <div class="row" style="gap:8px">
-          <span class="pill">여행 전 모임</span>
-          <span class="pill">종료된 모임</span>
+          <span class="pill" data-filter="upcoming" role="button" tabindex="0" aria-pressed="true">여행 전 모임</span>
+          <span class="pill" data-filter="done"      role="button" tabindex="0" aria-pressed="false">종료된 모임</span>
         </div>
       </div>
 
-      <div class="grid-3">
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">강원도 동해로 새벽 새찰하러 가요 서울 출발 당일</h3>
-            <div class="meta">
-              <span>여행 일정 00.00~00.00</span>
-              <span>출발 지역 서울</span>
-            </div>
-          </div>
-        </article>
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">중년 여성끼리 소박하게 국내 여행 가요</h3>
-            <div class="meta">
-              <span>여행 일정 00.00~00.00</span>
-              <span>출발 지역 서울</span>
-            </div>
-          </div>
-        </article>
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">모임명</h3>
-            <div class="meta">
-              <span>여행 일정 00.00~00.00</span>
-              <span>출발 지역 서울</span>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <button class="see-all">전체 보기</button>
+      <div class="grid-3" id="gathering"></div>
+      <button id="seeAllBtn-m" class="see-all" style="display:none">전체 보기</button>
+      <button id="seeShortBtn-m" class="see-short" style="display:none">축소</button>
     </section>
 
     <!-- 찜 목록 -->
-    <section>
+    <section id="wishlist">
       <h2 class="section-title">찜목록</h2>
-      <div class="grid-like">
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">[관광 상품] 오로라와 맛의 신세계</h3>
-            <div class="rev-text">짧은 설명이 들어갑니다. 여행지/상품 안내 등</div>
-          </div>
-        </article>
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">[관광 상품] 휴가의 정석</h3>
-            <div class="rev-text">짧은 설명이 들어갑니다. 여행지/상품 안내 등</div>
-          </div>
-        </article>
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">[관광 상품] 오로라와 맛의 신세계</h3>
-            <div class="rev-text">짧은 설명이 들어갑니다. 여행지/상품 안내 등</div>
-          </div>
-        </article>
-      </div>
-      <button class="see-all">전체 보기</button>
+      <div class="grid-like" id="wishlistList"></div>
+      <button id="seeAllBtn-w" class="see-all" style="display:none">전체 보기</button>
+      <button id="seeShortBtn-w" class="see-short" style="display:none">축소</button>
     </section>
 
     <!-- 나의 리뷰 -->
     <section class="reviews">
-      <h2 class="section-title">나의 리뷰</h2>
-
-      <div class="review">
-        <div class="stars">★★★★★ <span class="date">2025.05.06</span></div>
-        <div class="rev-title">평점이 1만점이라면? 2만점!</div>
-        <div class="rev-text">[관광 상품] 팀라보 전시.</div>
-      </div>
-
-      <div class="review">
-        <div class="stars">★★★★★ <span class="date">2025.03.05</span></div>
-        <div class="rev-title">맛집 대탐험</div>
-        <div class="rev-text">[관광 상품] 행복여행 단체 투어</div>
-      </div>
-
-      <div class="review">
-        <div class="stars">★★★★★ <span class="date">2025.02.05</span></div>
-        <div class="rev-title">최고의 힐링</div>
-        <div class="rev-text">[관광 상품] 오로라 투어</div>
-      </div>
-
-      <button class="see-all">전체 보기</button>
+        <h2 class="section-title">나의 리뷰</h2>
+        <div id="reviewList"></div>
+        <button id="seeAllBtn-r" class="see-all" style="display:none">전체 보기</button>
+        <button id="seeShortBtn-r" class="see-short" style="display:none">축소</button>
     </section>
 
   </main>
+
+  <!-- 모달 오버레이 -->
+<div id="interestModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="interestModalTitle">
+  <div class="modal__dialog" role="document">
+    <button class="modal__close" aria-label="닫기" onclick="closeInterestModal()">×</button>
+
+    <!-- 기존 섹션을 그대로 모달 안으로 이동/복붙 -->
+    <div class="onboarding-container">
+      <div id="interestSelection" class="interest-selection">
+        <div class="page-header">
+          <h1 class="page-title" id="interestModalTitle">관심사 설정</h1>
+          <p class="page-subtitle">
+            맞춤형 여행 추천을 위해 관심사를 선택해주세요.<br />
+            <span class="highlight">여러 개</span>를 선택할 수 있습니다.
+          </p>
+        </div>
+
+        <!-- Questions -->
+        <div class="question-section">
+          <h3 class="question-title">1. 어떤 지역을 선호하시나요?</h3>
+          <p class="question-subtitle">복수 선택 가능</p>
+          <div class="options-grid" id="regionOptions">
+            <button class="option-button" data-value="서울">서울</button>
+            <button class="option-button" data-value="부산">부산</button>
+            <button class="option-button" data-value="대구">대구</button>
+            <button class="option-button" data-value="인천">인천</button>
+            <button class="option-button" data-value="광주">광주</button>
+            <button class="option-button" data-value="대전">대전</button>
+            <button class="option-button" data-value="울산">울산</button>
+            <button class="option-button" data-value="세종">세종</button>
+            <button class="option-button" data-value="경기">경기</button>
+            <button class="option-button" data-value="강원">강원</button>
+            <button class="option-button" data-value="충북">충북</button>
+            <button class="option-button" data-value="충남">충남</button>
+            <button class="option-button" data-value="전북">전북</button>
+            <button class="option-button" data-value="전남">전남</button>
+            <button class="option-button" data-value="경북">경북</button>
+            <button class="option-button" data-value="경남">경남</button>
+            <button class="option-button" data-value="제주">제주</button>
+          </div>
+        </div>
+
+        <div class="question-section">
+          <h3 class="question-title">2. 어떤 장소로 가고 싶으신가요?</h3>
+          <p class="question-subtitle">복수 선택 가능</p>
+          <div class="options-grid" id="placeOptions">
+            <button class="option-button" data-value="해변">해변</button>
+            <button class="option-button" data-value="산">산</button>
+            <button class="option-button" data-value="도시관광">도시관광</button>
+            <button class="option-button" data-value="시골">시골</button>
+            <button class="option-button" data-value="호수">호수</button>
+            <button class="option-button" data-value="온천지역">온천지역</button>
+            <button class="option-button" data-value="섬지역">섬지역</button>
+          </div>
+        </div>
+
+        <div class="question-section">
+          <h3 class="question-title">3. 개인적으로 필요한 사항이 있으신가요?</h3>
+          <p class="question-subtitle">복수 선택 가능</p>
+          <div class="options-grid" id="needsOptions">
+            <button class="option-button" data-value="접근성">접근성</button>
+            <button class="option-button" data-value="휠체어">휠체어</button>
+            <button class="option-button" data-value="유치원시설">유치원시설</button>
+            <button class="option-button" data-value="병원">병원</button>
+            <button class="option-button" data-value="약국">약국</button>
+            <button class="option-button" data-value="응급실">응급실</button>
+            <button class="option-button" data-value="없음">없음</button>
+          </div>
+        </div>
+
+        <!-- Button Group -->
+        <div class="button-group">
+          <!-- <button class="btn btn-secondary" onclick="skipOnboarding()">나중에 설정</button> -->
+          <button class="btn btn-primary" onclick="completeOnboarding()">완료</button>
+        </div>
+
+        <!-- 메시지 영역 -->
+        <div class="message-area">
+          <div id="interestErrorMessage" class="error-message" hidden>
+            <p id="interestErrorText">관심사 저장에 실패했습니다. 다시 시도해주세요.</p>
+            <button class="retry-button" onclick="retryInterestSubmission()">다시 시도</button>
+          </div>
+
+          <div id="successMessage" class="success-message" hidden>
+            <p>관심사가 성공적으로 저장되었습니다!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- Footer -->
      <div th:replace="footer :: footer"></div>

@@ -29,7 +29,7 @@ public class ReviewsEntity {
     @Column(name = "group_id")
     private String groupId;
     
-    private boolean rating;
+    private int rating;
 
     @Column(name = "review_text")
     private String reviewText;
