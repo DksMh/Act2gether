@@ -32,7 +32,31 @@
     .card-title{font-size:13px; font-weight:700; line-height:1.4; margin:0 0 8px}
     .meta{display:flex; flex-wrap:wrap; gap:8px; color:var(--muted); font-size:12px}
     .see-all{margin-top:12px; width:100%; background:var(--btn); border:0; padding:10px; border-radius:8px; color:#444; cursor:pointer}
+    .see-short{margin-top:12px; width:100%; background:var(--btn); border:0; padding:10px; border-radius:8px; color:#444; cursor:pointer}
 
+    .pill {
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      user-select: none;
+      transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+
+    /* 활성(선택) */
+    .pill.active {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+      font-weight: 600;
+    }
+
+    /* 키보드 포커스(접근성) */
+    .pill:focus-visible {
+      outline: none;                     /* 브라우저 기본 아웃라인 제거 */
+      box-shadow: 0 0 0 3px rgba(17,17,17,.2);
+    }
+    
     /* 찜 카드(작게 같은 스타일 사용) */
     .grid-like{display:grid; grid-template-columns:repeat(3, 1fr); gap:18px}
 

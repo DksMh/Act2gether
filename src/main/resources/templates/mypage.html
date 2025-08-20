@@ -59,105 +59,31 @@
       <div class="row" style="justify-content:space-between; align-items:baseline">
         <h2 class="section-title">현재 가입된 모임</h2>
         <div class="row" style="gap:8px">
-          <span class="pill">여행 전 모임</span>
-          <span class="pill">종료된 모임</span>
+          <span class="pill" data-filter="upcoming" role="button" tabindex="0" aria-pressed="true">여행 전 모임</span>
+          <span class="pill" data-filter="done"      role="button" tabindex="0" aria-pressed="false">종료된 모임</span>
         </div>
       </div>
 
-      <div class="grid-3">
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">강원도 동해로 새벽 새찰하러 가요 서울 출발 당일</h3>
-            <div class="meta">
-              <span>여행 일정 00.00~00.00</span>
-              <span>출발 지역 서울</span>
-            </div>
-          </div>
-        </article>
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">중년 여성끼리 소박하게 국내 여행 가요</h3>
-            <div class="meta">
-              <span>여행 일정 00.00~00.00</span>
-              <span>출발 지역 서울</span>
-            </div>
-          </div>
-        </article>
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">모임명</h3>
-            <div class="meta">
-              <span>여행 일정 00.00~00.00</span>
-              <span>출발 지역 서울</span>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <button class="see-all">전체 보기</button>
+      <div class="grid-3" id="gathering"></div>
+      <button id="seeAllBtn-m" class="see-all" style="display:none">전체 보기</button>
+      <button id="seeShortBtn-m" class="see-short" style="display:none">축소</button>
     </section>
 
     <!-- 찜 목록 -->
     <section id="wishlist">
       <h2 class="section-title">찜목록</h2>
-      <div class="grid-like">
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">[관광 상품] 오로라와 맛의 신세계</h3>
-            <div class="rev-text">짧은 설명이 들어갑니다. 여행지/상품 안내 등</div>
-          </div>
-        </article>
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">[관광 상품] 휴가의 정석</h3>
-            <div class="rev-text">짧은 설명이 들어갑니다. 여행지/상품 안내 등</div>
-          </div>
-        </article>
-        <article class="card">
-          <div class="thumb"></div>
-          <div class="card-body">
-            <h3 class="card-title">[관광 상품] 오로라와 맛의 신세계</h3>
-            <div class="rev-text">짧은 설명이 들어갑니다. 여행지/상품 안내 등</div>
-          </div>
-        </article>
-      </div>
-      <button class="see-all">전체 보기</button>
+      <div class="grid-like" id="wishlistList"></div>
+      <button id="seeAllBtn-w" class="see-all" style="display:none">전체 보기</button>
+      <button id="seeShortBtn-w" class="see-short" style="display:none">축소</button>
     </section>
 
     <!-- 나의 리뷰 -->
     <section class="reviews">
         <h2 class="section-title">나의 리뷰</h2>
         <div id="reviewList"></div>
-        <button id="seeAllBtn" class="see-all" style="display:none">전체 보기</button>
+        <button id="seeAllBtn-r" class="see-all" style="display:none">전체 보기</button>
+        <button id="seeShortBtn-r" class="see-short" style="display:none">축소</button>
     </section>
-    <!-- <section class="reviews">
-      <h2 class="section-title">나의 리뷰</h2>
-
-      <div class="review">
-        <div class="stars">★★★★★ <span class="date">2025.05.06</span></div>
-        <div class="rev-title">평점이 1만점이라면? 2만점!</div>
-        <div class="rev-text">[관광 상품] 팀라보 전시.</div>
-      </div>
-
-      <div class="review">
-        <div class="stars">★★★★★ <span class="date">2025.03.05</span></div>
-        <div class="rev-title">맛집 대탐험</div>
-        <div class="rev-text">[관광 상품] 행복여행 단체 투어</div>
-      </div>
-
-      <div class="review">
-        <div class="stars">★★★★★ <span class="date">2025.02.05</span></div>
-        <div class="rev-title">최고의 힐링</div>
-        <div class="rev-text">[관광 상품] 오로라 투어</div>
-      </div>
-
-      <button class="see-all">전체 보기</button>
-    </section> -->
 
   </main>
 
