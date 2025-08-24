@@ -155,17 +155,36 @@ public class TourFilterService {
 
             // 8. 데이터 후처리 (기존과 동일)
             JsonNode processedItems = processTourData(objectMapper.valueToTree(balancedResults));
+            
+            // 🎯 개선된 응답 생성 부분 - 기존 "9. 응답 생성" 부분을 이것으로 교체
+            int requestedCount = Integer.parseInt(params.getOrDefault("numOfRows", "6"));
+            int actualCount = balancedResults.size();
 
-            // 9. 응답 생성 (v3.0 정보 추가)
             Map<String, Object> result = new HashMap<>();
             result.put("success", true);
             result.put("data", processedItems);
             result.put("totalFound", allResults.size());
-            result.put("finalCount", balancedResults.size());
+            result.put("finalCount", actualCount);
             result.put("apiCalls", searchParams.size());
             result.put("successfulCalls", successfulCalls);
-            result.put("version", "v3.0"); // 버전 업데이트
-            result.put("features", Arrays.asList("무장애여행통합", "논리적조합", "균형선별", "장소기반자동매핑")); // 기능 추가
+            result.put("version", "v3.0");
+            result.put("features", Arrays.asList("무장애여행통합", "논리적조합", "균형선별", "장소기반자동매핑"));
+
+            // 🆕 개선된 안내 정보 추가
+            result.put("searchInfo", Map.of(
+                "requestedCount", requestedCount,
+                "actualCount", actualCount,
+                "shortage", Math.max(0, requestedCount - actualCount),
+                "region", params.getOrDefault("areaCode", ""),
+                "sigungu", params.getOrDefault("sigunguCode", ""),
+                "selectedPlaces", parseMultiSelectValue(params.getOrDefault("places", "[]")),
+                "suggestions", generateSuggestions(params, requestedCount, actualCount)
+            ));
+            // 🆕 개선된 투어 제목 추가
+            if (!balancedResults.isEmpty()) {
+                String improvedTitle = generateTourTitle(balancedResults, params);
+                result.put("tourTitle", improvedTitle);
+            }
 
             // 무장애여행 정보 통계 추가 (기존과 동일)
             int barrierFreeCount = (int) balancedResults.stream()
@@ -197,170 +216,170 @@ public class TourFilterService {
     // ========================================
     // 장소별 그룹화 (cat3 소분류 기준) -250819
     // ========================================
-    private Map<String, List<JsonNode>> groupResultsByPlace(List<JsonNode> allResults, List<String> places) {
-        Map<String, List<JsonNode>> placeGroups = new HashMap<>();
+    // private Map<String, List<JsonNode>> groupResultsByPlace(List<JsonNode> allResults, List<String> places) {
+    //     Map<String, List<JsonNode>> placeGroups = new HashMap<>();
 
-        // 각 결과를 적절한 장소 그룹에 분류
-        for (JsonNode result : allResults) {
-            String cat3 = result.path("cat3").asText();
+    //     // 각 결과를 적절한 장소 그룹에 분류
+    //     for (JsonNode result : allResults) {
+    //         String cat3 = result.path("cat3").asText();
 
-            // 각 선택된 장소와 매칭 시도
-            for (String place : places) {
-                List<String> placeCodes = mapPlaceToMultipleCat3(place);
+    //         // 각 선택된 장소와 매칭 시도
+    //         for (String place : places) {
+    //             List<String> placeCodes = mapPlaceToMultipleCat3(place);
 
-                if (placeCodes.contains(cat3)) {
-                    placeGroups.computeIfAbsent(place, k -> new ArrayList<>()).add(result);
-                    break; // 첫 번째 매칭에서 중단 (중복 방지)
-                }
-            }
-        }
+    //             if (placeCodes.contains(cat3)) {
+    //                 placeGroups.computeIfAbsent(place, k -> new ArrayList<>()).add(result);
+    //                 break; // 첫 번째 매칭에서 중단 (중복 방지)
+    //             }
+    //         }
+    //     }
 
-        return placeGroups;
-    }
+    //     return placeGroups;
+    // }
 
     // ========================================
     // * 🔥 핵심: Weighted Fair Distribution 알고리즘
     // * 각 장소가 공정하게 배분되도록 하되, 품질도 고려
     // ========================================
-    private List<JsonNode> distributeResultsFairly(Map<String, List<JsonNode>> placeGroups,
-            int targetCount,
-            List<String> themes,
-            List<String> activities,
-            List<String> places) {
+    // private List<JsonNode> distributeResultsFairly(Map<String, List<JsonNode>> placeGroups,
+    //         int targetCount,
+    //         List<String> themes,
+    //         List<String> activities,
+    //         List<String> places) {
 
-        List<JsonNode> balancedResults = new ArrayList<>();
-        int placesCount = placeGroups.size();
+    //     List<JsonNode> balancedResults = new ArrayList<>();
+    //     int placesCount = placeGroups.size();
 
-        if (placesCount == 0) {
-            return balancedResults;
-        }
+    //     if (placesCount == 0) {
+    //         return balancedResults;
+    //     }
 
-        // 3단계: 기본 할당량 계산
-        int basePerPlace = targetCount / placesCount;
-        int extraSlots = targetCount % placesCount;
+    //     // 3단계: 기본 할당량 계산
+    //     int basePerPlace = targetCount / placesCount;
+    //     int extraSlots = targetCount % placesCount;
 
-        log.info("📊 균등 분배 계획: {}개 장소, 기본 {}개씩, 추가 {}개",
-                placesCount, basePerPlace, extraSlots);
+    //     log.info("📊 균등 분배 계획: {}개 장소, 기본 {}개씩, 추가 {}개",
+    //             placesCount, basePerPlace, extraSlots);
 
-        // 4단계: 각 장소별 품질 기준 정렬
-        Map<String, List<JsonNode>> sortedPlaceGroups = new HashMap<>();
-        for (Map.Entry<String, List<JsonNode>> entry : placeGroups.entrySet()) {
-            String placeName = entry.getKey();
-            List<JsonNode> placeResults = new ArrayList<>(entry.getValue());
+    //     // 4단계: 각 장소별 품질 기준 정렬
+    //     Map<String, List<JsonNode>> sortedPlaceGroups = new HashMap<>();
+    //     for (Map.Entry<String, List<JsonNode>> entry : placeGroups.entrySet()) {
+    //         String placeName = entry.getKey();
+    //         List<JsonNode> placeResults = new ArrayList<>(entry.getValue());
 
-            // 🔥 품질 점수 기준 정렬 (접근성 점수 + 관련성 점수)
-            placeResults.sort((a, b) -> {
-                // 접근성 점수 (20% 가중치)
-                int accessibilityA = a.path("accessibilityScore").asInt(0);
-                int accessibilityB = b.path("accessibilityScore").asInt(0);
+    //         // 🔥 품질 점수 기준 정렬 (접근성 점수 + 관련성 점수)
+    //         placeResults.sort((a, b) -> {
+    //             // 접근성 점수 (20% 가중치)
+    //             int accessibilityA = a.path("accessibilityScore").asInt(0);
+    //             int accessibilityB = b.path("accessibilityScore").asInt(0);
 
-                // 관련성 점수 (80% 가중치)
-                int relevanceA = calculateRelevanceScore(a, themes, activities, places);
-                int relevanceB = calculateRelevanceScore(b, themes, activities, places);
+    //             // 관련성 점수 (80% 가중치)
+    //             int relevanceA = calculateRelevanceScore(a, themes, activities, places);
+    //             int relevanceB = calculateRelevanceScore(b, themes, activities, places);
 
-                // 총 점수 계산
-                double totalScoreA = accessibilityA * 0.2 + relevanceA * 0.8;
-                double totalScoreB = accessibilityB * 0.2 + relevanceB * 0.8;
+    //             // 총 점수 계산
+    //             double totalScoreA = accessibilityA * 0.2 + relevanceA * 0.8;
+    //             double totalScoreB = accessibilityB * 0.2 + relevanceB * 0.8;
 
-                return Double.compare(totalScoreB, totalScoreA); // 높은 점수 먼저
-            });
+    //             return Double.compare(totalScoreB, totalScoreA); // 높은 점수 먼저
+    //         });
 
-            sortedPlaceGroups.put(placeName, placeResults);
-            log.debug("🔍 {} 정렬 완료: {}개 → 최고점수 {}",
-                    placeName, placeResults.size(),
-                    placeResults.isEmpty() ? 0
-                            : (placeResults.get(0).path("accessibilityScore").asInt(0) * 0.2 +
-                                    calculateRelevanceScore(placeResults.get(0), themes, activities, places) * 0.8));
-        }
+    //         sortedPlaceGroups.put(placeName, placeResults);
+    //         log.debug("🔍 {} 정렬 완료: {}개 → 최고점수 {}",
+    //                 placeName, placeResults.size(),
+    //                 placeResults.isEmpty() ? 0
+    //                         : (placeResults.get(0).path("accessibilityScore").asInt(0) * 0.2 +
+    //                                 calculateRelevanceScore(placeResults.get(0), themes, activities, places) * 0.8));
+    //     }
 
-        // 5단계: 공정한 선별 (Round-Robin + 우선순위)
-        List<String> placeNames = new ArrayList<>(sortedPlaceGroups.keySet());
-        Map<String, Integer> placeCounts = new HashMap<>();
-        Map<String, Integer> placeMaxCounts = new HashMap<>();
+    //     // 5단계: 공정한 선별 (Round-Robin + 우선순위)
+    //     List<String> placeNames = new ArrayList<>(sortedPlaceGroups.keySet());
+    //     Map<String, Integer> placeCounts = new HashMap<>();
+    //     Map<String, Integer> placeMaxCounts = new HashMap<>();
 
-        // 각 장소별 최대 할당량 계산 (가용성 기반)
-        for (int i = 0; i < placeNames.size(); i++) {
-            String placeName = placeNames.get(i);
-            int availableCount = sortedPlaceGroups.get(placeName).size();
-            int maxCount = basePerPlace + (i < extraSlots ? 1 : 0);
+    //     // 각 장소별 최대 할당량 계산 (가용성 기반)
+    //     for (int i = 0; i < placeNames.size(); i++) {
+    //         String placeName = placeNames.get(i);
+    //         int availableCount = sortedPlaceGroups.get(placeName).size();
+    //         int maxCount = basePerPlace + (i < extraSlots ? 1 : 0);
 
-            placeMaxCounts.put(placeName, Math.min(maxCount, availableCount));
-            placeCounts.put(placeName, 0);
-        }
+    //         placeMaxCounts.put(placeName, Math.min(maxCount, availableCount));
+    //         placeCounts.put(placeName, 0);
+    //     }
 
-        log.info("📋 장소별 최대 할당: {}", placeMaxCounts);
+    //     log.info("📋 장소별 최대 할당: {}", placeMaxCounts);
 
-        // 6단계: Round-Robin 선별
-        int selectedCount = 0;
-        int maxRounds = targetCount; // 무한루프 방지
+    //     // 6단계: Round-Robin 선별
+    //     int selectedCount = 0;
+    //     int maxRounds = targetCount; // 무한루프 방지
 
-        while (selectedCount < targetCount && maxRounds-- > 0) {
-            boolean selectedInThisRound = false;
+    //     while (selectedCount < targetCount && maxRounds-- > 0) {
+    //         boolean selectedInThisRound = false;
 
-            for (String placeName : placeNames) {
-                if (selectedCount >= targetCount)
-                    break;
+    //         for (String placeName : placeNames) {
+    //             if (selectedCount >= targetCount)
+    //                 break;
 
-                List<JsonNode> placeResults = sortedPlaceGroups.get(placeName);
-                int currentCount = placeCounts.get(placeName);
-                int maxCount = placeMaxCounts.get(placeName);
+    //             List<JsonNode> placeResults = sortedPlaceGroups.get(placeName);
+    //             int currentCount = placeCounts.get(placeName);
+    //             int maxCount = placeMaxCounts.get(placeName);
 
-                // 이 장소에서 더 선별할 수 있는지 확인
-                if (currentCount < maxCount && currentCount < placeResults.size()) {
-                    JsonNode selected = placeResults.get(currentCount);
-                    balancedResults.add(selected);
-                    placeCounts.put(placeName, currentCount + 1);
-                    selectedCount++;
-                    selectedInThisRound = true;
+    //             // 이 장소에서 더 선별할 수 있는지 확인
+    //             if (currentCount < maxCount && currentCount < placeResults.size()) {
+    //                 JsonNode selected = placeResults.get(currentCount);
+    //                 balancedResults.add(selected);
+    //                 placeCounts.put(placeName, currentCount + 1);
+    //                 selectedCount++;
+    //                 selectedInThisRound = true;
 
-                    log.debug("✅ {} 선별: {} ({}번째)", placeName,
-                            selected.path("title").asText(), currentCount + 1);
-                }
-            }
+    //                 log.debug("✅ {} 선별: {} ({}번째)", placeName,
+    //                         selected.path("title").asText(), currentCount + 1);
+    //             }
+    //         }
 
-            // 이번 라운드에서 아무것도 선별되지 않았으면 종료
-            if (!selectedInThisRound) {
-                break;
-            }
-        }
+    //         // 이번 라운드에서 아무것도 선별되지 않았으면 종료
+    //         if (!selectedInThisRound) {
+    //             break;
+    //         }
+    //     }
 
-        // 7단계: 부족한 경우 추가 선별 (품질 순)
-        if (selectedCount < targetCount) {
-            log.info("🔧 추가 선별 필요: {}개 → {}개", selectedCount, targetCount);
+    //     // 7단계: 부족한 경우 추가 선별 (품질 순)
+    //     if (selectedCount < targetCount) {
+    //         log.info("🔧 추가 선별 필요: {}개 → {}개", selectedCount, targetCount);
 
-            Set<String> selectedIds = balancedResults.stream()
-                    .map(node -> node.path("contentid").asText())
-                    .collect(Collectors.toSet());
+    //         Set<String> selectedIds = balancedResults.stream()
+    //                 .map(node -> node.path("contentid").asText())
+    //                 .collect(Collectors.toSet());
 
-            List<JsonNode> remainingResults = placeGroups.values().stream()
-                    .flatMap(List::stream)
-                    .filter(node -> !selectedIds.contains(node.path("contentid").asText()))
-                    .sorted((a, b) -> {
-                        double scoreA = a.path("accessibilityScore").asInt(0) * 0.2 +
-                                calculateRelevanceScore(a, themes, activities, places) * 0.8;
-                        double scoreB = b.path("accessibilityScore").asInt(0) * 0.2 +
-                                calculateRelevanceScore(b, themes, activities, places) * 0.8;
-                        return Double.compare(scoreB, scoreA);
-                    })
-                    .collect(Collectors.toList());
+    //         List<JsonNode> remainingResults = placeGroups.values().stream()
+    //                 .flatMap(List::stream)
+    //                 .filter(node -> !selectedIds.contains(node.path("contentid").asText()))
+    //                 .sorted((a, b) -> {
+    //                     double scoreA = a.path("accessibilityScore").asInt(0) * 0.2 +
+    //                             calculateRelevanceScore(a, themes, activities, places) * 0.8;
+    //                     double scoreB = b.path("accessibilityScore").asInt(0) * 0.2 +
+    //                             calculateRelevanceScore(b, themes, activities, places) * 0.8;
+    //                     return Double.compare(scoreB, scoreA);
+    //                 })
+    //                 .collect(Collectors.toList());
 
-            int needed = targetCount - selectedCount;
-            for (int i = 0; i < Math.min(needed, remainingResults.size()); i++) {
-                balancedResults.add(remainingResults.get(i));
-            }
-        }
+    //         int needed = targetCount - selectedCount;
+    //         for (int i = 0; i < Math.min(needed, remainingResults.size()); i++) {
+    //             balancedResults.add(remainingResults.get(i));
+    //         }
+    //     }
 
-        // 8단계: 최종 결과 로깅
-        Map<String, Long> finalDistribution = balancedResults.stream()
-                .collect(Collectors.groupingBy(
-                        node -> findPlaceNameByCat3(node.path("cat3").asText(), places),
-                        Collectors.counting()));
+    //     // 8단계: 최종 결과 로깅
+    //     Map<String, Long> finalDistribution = balancedResults.stream()
+    //             .collect(Collectors.groupingBy(
+    //                     node -> findPlaceNameByCat3(node.path("cat3").asText(), places),
+    //                     Collectors.counting()));
 
-        log.info("🎯 Phase 2 균형 선별 완료: {} → 최종 분배: {}",
-                targetCount, finalDistribution);
+    //     log.info("🎯 Phase 2 균형 선별 완료: {} → 최종 분배: {}",
+    //             targetCount, finalDistribution);
 
-        return balancedResults;
-    }
+    //     return balancedResults;
+    // }
 
     // ========================================
     // cat3 코드로 장소명 찾기
@@ -378,178 +397,331 @@ public class TourFilterService {
     // ========================================
     // 공정한 균형 선별 알고리즘 --> 수정 Phase 2 알고리즘을 호출하도록 변경 250819
     // ========================================
+    private List<JsonNode> selectBalancedResults(List<JsonNode> allResults, int targetCount, 
+        List<String> themes, List<String> activities, List<String> places) {
 
-    private List<JsonNode> selectBalancedResults(List<JsonNode> allResults, int targetCount,
-            List<String> themes, List<String> activities, List<String> places) {
-
-        // 🔥 수정: Phase 2 알고리즘을 직접 여기서 처리 (재귀 방지)
-        if (places.size() >= 2) {
-            log.info("🎯 Phase 2 장소별 균형 선별 알고리즘 적용: {}개 장소", places.size());
-            return selectBalancedResultsByPlaceDirect(allResults, targetCount, themes, activities, places);
-        }
-
-        // 기존 카테고리 기반 알고리즘 (1개 장소이거나 장소 미선택)
-        return selectBalancedResultsByCategory(allResults, targetCount, themes, activities, places);
+    if (allResults.size() <= targetCount) {
+        log.info("🎯 결과가 목표 이하 - 전체 반환: {}개 ≤ {}개", allResults.size(), targetCount);
+        return allResults;
     }
 
+    log.info("🎯 균형 선별 시작: {}개 → {}개", allResults.size(), targetCount);
+
+    // 🆕 Phase 2: 장소가 2개 이상 선택된 경우 장소별 균형 알고리즘 사용
+    if (places.size() >= 2) {
+        log.info("🎯 Phase 2 장소별 균형 선별 알고리즘 적용: {}개 장소", places.size());
+        return selectBalancedResultsByPlaces(allResults, targetCount, themes, activities, places);
+    }
+
+    // 일반 카테고리 기반 선별
+    Map<String, List<JsonNode>> categoryGroups = allResults.stream()
+            .collect(Collectors.groupingBy(result -> result.path("cat1").asText()));
+
+    List<JsonNode> balancedResults = new ArrayList<>();
+    
+    // 🔥 핵심 수정: 카테고리가 적으면 간단하게 처리
+    if (categoryGroups.size() == 1) {
+        // 카테고리가 1개뿐이면 그냥 상위 N개 선택
+        String singleCategory = categoryGroups.keySet().iterator().next();
+        List<JsonNode> categoryResults = categoryGroups.get(singleCategory);
+        
+        // 이미지 품질 + 접근성 점수로 정렬
+        categoryResults.sort((a, b) -> {
+            int imageScoreA = getImageQualityScore(a);
+            int imageScoreB = getImageQualityScore(b);
+            int accessibilityA = a.path("accessibilityScore").asInt(0);
+            int accessibilityB = b.path("accessibilityScore").asInt(0);
+            int relevanceA = calculateRelevanceScore(a, themes, activities, places);
+            int relevanceB = calculateRelevanceScore(b, themes, activities, places);
+            
+            double totalScoreA = imageScoreA * 0.3 + accessibilityA * 0.2 + relevanceA * 0.5;
+            double totalScoreB = imageScoreB * 0.3 + accessibilityB * 0.2 + relevanceB * 0.5;
+            
+            return Double.compare(totalScoreB, totalScoreA);
+        });
+        
+        // 목표 개수만큼 선별
+        int selectCount = Math.min(targetCount, categoryResults.size());
+        for (int i = 0; i < selectCount; i++) {
+            balancedResults.add(categoryResults.get(i));
+        }
+        
+        log.info("✅ 단일 카테고리 선별 완료: {} - {}개 선별", 
+                getCategoryDisplayName(singleCategory), selectCount);
+        
+        return balancedResults;
+    }
+
+    // 카테고리가 여러 개인 경우 기본 균형 로직
+    Set<String> categories = categoryGroups.keySet();
+    int categoriesCount = categories.size();
+    int basePerCategory = targetCount / categoriesCount;
+    int extraSlots = targetCount % categoriesCount;
+
+    log.info("📊 카테고리 균형: {}개 카테고리, 기본 {}개씩, 추가 {}개", 
+             categoriesCount, basePerCategory, extraSlots);
+
+    // 카테고리 우선순위 계산
+    Map<String, Double> categoryPriority = calculateCategoryPriority(themes, activities, places, categories);
+    
+    List<String> sortedCategories = categories.stream()
+            .sorted((cat1, cat2) -> Double.compare(
+                    categoryPriority.getOrDefault(cat2, 0.0),
+                    categoryPriority.getOrDefault(cat1, 0.0)))
+            .collect(Collectors.toList());
+
+    // 1단계: 기본 할당
+    Map<String, Integer> categoryAllocated = new HashMap<>();
+    int totalSelected = 0;
+    
+    for (int i = 0; i < sortedCategories.size(); i++) {
+        String category = sortedCategories.get(i);
+        List<JsonNode> categoryResults = categoryGroups.get(category);
+
+        int assignedSlots = basePerCategory + (i < extraSlots ? 1 : 0);
+        int actualSlots = Math.min(assignedSlots, categoryResults.size());
+
+        // 이미지 품질 + 접근성 + 관련성 점수로 정렬
+        categoryResults.sort((a, b) -> {
+            int imageScoreA = getImageQualityScore(a);
+            int imageScoreB = getImageQualityScore(b);
+            int accessibilityA = a.path("accessibilityScore").asInt(0);
+            int accessibilityB = b.path("accessibilityScore").asInt(0);
+            int relevanceA = calculateRelevanceScore(a, themes, activities, places);
+            int relevanceB = calculateRelevanceScore(b, themes, activities, places);
+            
+            double totalScoreA = imageScoreA * 0.3 + accessibilityA * 0.2 + relevanceA * 0.5;
+            double totalScoreB = imageScoreB * 0.3 + accessibilityB * 0.2 + relevanceB * 0.5;
+            
+            return Double.compare(totalScoreB, totalScoreA);
+        });
+
+        // 선별
+        for (int j = 0; j < actualSlots; j++) {
+            balancedResults.add(categoryResults.get(j));
+            totalSelected++;
+        }
+        
+        categoryAllocated.put(category, actualSlots);
+
+        log.info("✅ {} ({}): {}개 선별 (전체 {}개 중)",
+                getCategoryDisplayName(category), category, actualSlots, categoryResults.size());
+    }
+
+    // 🔥 2단계: 부족분 무조건 채우기
+    while (totalSelected < targetCount) {
+        // 가장 많은 여유 데이터를 가진 카테고리 찾기
+        String richestCategory = null;
+        int maxRemaining = 0;
+        
+        for (String category : sortedCategories) {
+            List<JsonNode> categoryResults = categoryGroups.get(category);
+            int currentUsed = categoryAllocated.getOrDefault(category, 0);
+            int remaining = categoryResults.size() - currentUsed;
+            
+            if (remaining > maxRemaining) {
+                maxRemaining = remaining;
+                richestCategory = category;
+            }
+        }
+        
+        if (richestCategory == null || maxRemaining == 0) {
+            log.warn("⚠️ 더 이상 선별할 관광지가 없음: {}/{} (이론적으로 불가능)", totalSelected, targetCount);
+            break;
+        }
+        
+        // 해당 카테고리에서 1개 더 선별
+        List<JsonNode> categoryResults = categoryGroups.get(richestCategory);
+        int currentUsed = categoryAllocated.get(richestCategory);
+        
+        JsonNode additional = categoryResults.get(currentUsed);
+        balancedResults.add(additional);
+        categoryAllocated.put(richestCategory, currentUsed + 1);
+        totalSelected++;
+        
+        log.info("🔄 부족분 보완: {} 카테고리에서 1개 추가 ({}/{})", 
+                getCategoryDisplayName(richestCategory), totalSelected, targetCount);
+    }
+
+    // 최종 분포 로깅
+    Map<String, Long> finalDistribution = balancedResults.stream()
+        .collect(Collectors.groupingBy(
+            node -> getCategoryDisplayName(node.path("cat1").asText()),
+            Collectors.counting()));
+    
+    log.info("🎯 최종 배분 완료: 요청 {}개 → 실제 {}개, 분포: {}", 
+             targetCount, balancedResults.size(), finalDistribution);
+    
+    return balancedResults;
+}
+
+    // 🆕 이미지 품질 점수 계산 메서드 추가
+    private int getImageQualityScore(JsonNode tour) {
+        String firstImage = tour.path("firstimage").asText("");
+        String firstImage2 = tour.path("firstimage2").asText("");
+        String optimizedImage = tour.path("optimizedImage").asText("");
+        
+        // 1순위: 최적화된 실제 이미지
+        if (hasGoodImage(optimizedImage)) {
+            return 3;
+        }
+        
+        // 2순위: 메인 이미지
+        if (hasGoodImage(firstImage)) {
+            return 2;
+        }
+        
+        // 3순위: 보조 이미지
+        if (hasGoodImage(firstImage2)) {
+            return 1;
+        }
+        
+        // 최하위: 이미지 없음 (no-image.png 사용)
+        return 0;
+    }
+
+    // 🆕 유효한 이미지인지 확인
+    private boolean hasGoodImage(String imageUrl) {
+        return imageUrl != null && 
+            !imageUrl.isEmpty() && 
+            !imageUrl.contains("no-image") &&
+            !imageUrl.trim().equals("") &&
+            imageUrl.startsWith("http");
+    }
     /**
-     * 🎯 Phase 2: 장소별 균형 선별 (직접 구현 - 재귀 없음)
+     * 🆕 장소별 균형 선별 알고리즘 (places 2개 이상일 때)
      */
-    private List<JsonNode> selectBalancedResultsByPlaceDirect(List<JsonNode> allResults, int targetCount,
+    private List<JsonNode> selectBalancedResultsByPlaces(List<JsonNode> allResults, int targetCount,
             List<String> themes, List<String> activities, List<String> places) {
 
-        if (allResults.size() <= targetCount) {
-            return allResults;
-        }
-
-        log.info("🎯 Phase 2 장소별 균형 선별 시작: {}개 → {}개, 선택 장소: {}",
-                allResults.size(), targetCount, places);
-
-        // 1단계: 장소별 그룹화 (cat3 기준)
+        log.info("🎯 장소별 균형 선별 시작: {}개 장소, 목표 {}개", places.size(), targetCount);
+        
+        // 장소별 그룹화 (cat3 기준)
         Map<String, List<JsonNode>> placeGroups = new HashMap<>();
-
+        
         for (JsonNode result : allResults) {
             String cat3 = result.path("cat3").asText();
-
+            
             // 각 선택된 장소와 매칭 시도
             for (String place : places) {
                 List<String> placeCodes = mapPlaceToMultipleCat3(place);
-
+                
                 if (placeCodes.contains(cat3)) {
                     placeGroups.computeIfAbsent(place, k -> new ArrayList<>()).add(result);
                     break; // 첫 번째 매칭에서 중단 (중복 방지)
                 }
             }
         }
+        
+        log.info("📋 장소별 데이터 분포: {}", 
+            placeGroups.entrySet().stream()
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey, 
+                    entry -> entry.getValue().size())));
 
-        // 🔧 수정: 그룹화 실패시 카테고리 기반으로 fallback (재귀 없음)
         if (placeGroups.isEmpty()) {
-            log.warn("⚠️ 장소별 그룹화 실패 - 카테고리 기반 선별로 전환");
+            log.warn("⚠️ 장소 매칭 실패, 일반 카테고리 알고리즘으로 fallback");
             return selectBalancedResultsByCategory(allResults, targetCount, themes, activities, places);
         }
 
-        log.info("📊 장소별 그룹화 완료: {} → {}",
-                places,
-                placeGroups.entrySet().stream()
-                        .collect(Collectors.toMap(
-                                Map.Entry::getKey,
-                                entry -> entry.getValue().size())));
-
-        // 2단계: 균등 분배
         List<JsonNode> balancedResults = new ArrayList<>();
         int placesCount = placeGroups.size();
-
-        // 3단계: 기본 할당량 계산
+        
+        // 기본 할당량 계산
         int basePerPlace = targetCount / placesCount;
         int extraSlots = targetCount % placesCount;
-
-        log.info("📊 균등 분배 계획: {}개 장소, 기본 {}개씩, 추가 {}개",
+        
+        log.info("📊 장소별 기본 할당: {}개 장소, 기본 {}개씩, 추가 {}개", 
                 placesCount, basePerPlace, extraSlots);
 
-        // 4단계: 각 장소별 품질 기준 정렬
-        List<String> placeNames = new ArrayList<>(placeGroups.keySet());
-        Map<String, Integer> placeCounts = new HashMap<>();
-        Map<String, Integer> placeMaxCounts = new HashMap<>();
-
-        for (int i = 0; i < placeNames.size(); i++) {
-            String placeName = placeNames.get(i);
-            List<JsonNode> placeResults = placeGroups.get(placeName);
+        // 각 장소별 품질 기준 정렬
+        Map<String, List<JsonNode>> sortedPlaceGroups = new HashMap<>();
+        for (Map.Entry<String, List<JsonNode>> entry : placeGroups.entrySet()) {
+            String placeName = entry.getKey();
+            List<JsonNode> placeResults = new ArrayList<>(entry.getValue());
 
             // 품질 점수 기준 정렬
             placeResults.sort((a, b) -> {
-                // 접근성 점수 (20% 가중치)
+                int imageScoreA = getImageQualityScore(a);
+                int imageScoreB = getImageQualityScore(b);
                 int accessibilityA = a.path("accessibilityScore").asInt(0);
                 int accessibilityB = b.path("accessibilityScore").asInt(0);
-
-                // 관련성 점수 (80% 가중치)
                 int relevanceA = calculateRelevanceScore(a, themes, activities, places);
                 int relevanceB = calculateRelevanceScore(b, themes, activities, places);
-
-                // 총 점수 계산
-                double totalScoreA = accessibilityA * 0.2 + relevanceA * 0.8;
-                double totalScoreB = accessibilityB * 0.2 + relevanceB * 0.8;
-
-                return Double.compare(totalScoreB, totalScoreA); // 높은 점수 먼저
+                
+                double totalScoreA = imageScoreA * 0.3 + accessibilityA * 0.2 + relevanceA * 0.5;
+                double totalScoreB = imageScoreB * 0.3 + accessibilityB * 0.2 + relevanceB * 0.5;
+                
+                return Double.compare(totalScoreB, totalScoreA);
             });
 
-            // 이 장소의 최대 할당량 계산
-            int availableCount = placeResults.size();
-            int maxCount = basePerPlace + (i < extraSlots ? 1 : 0);
-
-            placeMaxCounts.put(placeName, Math.min(maxCount, availableCount));
-            placeCounts.put(placeName, 0);
+            sortedPlaceGroups.put(placeName, placeResults);
         }
 
-        log.info("📋 장소별 최대 할당: {}", placeMaxCounts);
+        // 1단계: 기본 할당량 선별
+        List<String> placeNames = new ArrayList<>(sortedPlaceGroups.keySet());
+        Map<String, Integer> placeAllocated = new HashMap<>();
+        int totalSelected = 0;
 
-        // 5단계: Round-Robin 선별
-        int selectedCount = 0;
-        int maxRounds = targetCount; // 무한루프 방지
+        for (int i = 0; i < placeNames.size(); i++) {
+            String placeName = placeNames.get(i);
+            List<JsonNode> placeResults = sortedPlaceGroups.get(placeName);
+            
+            int assignedSlots = basePerPlace + (i < extraSlots ? 1 : 0);
+            int actualSlots = Math.min(assignedSlots, placeResults.size());
 
-        while (selectedCount < targetCount && maxRounds-- > 0) {
-            boolean selectedInThisRound = false;
+            for (int j = 0; j < actualSlots; j++) {
+                balancedResults.add(placeResults.get(j));
+                totalSelected++;
+            }
+            
+            placeAllocated.put(placeName, actualSlots);
+            
+            log.info("✅ {} 장소: {}개 선별 (전체 {}개 중)", 
+                    placeName, actualSlots, placeResults.size());
+        }
 
+        // 2단계: 부족분 보완 (가장 많은 데이터를 가진 장소에서)
+        while (totalSelected < targetCount) {
+            String richestPlace = null;
+            int maxRemaining = 0;
+            
             for (String placeName : placeNames) {
-                if (selectedCount >= targetCount)
-                    break;
-
-                List<JsonNode> placeResults = placeGroups.get(placeName);
-                int currentCount = placeCounts.get(placeName);
-                int maxCount = placeMaxCounts.get(placeName);
-
-                // 이 장소에서 더 선별할 수 있는지 확인
-                if (currentCount < maxCount && currentCount < placeResults.size()) {
-                    JsonNode selected = placeResults.get(currentCount);
-                    balancedResults.add(selected);
-                    placeCounts.put(placeName, currentCount + 1);
-                    selectedCount++;
-                    selectedInThisRound = true;
-
-                    log.debug("✅ {} 선별: {} ({}번째)", placeName,
-                            selected.path("title").asText(), currentCount + 1);
+                List<JsonNode> placeResults = sortedPlaceGroups.get(placeName);
+                int currentUsed = placeAllocated.getOrDefault(placeName, 0);
+                int remaining = placeResults.size() - currentUsed;
+                
+                if (remaining > maxRemaining) {
+                    maxRemaining = remaining;
+                    richestPlace = placeName;
                 }
             }
-
-            // 이번 라운드에서 아무것도 선별되지 않았으면 종료
-            if (!selectedInThisRound) {
+            
+            if (richestPlace == null || maxRemaining == 0) {
+                log.warn("⚠️ 더 이상 선별할 장소 데이터 없음: {}/{}", totalSelected, targetCount);
                 break;
             }
+            
+            List<JsonNode> placeResults = sortedPlaceGroups.get(richestPlace);
+            int currentUsed = placeAllocated.get(richestPlace);
+            
+            JsonNode additional = placeResults.get(currentUsed);
+            balancedResults.add(additional);
+            placeAllocated.put(richestPlace, currentUsed + 1);
+            totalSelected++;
+            
+            log.info("🔄 부족분 보완: {} 장소에서 1개 추가 ({}개/{}개)", 
+                    richestPlace, totalSelected, targetCount);
         }
 
-        // 6단계: 부족한 경우 추가 선별 (품질 순)
-        if (selectedCount < targetCount) {
-            log.info("🔧 추가 선별 필요: {}개 → {}개", selectedCount, targetCount);
-
-            Set<String> selectedIds = balancedResults.stream()
-                    .map(node -> node.path("contentid").asText())
-                    .collect(Collectors.toSet());
-
-            List<JsonNode> remainingResults = placeGroups.values().stream()
-                    .flatMap(List::stream)
-                    .filter(node -> !selectedIds.contains(node.path("contentid").asText()))
-                    .sorted((a, b) -> {
-                        double scoreA = a.path("accessibilityScore").asInt(0) * 0.2 +
-                                calculateRelevanceScore(a, themes, activities, places) * 0.8;
-                        double scoreB = b.path("accessibilityScore").asInt(0) * 0.2 +
-                                calculateRelevanceScore(b, themes, activities, places) * 0.8;
-                        return Double.compare(scoreB, scoreA);
-                    })
-                    .collect(Collectors.toList());
-
-            int needed = targetCount - selectedCount;
-            for (int i = 0; i < Math.min(needed, remainingResults.size()); i++) {
-                balancedResults.add(remainingResults.get(i));
-            }
-        }
-
-        // 7단계: 최종 결과 로깅
+        // 최종 분포 로깅
         Map<String, Long> finalDistribution = balancedResults.stream()
-                .collect(Collectors.groupingBy(
-                        node -> findPlaceNameByCat3(node.path("cat3").asText(), places),
-                        Collectors.counting()));
-
-        log.info("🎯 Phase 2 균형 선별 완료: {} → 최종 분배: {}",
-                targetCount, finalDistribution);
+            .collect(Collectors.groupingBy(
+                node -> findPlaceNameByCat3(node.path("cat3").asText(), places),
+                Collectors.counting()));
+        
+        log.info("🎯 장소별 균형 선별 완료: 요청 {}개 → 실제 {}개, 분포: {}", 
+                targetCount, balancedResults.size(), finalDistribution);
 
         return balancedResults;
     }
@@ -558,7 +730,7 @@ public class TourFilterService {
      * 🔧 카테고리 기반 선별 (기존 로직, 분리됨)
      */
     private List<JsonNode> selectBalancedResultsByCategory(List<JsonNode> allResults, int targetCount,
-            List<String> themes, List<String> activities, List<String> places) {
+        List<String> themes, List<String> activities, List<String> places) {
 
         if (allResults.size() <= targetCount) {
             return allResults;
@@ -573,7 +745,7 @@ public class TourFilterService {
         List<JsonNode> balancedResults = new ArrayList<>();
         Set<String> categories = categoryGroups.keySet();
         int categoriesCount = categories.size();
-        int basePerCategory = Math.max(1, targetCount / categoriesCount);
+        int basePerCategory = targetCount / categoriesCount;
         int extraSlots = targetCount % categoriesCount;
 
         log.info("📊 카테고리 균형: {}개 카테고리, 기본 {}개씩 할당", categoriesCount, basePerCategory);
@@ -619,7 +791,7 @@ public class TourFilterService {
 
             log.info("✅ {} ({}): {}개 선별 (전체 {}개 중)",
                     getCategoryDisplayName(category), category, actualSlots, categoryResults.size());
-        }
+            }
 
         return balancedResults;
     }
@@ -813,10 +985,10 @@ public class TourFilterService {
         return combinations;
     }
 
-    private boolean isLogicalCombination(String cat1, String cat2, String cat3) {
-        // 새로운 메서드로 위임
-        return isValidHierarchyCombination(cat1, cat2, cat3);
-    }
+    // private boolean isLogicalCombination(String cat1, String cat2, String cat3) {
+    //     // 새로운 메서드로 위임
+    //     return isValidHierarchyCombination(cat1, cat2, cat3);
+    // }
 
     /**
      * ✅ 완전한 계층 구조 검증 로직
@@ -1554,6 +1726,194 @@ public class TourFilterService {
         }
     }
 
+    /**
+     * 🎯 투어 제목 생성 개선 - 실제 선택한 장소들 반영
+     */
+    private String generateTourTitle(List<JsonNode> tours, Map<String, String> originalParams) {
+        // 지역 정보 추출
+        String areaName = getAreaNameByCode(originalParams.get("areaCode"));
+        String sigunguName = getSigunguNameByCode(originalParams.get("areaCode"), originalParams.get("sigunguCode"));
+        
+        String regionPart = areaName;
+        if (sigunguName != null && !sigunguName.isEmpty()) {
+            regionPart = areaName + " " + sigunguName;
+        }
+        
+        // 사용자가 실제 선택한 장소들 추출
+        List<String> selectedPlaces = new ArrayList<>();
+        String placesParam = originalParams.get("places");
+        if (placesParam != null && !placesParam.isEmpty()) {
+            try {
+                JsonNode placesArray = objectMapper.readTree(placesParam);
+                if (placesArray.isArray()) {
+                    for (JsonNode place : placesArray) {
+                        selectedPlaces.add(place.asText());
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("장소 파라미터 파싱 실패: {}", e.getMessage());
+            }
+        }
+        
+        // 선택한 장소들에서 테마 추출
+        Set<String> themes = new HashSet<>();
+        for (String place : selectedPlaces) {
+            if (Arrays.asList("해변", "산/공원", "계곡/폭포", "호수/강", "수목원", 
+                            "자연휴양림", "자연생태관광지").contains(place)) {
+                themes.add("자연");
+            }
+            if (Arrays.asList("고궁/문", "민속마을/가옥", "유적지", "사찰", "종교성지").contains(place)) {
+                themes.add("역사");
+            }
+            if (Arrays.asList("박물관", "미술관").contains(place)) {
+                themes.add("문화");
+            }
+            if (Arrays.asList("체험").contains(place)) {
+                themes.add("체험");
+            }
+            if (Arrays.asList("온천", "테마파크", "관광단지", "창질방", "유람선/잠수함관광").contains(place)) {
+                themes.add("휴양");
+            }
+            if (Arrays.asList("트래킹", "골프장", "스키장", "캠핑장", "낚시").contains(place)) {
+                themes.add("레포츠");
+            }
+        }
+        
+        // 테마가 없으면 관광지에서 추출
+        if (themes.isEmpty()) {
+            themes = extractThemesFromToursAsSet(tours);
+        }
+        
+        String themePart = themes.size() > 1 ? 
+            String.join("+", themes) : 
+            (themes.isEmpty() ? "종합" : themes.iterator().next());
+        
+        return regionPart + " " + themePart + " 투어";
+    }
+    
+    /**
+     * 🗺️ 지역코드로 지역명 반환 (기존 getAreaCodeByName의 역함수)
+     */
+    private String getAreaNameByCode(String areaCode) {
+        if (areaCode == null || areaCode.trim().isEmpty()) return "전국";
+        
+        Map<String, String> codeToNameMap = new HashMap<>();
+        codeToNameMap.put("1", "서울");
+        codeToNameMap.put("2", "인천");
+        codeToNameMap.put("3", "대전");
+        codeToNameMap.put("4", "대구");
+        codeToNameMap.put("5", "광주");
+        codeToNameMap.put("6", "부산");
+        codeToNameMap.put("7", "울산");
+        codeToNameMap.put("8", "세종");
+        codeToNameMap.put("31", "경기");
+        codeToNameMap.put("32", "강원");
+        codeToNameMap.put("33", "충북");
+        codeToNameMap.put("34", "충남");
+        codeToNameMap.put("35", "경북");
+        codeToNameMap.put("36", "경남");
+        codeToNameMap.put("37", "전북");
+        codeToNameMap.put("38", "전남");
+        codeToNameMap.put("39", "제주");
+        
+        return codeToNameMap.getOrDefault(areaCode.trim(), "전국");
+    }
+
+    /**
+     * 🏛️ 시군구코드로 시군구명 반환 - 실제 API 호출 또는 캐시 활용
+     */
+    private String getSigunguNameByCode(String areaCode, String sigunguCode) {
+        if (sigunguCode == null || sigunguCode.isEmpty()) return null;
+        
+        try {
+            // 기존 getSigunguCodes 메서드 활용
+            Map<String, Object> sigunguResult = getSigunguCodes(areaCode);
+            if (sigunguResult != null && (Boolean) sigunguResult.get("success")) {
+                JsonNode sigunguData = (JsonNode) sigunguResult.get("data");
+                
+                if (sigunguData != null && sigunguData.isArray()) {
+                    for (JsonNode sigungu : sigunguData) {
+                        String code = sigungu.path("code").asText();
+                        if (code.isEmpty()) {
+                            code = sigungu.path("sigungucode").asText();
+                        }
+                        
+                        if (sigunguCode.equals(code)) {
+                            String name = sigungu.path("name").asText();
+                            if (name.isEmpty()) {
+                                name = sigungu.path("name").asText();
+                            }
+                            return name;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("시군구명 조회 실패: areaCode={}, sigunguCode={}, error={}", 
+                    areaCode, sigunguCode, e.getMessage());
+        }
+        
+        return null; // 조회 실패하면 시군구명 없이 표시
+    }
+
+    /**
+     * 🎨 관광지에서 테마 추출 (Set 버전)
+     */
+    private Set<String> extractThemesFromToursAsSet(List<JsonNode> tours) {
+        Set<String> themes = new HashSet<>();
+        
+        tours.forEach(tour -> {
+            String cat1 = tour.path("cat1").asText();
+            switch (cat1) {
+                case "A01":
+                    themes.add("자연");
+                    break;
+                case "A02":
+                    themes.add("문화");
+                    break;
+                case "A03":
+                    themes.add("레포츠");
+                    break;
+                default:
+                    themes.add("관광");
+                    break;
+            }
+        });
+        
+        return themes;
+    }
+
+    /**
+     * 💡 제안사항 생성
+     */
+    private List<String> generateSuggestions(Map<String, String> params, int requested, int actual) {
+        List<String> suggestions = new ArrayList<>();
+        
+        if (actual < requested) {
+            // 장소 선택이 많으면 변경 제안
+            String placesParam = params.get("places");
+            if (placesParam != null) {
+                try {
+                    JsonNode places = objectMapper.readTree(placesParam);
+                    if (places.isArray() && places.size() > 2) {
+                        suggestions.add("선택 장소를 변경하거나 줄여보세요");
+                    }
+                } catch (Exception ignored) {}
+            }
+            
+            // 편의시설 조건이 있으면 완화 제안
+            String needs = params.get("needs");
+            if (needs != null && !needs.isEmpty() && !"필요없음".equals(needs)) {
+                suggestions.add("편의시설 조건을 완화해보세요");
+            }
+            
+            if (suggestions.isEmpty()) {
+                suggestions.add("해당 지역은 선택하신 조건의 관광지가 제한적입니다");
+            }
+        }
+        
+        return suggestions;
+    }
     /**
      * 🆕 v3.0: 장소 → 테마 자동 매핑
      */

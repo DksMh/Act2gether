@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                 .requestMatchers("/qna/api/inquiry-types", "/qna/api/statuses").permitAll()
                 .requestMatchers("/api/tours/**").permitAll()
+                .requestMatchers("/tour-detail","/tour-detail/**").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
