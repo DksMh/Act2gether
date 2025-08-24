@@ -117,6 +117,12 @@ public class PageController {
         return "tour-search";
     }
 
+    @GetMapping("/tour-detail")    
+    public String tourDetailPage() {
+        return "tour-detail";        
+    }
+
+
     @GetMapping("/community-search")
     public String communitySearchPage() {
         return "community-search";
