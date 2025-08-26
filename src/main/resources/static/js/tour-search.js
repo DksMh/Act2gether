@@ -1395,6 +1395,7 @@ let tourSearchManager = {
     // ✅ 요청한 개수만큼 받은 경우에만 투어 상품 카드 생성
     const tourProduct = this.createTourProduct(displayTours, tourCount, searchResult);
     const tourProductCard = this.createTourProductCard(tourProduct);
+    console.log("1");
     recommendedContainer.appendChild(tourProductCard);
     //const tourProductCard = this.createTourProductCard(tourProduct);
     //recommendedContainer.appendChild(tourProductCard);
@@ -1520,7 +1521,7 @@ let tourSearchManager = {
     
     // 세션 스토리지에 투어 데이터 저장
     this.saveTourDataToSession(tourProduct);
-
+    console.log("2");
     // 방문지 미리보기 생성
     const previewCount = this.getPreviewCount(tourProduct.tourCount);
     const previewTours = tourProduct.tours.slice(0, previewCount);
@@ -1765,7 +1766,8 @@ let tourSearchManager = {
    * 투어 상세페이지 열기
    */
   openTourDetail(tourId) {
-    window.location.href = `/tour/${tourId}`;
+    // window.location.href = `/tour/${tourId}`;
+     window.location.href = `/tour-detail?id=${tourId}`;
   },
 
   /**
