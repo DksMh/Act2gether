@@ -30,6 +30,8 @@ window.tourDetail = {
         console.log('🚀 투어 상세정보 로드 시작 (세션 우선):', tourId);
 
         this.showLoading();
+
+
         
         try {
             // 1단계: 세션에서 데이터 확인
@@ -1030,10 +1032,13 @@ window.tourDetail = {
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🚀 투어 상세페이지 v3.0 로드됨");
-  
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  console.log("path : " +id );
   // URL에서 tourId 추출
-  const pathParts = window.location.pathname.split('/');
-  const tourId = pathParts[pathParts.length - 1];
+//   const pathParts = window.location.pathname.split('/');
+//   const tourId = pathParts[pathParts.length - 1];
+   const tourId = id;
   
   // tourId 유효성 검증
   if (tourId && tourId !== 'tour' && tourId.length > 5) {

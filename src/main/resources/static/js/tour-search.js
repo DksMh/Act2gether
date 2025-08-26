@@ -1520,7 +1520,6 @@ let tourSearchManager = {
     
     // 세션 스토리지에 투어 데이터 저장
     this.saveTourDataToSession(tourProduct);
-
     // 방문지 미리보기 생성
     const previewCount = this.getPreviewCount(tourProduct.tourCount);
     const previewTours = tourProduct.tours.slice(0, previewCount);
@@ -1765,7 +1764,8 @@ let tourSearchManager = {
    * 투어 상세페이지 열기
    */
   openTourDetail(tourId) {
-    window.location.href = `/tour/${tourId}`;
+    // window.location.href = `/tour/${tourId}`;
+     window.location.href = `/tour-detail?id=${tourId}`;
   },
 
   /**
