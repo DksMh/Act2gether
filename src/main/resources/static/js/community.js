@@ -800,18 +800,39 @@ function openMemberModal() {
 
 // 멤버 리스트 생성
 function generateMemberList() {
-  const members = [
-    { name: "멤버닉네임1", role: "리더", isOnline: true },
-    { name: "멤버닉네임2", role: "멤버", isOnline: true },
-    { name: "멤버닉네임3", role: "멤버", isOnline: false },
-    { name: "멤버닉네임4", role: "멤버", isOnline: true },
-    { name: "멤버닉네임5", role: "멤버", isOnline: false },
-    { name: "멤버닉네임6", role: "멤버", isOnline: true },
-    { name: "멤버닉네임7", role: "멤버", isOnline: true },
-    { name: "멤버닉네임8", role: "멤버", isOnline: false },
-    { name: "멤버닉네임9", role: "멤버", isOnline: true },
-    { name: "멤버닉네임10", role: "멤버", isOnline: false },
-  ];
+  const groupId = {
+        groupId: "1f2d3c4b-5a6e-4f80-9123-456789abcdef" //이 정보 화면에서 갖고와야함(임시)
+    };
+  const members = []
+  // 멤버정보 갖고오기
+  $.ajax({
+    url: "/community/members",
+    type: 'POST',
+    contentType: "application/json",
+    data: JSON.stringify(groupId), //그룹id
+    success: function(response, textStatus, jqXHR) {
+        console.log("멤버 정보 가져오기 성공 : " + Array.isArray(response)); //데이터 갖고오는 방법,,,,
+        members.push(response);
+      
+    },
+    error: function(request, status, error) {
+      
+      console.error("멤버 정보 가져오기 오류:", error);
+    }
+  });
+
+  // const members = [
+  //   { name: "멤버닉네임1", role: "리더", isOnline: true },
+  //   { name: "멤버닉네임2", role: "멤버", isOnline: true },
+  //   { name: "멤버닉네임3", role: "멤버", isOnline: false },
+  //   { name: "멤버닉네임4", role: "멤버", isOnline: true },
+  //   { name: "멤버닉네임5", role: "멤버", isOnline: false },
+  //   { name: "멤버닉네임6", role: "멤버", isOnline: true },
+  //   { name: "멤버닉네임7", role: "멤버", isOnline: true },
+  //   { name: "멤버닉네임8", role: "멤버", isOnline: false },
+  //   { name: "멤버닉네임9", role: "멤버", isOnline: true },
+  //   { name: "멤버닉네임10", role: "멤버", isOnline: false },
+  // ];
 
   return members
     .map(
