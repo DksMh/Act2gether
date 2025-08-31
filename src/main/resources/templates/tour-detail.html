@@ -114,6 +114,10 @@
         <!-- 4️⃣ 투어 이미지 갤러리 -->
         <section class="tour-gallery-section" id="tourGallerySection">
             <h2 class="section-title">🖼️ 투어 이미지 갤러리</h2>
+            <div class="gallery-note" role="note" aria-live="polite">
+                <span aria-hidden="true">ℹ️</span>
+                참고: 이미지가 없는 관광지는 갤러리에 표시되지 않습니다.
+            </div>
             <div class="gallery-container">
                 <div id="tourImageCarousel" class="image-carousel">
                     <!-- 동적으로 생성됨 -->
@@ -199,6 +203,15 @@
         </section>
     </div>
 
+    <!-- 이미지 전체화면 모달 -->
+    <div id="imageFullscreenModal" class="image-fullscreen-modal">
+        <div class="fullscreen-content">
+            <button class="fullscreen-close" onclick="tourDetail.closeFullImage()" title="닫기">×</button>
+            <img id="fullscreenImage" class="fullscreen-image" src="" alt="">
+            <h3 id="fullscreenTitle" class="fullscreen-title"></h3>
+        </div>
+    </div>
+
     <!-- 하단 고정 액션바 (모바일용) -->
     <div class="mobile-action-bar">
         <button class="mobile-wishlist-btn" onclick="tourDetail.toggleWishlist()">
@@ -220,25 +233,23 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- JavaScript -->
-   
-    
-    <!-- <script>
-        // 페이지 로드 시 투어 상세정보 로드
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 투어 상세페이지 v3.0 로드 시작');
-            
-            // URL에서 tourId 추출
-            const pathParts = window.location.pathname.split('/');
-            const tourId = pathParts[pathParts.length - 1];
-            
-            if (tourId && tourId !== 'tour') {
-                console.log('📍 투어 ID:', tourId);
-                window.tourDetail.loadTourDetail(tourId);
-            } else {
-                console.error('❌ 유효하지 않은 투어 ID');
-                window.tourDetail.showError('잘못된 투어 페이지 주소입니다.');
+   <script>
+    //  카카오맵 SDK 내부에서 발생하는 경고 - Passive event listener 경고 억제 
+    (function() {
+        const originalAddEventListener = EventTarget.prototype.addEventListener;
+        EventTarget.prototype.addEventListener = function(type, listener, options) {
+            if (typeof options === 'boolean') {
+                options = { capture: options };
             }
-        });
-    </script> -->
+            if (!options) {
+                options = {};
+            }
+            if (['touchstart', 'touchmove', 'wheel', 'mousewheel'].includes(type)) {
+                options.passive = options.passive !== false;
+            }
+            return originalAddEventListener.call(this, type, listener, options);
+        };
+    })();
+    </script>
 </body>
 </html>
