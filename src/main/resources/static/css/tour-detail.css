@@ -340,6 +340,59 @@ section {
   font-size: var(--font-size-medium);
 }
 
+  /* 카카오맵 InfoWindow 스타일 */
+  .kakao-infowindow {
+      padding: 0.5rem;
+      min-width: 12.5rem;
+      position: relative;
+      font-family: inherit;
+  }
+
+  .kakao-infowindow-close {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.25rem;
+      background: #ff4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 1.25rem;
+      height: 1.25rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+  }
+
+  .kakao-infowindow-close:hover {
+      background: #cc3333;
+  }
+
+  .kakao-infowindow-title {
+      margin: 0 0 0.25rem 0;
+      color: #333;
+      font-size: 0.875rem;
+      padding-right: 1.5rem;
+      font-weight: 600;
+      line-height: 1.2;
+  }
+
+  .kakao-infowindow-address {
+      margin: 0 0 0.25rem 0;
+      color: #666;
+      font-size: 0.75rem;
+      line-height: 1.2;
+  }
+
+  .kakao-infowindow-accessibility {
+      color: #4CAF50;
+      font-size: 0.6875rem;
+      margin-top: 0.25rem;
+  }
+
 /* ===========================================
    3️⃣ 관광지별 상세 정보
    =========================================== */
@@ -438,29 +491,45 @@ section {
 /* ===========================================
    4️⃣ 투어 이미지 갤러리
    =========================================== */
-.gallery-container {
+.gallery-container { position: relative; }
+
+.gallery-note{
+  margin: 0.5rem 0 0.75rem;        /* 8px 0 12px */
+  padding: 0.625rem 0.75rem;       /* 10px 12px */
+  font-size: 1rem;                 /* 16px */
+  line-height: 1.6;
+  color: #333;
+  background: #f5f7fa;
+  border: 0.0625rem solid #e2e6ef; /* 1px */
+  border-radius: 0.5rem;           /* 8px */
+  text-align: left;
+}
+
+
+/* 컨테이너: 가로 100% + 16:9 비율(모바일에서 4:3로 변경) */
+#tourImageCarousel {
   position: relative;
-}
-
-.image-carousel {
-  display: flex;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
 }
 
-.carousel-slide {
-  flex: 0 0 100%;
-  transition: transform 0.3s ease;
-}
-
-.carousel-image {
+/* 슬라이드는 전부 겹쳐두고 transform 으로만 이동 */
+#tourImageCarousel .carousel-slide {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 300px;
-  object-fit: cover;
-  cursor: pointer;
+  transition: transform .35s ease;
 }
 
+/* 이미지는 컨테이너 꽉 채움 + 비율 유지(필요한 만큼 크롭) */
+#tourImageCarousel .carousel-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/*화살표*/   
 .carousel-controls {
   position: absolute;
   top: 50%;
@@ -494,7 +563,7 @@ section {
   gap: 8px;
   margin-top: 16px;
 }
-
+/*아래 슬라이드 위치*/   
 .indicator {
   width: 12px;
   height: 12px;
@@ -506,6 +575,74 @@ section {
 
 .indicator.active {
   background: var(--primary-color);
+}
+/* 이미지 전체화면 모달 */
+.image-fullscreen-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(0.125rem);
+}
+
+.image-fullscreen-modal.active {
+    display: flex;
+}
+
+.fullscreen-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.fullscreen-image {
+    max-width: 100%;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 0.5rem;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.5);
+}
+
+.fullscreen-close {
+    position: absolute;
+    top: -2.5rem;
+    right: 0;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    border: none;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.fullscreen-close:hover {
+    background: #fff;
+    transform: scale(1.1);
+}
+
+.fullscreen-title {
+    color: white;
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 /* ===========================================
@@ -683,6 +820,7 @@ section {
    하단 모바일 액션바
    =========================================== */
 .mobile-action-bar {
+  display: none; /* 기본적으로 숨김 */
   position: fixed;
   bottom: 0;
   left: 0;
@@ -690,8 +828,7 @@ section {
   background: var(--white);
   padding: 12px 20px;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-  border-top: 1px solid var(--border-color);
-  display: none; /* 기본적으로 숨김 */
+  border-top: 1px solid var(--border-color);  
   z-index: 1000;
 }
 
@@ -728,11 +865,11 @@ section {
   cursor: not-allowed;
   opacity: 0.7;
 }
-
+/* 
 .mobile-action-bar {
   display: flex;
   gap: 8px;
-}
+} */
 
 /* ===========================================
    토스트 메시지
@@ -816,6 +953,51 @@ section {
     flex-direction: column;
     align-items: center;
   }
+  .kakao-infowindow {
+    min-width: 10rem;
+    padding: 0.375rem;
+   }
+    
+    .kakao-infowindow-close {
+        width: 1.125rem;
+        height: 1.125rem;
+        font-size: 0.6875rem;
+    }
+    
+    .kakao-infowindow-title {
+        font-size: 0.8125rem;
+        padding-right: 1.25rem;
+    }
+    
+    .kakao-infowindow-address {
+        font-size: 0.6875rem;
+    }
+    
+    .kakao-infowindow-accessibility {
+        font-size: 0.625rem;
+    }
+
+  #tourImageCarousel { aspect-ratio: 4 / 3; }
+
+  .fullscreen-content {
+        max-width: 95vw;
+        max-height: 95vh;
+    }
+    
+    .fullscreen-image {
+        max-height: 75vh;
+    }
+    
+    .fullscreen-close {
+        top: -2rem;
+        width: 2rem;
+        height: 2rem;
+        font-size: 1rem;
+    }
+    
+    .fullscreen-title {
+        font-size: 0.875rem;
+    }
 }
 
 /* 모바일 */

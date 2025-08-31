@@ -18,10 +18,12 @@ window.tourDetail = {
     kakaoMap: null,
     kakaoMapApiKey: null,
     isWishlisted: false,
-    
+    // 카카오 지도
+    currentInfoWindow: null,
     // 갤러리 상태
     currentImageIndex: 0,
     totalImages: 0,
+
 
     /**
      * 🎯 메인 진입점: 세션 우선 → API fallback 투어 상세정보 로드
@@ -138,7 +140,8 @@ window.tourDetail = {
      */
     async loadAdditionalData(tourId) {
         try {
-            const response = await fetch(`/tour/${tourId}`);
+            //const response = await fetch(`/tour/${tourId}`);
+            const response = await fetch(`/tour-detail/${tourId}`); // 수정된 API 경로
             const result = await response.json();
             
             if (result.success) {
@@ -196,50 +199,6 @@ window.tourDetail = {
             throw error;
         }
     },
-
-    //         const response = await fetch(`/tour/${tourId}`);
-    //         const result = await response.json();
-            
-    //         console.log('📦 백엔드 응답:', result);
-            
-    //         if (result.success) {
-    //             this.currentTour = result.tour;
-    //             this.currentSpots = result.spots || [];
-    //             this.currentRestaurants = result.restaurants || {};
-    //             this.kakaoMapApiKey = result.kakaoMapApiKey;
-                
-    //             console.log('✅ 데이터 로드 완료:', {
-    //                 tour: this.currentTour?.title,
-    //                 spots: this.currentSpots.length,
-    //                 restaurants: Object.keys(this.currentRestaurants).length,
-    //                 hasApiKey: !!this.kakaoMapApiKey
-    //             });
-                
-    //             // UI 업데이트
-    //             this.updateTourHeader();
-    //             this.initializeKakaoMap();
-    //             this.renderTourSpots();
-    //             this.renderImageGallery();
-    //             this.renderRestaurants();
-    //             this.setupEventListeners();
-                
-    //             // 찜하기 상태 확인
-    //             this.checkWishlistStatus(tourId);
-                
-    //             this.showSuccess('투어 정보를 성공적으로 불러왔습니다!');
-                
-    //         } else {
-    //             console.error('❌ 데이터 로드 실패:', result.message);
-    //             this.showError(result.message || '투어 정보를 불러오는데 실패했습니다.');
-    //         }
-            
-    //     } catch (error) {
-    //         console.error('💥 API 호출 실패:', error);
-    //         this.showError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-    //     } finally {
-    //         this.hideLoading();
-    //     }
-    // },
 
     /**
      * 🏷️ 투어 헤더 업데이트
@@ -362,13 +321,12 @@ window.tourDetail = {
     },
 
     /**
-     * 실제 카카오맵 생성
+     * 실제 카카오맵 생성수정 - 경로 라인 추가)
      */
     createKakaoMap(container) {
         if (!this.currentSpots.length) return;
         
         try {
-            // 첫 번째 관광지를 중심으로 설정
             const firstSpot = this.currentSpots[0];
             const centerLat = parseFloat(firstSpot.mapy);
             const centerLng = parseFloat(firstSpot.mapx);
@@ -379,23 +337,31 @@ window.tourDetail = {
             
             const mapOption = {
                 center: new kakao.maps.LatLng(centerLat, centerLng),
-                level: this.currentSpots.length > 3 ? 9 : 7 // 관광지 수에 따라 줌 레벨 조정
+                level: this.currentSpots.length > 3 ? 9 : 7 // 관광지 수에 때라 줌레벨 조정
             };
             
             this.kakaoMap = new kakao.maps.Map(container, mapOption);
+            
+            // 지도 클릭시 인포윈도우 닫기
+            kakao.maps.event.addListener(this.kakaoMap, 'click', () => {
+                this.closeInfoWindow();
+            });
             
             // 관광지별 마커 생성
             this.currentSpots.forEach((spot, index) => {
                 this.createSpotMarker(spot, index + 1);
             });
             
+            // 투어 경로 라인 그리기
+            this.createTourPath();
+            
             // 지도 영역 자동 조정
             this.fitMapBounds();
             
-            console.log('✅ 카카오맵 생성 완료:', this.currentSpots.length + '개 마커');
+            console.log('카카오맵 생성 완료:', this.currentSpots.length + '개 마커 + 경로 라인');
             
         } catch (error) {
-            console.error('💥 카카오맵 생성 실패:', error);
+            console.error('카카오맵 생성 실패:', error);
             throw error;
         }
     },
@@ -408,13 +374,12 @@ window.tourDetail = {
         const lng = parseFloat(spot.mapx);
         
         if (isNaN(lat) || isNaN(lng)) {
-            console.warn('⚠️ 유효하지 않은 좌표:', spot.title, lat, lng);
+            console.warn('유효하지 않은 좌표:', spot.title, lat, lng);
             return;
         }
         
         const markerPosition = new kakao.maps.LatLng(lat, lng);
         
-        // 커스텀 마커 이미지 (순서 표시)
         const imageSrc = this.createMarkerImageDataURL(order);
         const imageSize = new kakao.maps.Size(30, 30);
         const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
@@ -429,15 +394,33 @@ window.tourDetail = {
         
         // 인포윈도우 생성
         const infoWindow = new kakao.maps.InfoWindow({
-            content: this.createInfoWindowContent(spot, order)
+            content: this.createInfoWindowContent(spot, order),
+            removable: false
         });
         
         // 마커 클릭 이벤트
         kakao.maps.event.addListener(marker, 'click', () => {
+            // 기존 인포윈도우가 열려있으면 닫기
+            if (this.currentInfoWindow) {
+                this.currentInfoWindow.close();
+            }
+            
+            // 새로운 인포윈도우 열기
             infoWindow.open(this.kakaoMap, marker);
+            this.currentInfoWindow = infoWindow;
+            
             // 해당 관광지 섹션으로 스크롤
-            this.scrollToSpot(order);
+            //this.scrollToSpot(order);
         });
+    },
+    /**
+     * 인포윈도우 닫기
+     */
+    closeInfoWindow() {
+        if (this.currentInfoWindow) {
+            this.currentInfoWindow.close();
+            this.currentInfoWindow = null;
+        }
     },
 
     /**
@@ -475,19 +458,61 @@ window.tourDetail = {
      */
     createInfoWindowContent(spot, order) {
         return `
-            <div style="padding: 8px; min-width: 200px;">
-                <h4 style="margin: 0 0 4px 0; color: #333; font-size: 14px;">
-                    ${order}. ${spot.title}
-                </h4>
-                <p style="margin: 0 0 4px 0; color: #666; font-size: 12px;">
-                    ${spot.addr1}
-                </p>
-                ${spot.hasBarrierFreeInfo ? 
-                    `<div style="color: #4CAF50; font-size: 11px;">♿ 편의시설 ${spot.accessibilityScore}점</div>` : 
-                    ''
-                }
+            <div class="kakao-infowindow">
+                <button class="kakao-infowindow-close" onclick="tourDetail.closeInfoWindow()" title="닫기">×</button>
+                <h4 class="kakao-infowindow-title">${order}. ${spot.title}</h4>
+                <p class="kakao-infowindow-address">${spot.addr1}</p>
             </div>
-        `;
+        `;// ${spot.hasBarrierFreeInfo ? `<div class="kakao-infowindow-accessibility">♿ 편의시설  ${spot.hasBarrierFreeInfo}와  ${spot.accessibilityScore}점</div>` :  ''}*/
+    },
+
+    /**
+     * 투어 경로 라인 그리기 (마커 순서대로 연결)
+     */
+    createTourPath() {
+        if (!this.kakaoMap || this.currentSpots.length < 2) {
+            return; // 지도가 없거나 관광지가 2개 미만이면 라인 불필요
+        }
+
+        // 관광지 좌표들을 순서대로 수집
+        const pathCoords = [];
+        
+        for (const spot of this.currentSpots) {
+            const lat = parseFloat(spot.mapy);
+            const lng = parseFloat(spot.mapx);
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                pathCoords.push(new kakao.maps.LatLng(lat, lng));
+            }
+        }
+
+        if (pathCoords.length < 2) {
+            console.warn('유효한 좌표가 2개 미만이라 경로를 그릴 수 없습니다');
+            return;
+        }
+
+        // Polyline 생성
+        const polyline = new kakao.maps.Polyline({
+            path: pathCoords,
+            strokeWeight: 3,
+            strokeColor: '#FF6B35',
+            strokeOpacity: 0.7,
+            strokeStyle: 'solid'
+        });
+
+        // 다양한 스타일 옵션
+        // const polyline = new kakao.maps.Polyline({
+        //     path: pathCoords,
+        //     strokeWeight: 4,           // 선 두께 (기본: 3)
+        //     strokeColor: '#FF6B35',    // 선 색상 (기본: #4CAF50)
+        //     strokeOpacity: 0.9,        // 투명도 (0~1)
+        //     strokeStyle: 'solid'       // 'solid', 'shortdash', 'shortdot', 'dash'
+        // });
+
+        // 지도에 라인 표시
+        polyline.setMap(this.kakaoMap);
+        
+        console.log('투어 경로 라인 생성 완료:', pathCoords.length + '개 지점 연결');
     },
 
     /**
@@ -538,7 +563,7 @@ window.tourDetail = {
     },
 
     /**
-     * 특정 관광지로 스크롤
+     * 특정 관광지로 스크롤 -> 미커 클릭시 이동
      */
     scrollToSpot(order) {
         const spotElement = document.querySelector(`[data-spot-order="${order}"]`);
@@ -546,6 +571,8 @@ window.tourDetail = {
             spotElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     },
+
+
 
     /**
      * 📋 관광지별 상세정보 렌더링
@@ -594,101 +621,187 @@ window.tourDetail = {
         console.log('✅ 관광지 상세정보 렌더링 완료:', this.currentSpots.length + '개');
     },
 
-    /**
-     * 🖼️ 이미지 갤러리 렌더링
+   /**
+     * 🖼️ 이미지 갤러리 렌더링 (수정된 버전)
      */
-    renderImageGallery() {
-        const carousel = document.getElementById('tourImageCarousel');
-        const indicators = document.getElementById('carouselIndicators');
-        
-        if (!carousel || !indicators) return;
-        
-        // 이미지 수집 (모든 관광지 이미지)
-        const images = this.currentSpots
-            .map(spot => spot.optimizedImage || spot.firstimage)
-            .filter(img => img && img.trim() !== '' && !img.includes('no-image'));
-        
-        this.totalImages = images.length;
-        
-        if (this.totalImages === 0) {
-            // 이미지가 없는 경우
-            document.getElementById('tourGallerySection').style.display = 'none';
-            return;
-        }
-        
-        // 캐러셀 슬라이드 생성
-        let carouselHtml = '';
-        images.forEach((image, index) => {
-            const spot = this.currentSpots[index] || {};
-            carouselHtml += `
-                <div class="carousel-slide" style="transform: translateX(${index * 100}%)">
-                    <img src="${image}" alt="${spot.title || '투어 이미지'}" 
-                         class="carousel-image"
-                         onerror="this.src='/uploads/tour/no-image.png'"
-                         onclick="tourDetail.showFullImage('${image}', '${spot.title || ''}')">
-                </div>
-            `;
-        });
-        carousel.innerHTML = carouselHtml;
-        
-        // 인디케이터 생성
-        let indicatorsHtml = '';
-        for (let i = 0; i < this.totalImages; i++) {
-            indicatorsHtml += `
-                <div class="indicator ${i === 0 ? 'active' : ''}" 
-                     onclick="tourDetail.goToSlide(${i})"></div>
-            `;
-        }
-        indicators.innerHTML = indicatorsHtml;
-        
-        // 1개 이미지인 경우 컨트롤 숨김
-        if (this.totalImages <= 1) {
-            document.querySelector('.carousel-controls').style.display = 'none';
-            indicators.style.display = 'none';
-        }
-        
-        console.log('✅ 이미지 갤러리 렌더링 완료:', this.totalImages + '개 이미지');
-    },
+/**
+ * ✅ 최종 JS (옵션 A + 키보드 화살표 이동)
+ * - 높이 계산 없음(aspect-ratio로 해결)
+ * - 좌우 화살표 키(←/→)로 한 칸씩 이동
+ */
 
-    /**
-     * 갤러리 슬라이드 이동
-     */
-    goToSlide(index) {
-        if (index < 0 || index >= this.totalImages) return;
-        
-        this.currentImageIndex = index;
-        
-        // 슬라이드 이동
-        const slides = document.querySelectorAll('.carousel-slide');
-        slides.forEach((slide, i) => {
-            slide.style.transform = `translateX(${(i - index) * 100}%)`;
-        });
-        
-        // 인디케이터 업데이트
-        document.querySelectorAll('.indicator').forEach((indicator, i) => {
-            indicator.classList.toggle('active', i === index);
-        });
-    },
+renderImageGallery() {
+  const carousel   = document.getElementById('tourImageCarousel');
+  const indicators = document.getElementById('carouselIndicators');
+  const section    = document.getElementById('tourGallerySection');
+  if (!carousel || !indicators) return;
 
-    /**
-     * 이전/다음 슬라이드
-     */
-    prevSlide() {
-        const newIndex = this.currentImageIndex > 0 ? this.currentImageIndex - 1 : this.totalImages - 1;
-        this.goToSlide(newIndex);
-    },
+  // 유효 이미지 수집
+  const items = (this.currentSpots || [])
+    .map(spot => {
+      const src = spot?.optimizedImage || spot?.firstimage || '';
+      const ok  = src && src.trim() !== '' && !src.includes('no-image');
+      return ok ? { src, title: spot?.title || '투어 이미지' } : null;
+    })
+    .filter(Boolean);
 
-    nextSlide() {
-        const newIndex = this.currentImageIndex < this.totalImages - 1 ? this.currentImageIndex + 1 : 0;
-        this.goToSlide(newIndex);
-    },
+  this.totalImages = items.length;
+
+  if (this.totalImages === 0) {
+    if (section) section.style.display = 'none';
+    return;
+  } else if (section) {
+    section.style.display = '';
+  }
+
+  // 슬라이드 마크업
+  let carouselHtml = '';
+  items.forEach(({ src, title }) => {
+    const safeTitle = String(title).replace(/'/g, "\\'");
+    carouselHtml += `
+      <div class="carousel-slide">
+        <img src="${src}" alt="${title}"
+             class="carousel-image"
+             onerror="this.src='/uploads/tour/no-image.png'"
+             onclick="tourDetail.showFullImage('${src}', '${safeTitle}')">
+      </div>
+    `;
+  });
+  carousel.innerHTML = carouselHtml;
+
+  // 인디케이터
+  let indicatorsHtml = '';
+  for (let i = 0; i < this.totalImages; i++) {
+    indicatorsHtml += `
+      <div class="indicator ${i === 0 ? 'active' : ''}"
+           onclick="tourDetail.goToSlide(${i})"></div>
+    `;
+  }
+  indicators.innerHTML = indicatorsHtml;
+
+  // 초기 위치
+  this.currentImageIndex = 0;
+  const slides = carousel.querySelectorAll('.carousel-slide');
+  slides.forEach((slide, i) => {
+    slide.style.transform = `translateX(${i * 100}%)`;
+  });
+
+  // 한 장만 있으면 컨트롤/인디케이터 숨김
+  const controls = document.querySelector('.carousel-controls');
+  if (this.totalImages <= 1) {
+    if (controls) controls.style.display = 'none';
+    indicators.style.display = 'none';
+  } else {
+    if (controls) controls.style.display = '';
+    indicators.style.display = '';
+  }
+
+  // 첫 슬라이드 표시
+  this.goToSlide(0);
+
+  // ⌨️ 화살표 키 바인딩(한 번만)
+  this._bindKeyboardForCarousel();
+},
+
+/**
+ * 갤러리 슬라이드 이동
+ */
+goToSlide(index) {
+  if (!Number.isInteger(index)) return;
+  if (index < 0 || index >= this.totalImages) return;
+
+  this.currentImageIndex = index;
+
+  const slides = document.querySelectorAll('#tourImageCarousel .carousel-slide');
+  slides.forEach((slide, i) => {
+    slide.style.transform = `translateX(${(i - index) * 100}%)`;
+  });
+
+  document.querySelectorAll('#carouselIndicators .indicator').forEach((dot, i) => {
+    dot.classList.toggle('active', i === index);
+  });
+},
+
+/** 이전/다음 */
+prevSlide() {
+  if (this.totalImages <= 1) return;
+  const newIndex = this.currentImageIndex > 0
+    ? this.currentImageIndex - 1
+    : this.totalImages - 1;
+  this.goToSlide(newIndex);
+},
+
+nextSlide() {
+  if (this.totalImages <= 1) return;
+  const newIndex = this.currentImageIndex < this.totalImages - 1
+    ? this.currentImageIndex + 1
+    : 0;
+  this.goToSlide(newIndex);
+},
+
+/**
+ * ⌨️ 키보드 바인딩 (←/→)
+ * - 입력 중엔 방해하지 않도록 form/에디터는 무시
+ * - 중복 바인딩 방지 플래그 사용
+ */
+_bindKeyboardForCarousel() {
+  if (this._kbdBound) return;
+  this._kbdBound = true;
+
+  // 캐러셀에 포커스도 줄 수 있게(선택)
+  const carousel = document.getElementById('tourImageCarousel');
+  if (carousel && !carousel.hasAttribute('tabindex')) {
+    carousel.setAttribute('tabindex', '0');
+  }
+
+  window.addEventListener('keydown', (e) => {
+    // 입력 필드/에디터에선 무시
+    const t = e.target;
+    const tag = (t && t.tagName ? t.tagName.toLowerCase() : '');
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || (t && t.isContentEditable)) return;
+    if (this.totalImages <= 1) return;
+
+    if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        this.nextSlide();
+    } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        this.prevSlide();
+    }
+  });
+},
 
     /**
      * 이미지 전체화면 표시 (placeholder)
      */
     showFullImage(imageUrl, title) {
-        this.showToast('이미지 전체화면 기능은 준비 중입니다', 'info');
-        // 향후 구현: 모달로 이미지 확대 표시
+        const modal = document.getElementById('imageFullscreenModal');
+        const image = document.getElementById('fullscreenImage');
+        const titleElement = document.getElementById('fullscreenTitle');
+        
+        if (modal && image && titleElement) {
+            image.src = imageUrl;
+            image.alt = title;
+            titleElement.textContent = title;
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 스크롤 방지
+            
+            console.log('이미지 전체화면 표시:', title);
+        }
+    },
+    /**
+     * 이미지 전체화면 닫기
+     */
+    closeFullImage() {
+        const modal = document.getElementById('imageFullscreenModal');
+        
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // 스크롤 복원
+            
+            console.log('이미지 전체화면 닫기');
+        }
     },
 
     /**
@@ -840,18 +953,52 @@ window.tourDetail = {
     /**
      * 찜하기 상태 확인
      */
+    // async checkWishlistStatus(tourId) {
+    //     try {
+    //         const response = await fetch(`/api/wishlist/check/${tourId}`);
+    //         if (response.ok) {
+    //             const result = await response.json();
+    //             this.isWishlisted = result.isWishlisted || false;
+    //             this.updateWishlistButton();
+    //         }
+    //     } catch (error) {
+    //         console.warn('찜하기 상태 확인 실패:', error);
+    //     }
+    // },
+
+    /**
+     * 찜하기 상태 확인
+     */
     async checkWishlistStatus(tourId) {
         try {
             const response = await fetch(`/api/wishlist/check/${tourId}`);
+            
+            // HTML 응답인지 확인 (로그인 페이지 리다이렉트 등)
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                console.warn('찜하기 상태 확인 - 비로그인 상태 또는 리다이렉트');
+                this.isWishlisted = false;
+                this.updateWishlistButton();
+                return;
+            }
+            
             if (response.ok) {
                 const result = await response.json();
                 this.isWishlisted = result.isWishlisted || false;
                 this.updateWishlistButton();
+            } else {
+                // 401 Unauthorized 등
+                console.warn('찜하기 상태 확인 - 인증 필요');
+                this.isWishlisted = false;
+                this.updateWishlistButton();
             }
         } catch (error) {
-            console.warn('찜하기 상태 확인 실패:', error);
+            console.warn('찜하기 상태 확인 실패:', error.message);
+            this.isWishlisted = false;
+            this.updateWishlistButton();
         }
     },
+    
 
     /**
      * 찜하기 버튼 UI 업데이트
@@ -880,6 +1027,7 @@ window.tourDetail = {
         updateButton(button);
         updateButton(mobileButton);
     },
+
 
     /**
      * ✈️ 여행만들기 (placeholder)
@@ -942,6 +1090,31 @@ window.tourDetail = {
             }
         });
         
+        // ESC 키로 전체화면 이미지 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeFullImage();
+            }
+            
+            if (this.totalImages > 1) {
+                if (e.key === 'ArrowLeft') {
+                    this.prevSlide();
+                } else if (e.key === 'ArrowRight') {
+                    this.nextSlide();
+                }
+            }
+        });
+        
+        // 모달 배경 클릭시 닫기
+        const modal = document.getElementById('imageFullscreenModal');
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeFullImage();
+                }
+            });
+        }
+
         console.log('✅ 이벤트 리스너 설정 완료');
     },
 

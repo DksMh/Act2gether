@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
  * - 투어 상품 메타데이터 생성
  */
 @RestController
-@RequestMapping("/tour")
+@RequestMapping("/tour-detail")
 @RequiredArgsConstructor
 @Slf4j
 public class TourDetailController {
