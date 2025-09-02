@@ -14,10 +14,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.act2gether.service.TourFilterService;
 import com.example.act2gether.service.BarrierFreeService;
+import com.example.act2gether.service.SpotDetailService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -52,6 +54,9 @@ public class TourDetailController {
 
   @Autowired
   private BarrierFreeService barrierFreeService;
+  
+  @Autowired
+  private SpotDetailService spotDetailService;
 
   // ✅ 새로 추가: 카카오맵 API 키
   @Value("${kakao.map.api.key}")
@@ -624,5 +629,67 @@ public class TourDetailController {
     }
 
     return finalSpots;
+  }  
+  /**
+   * 관광지 상세정보 조회 - 아코디언용
+   * URL: /tour-detail/spot-detail/{contentId}
+   * 
+   * @param contentId - 관광지 ID
+   * @return 통합된 관광지 상세정보 (홈페이지, 쉬는날, 이용시간, 주차, 입장료)
+   */
+  @GetMapping("/spot-detail/{contentId}")
+  public ResponseEntity<Map<String, Object>> getSpotDetail(@PathVariable String contentId) {
+      log.info("📋 관광지 상세정보 조회: contentId={}", contentId);
+      
+      try {
+          Map<String, Object> result = spotDetailService.getSpotDetail(contentId);
+          
+          if ((Boolean) result.get("success")) {
+              log.info("✅ 관광지 상세정보 조회 성공: contentId={}", contentId);
+          } else {
+              log.warn("⚠️ 관광지 상세정보 조회 실패: contentId={}, message={}", 
+                      contentId, result.get("message"));
+          }
+          
+          return ResponseEntity.ok(result);
+          
+      } catch (Exception e) {
+          log.error("💥 관광지 상세정보 조회 중 예외 발생: contentId={}, error={}", contentId, e.getMessage(), e);
+          
+          return ResponseEntity.ok(Map.of(
+              "success", false,
+              "message", "상세정보를 불러오는 중 오류가 발생했습니다: " + e.getMessage()
+          ));
+      }
+  }
+
+  /**
+   * 🆕 배치 상세정보 조회 - 여러 관광지를 한번에 조회 (선택사항)
+   */
+  @GetMapping("/spot-detail/batch")
+  public ResponseEntity<Map<String, Object>> getSpotDetailBatch(@RequestParam String ids) {
+      try {
+          String[] contentIds = ids.split(",");
+          Map<String, Object> results = new HashMap<>();
+          
+          for (String contentId : contentIds) {
+              Map<String, Object> spotDetail = spotDetailService.getSpotDetail(contentId.trim());
+              if ((Boolean) spotDetail.get("success")) {
+                  results.put(contentId.trim(), spotDetail.get("data"));
+              }
+          }
+          
+          return ResponseEntity.ok(Map.of(
+              "success", true,
+              "data", results
+          ));
+          
+      } catch (Exception e) {
+          log.error("배치 상세정보 조회 실패: {}", e.getMessage());
+          return ResponseEntity.ok(Map.of(
+              "success", false,
+              "message", "상세정보를 불러올 수 없습니다"
+          ));
+      }
   }
 }

@@ -488,6 +488,296 @@ section {
   overflow: hidden;
 }
 
+
+/* tour-detail.css에 추가할 아코디언 스타일 */
+
+/* 🎯 아코디언 컨테이너 */
+.spot-accordions {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+/* 📦 개별 아코디언 */
+.spot-accordion {
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.spot-accordion:hover {
+    border-color: #4CAF50;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.spot-accordion.active {
+    border-color: #4CAF50;
+    background: #f8fff8;
+}
+
+/* 📋 아코디언 헤더 */
+.accordion-header {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    cursor: pointer;
+    background: inherit;
+    transition: background-color 0.2s ease;
+    min-height: 80px; /* 액티브 시니어를 위한 충분한 터치 영역 */
+}
+
+.accordion-header:hover {
+    background-color: rgba(76, 175, 80, 0.05);
+}
+
+.spot-accordion.active .accordion-header {
+    background-color: rgba(76, 175, 80, 0.1);
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* 🔢 관광지 순서 번호 */
+.spot-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 18px;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.spot-accordion.active .spot-number {
+    background: #2E7D32;
+}
+
+/* 📄 헤더 콘텐츠 영역 */
+.spot-header-content {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 16px;
+    min-width: 0; /* flex 오버플로우 방지 */
+}
+
+/* 🖼️ 썸네일 이미지 */
+.spot-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
+}
+
+/* 📝 헤더 정보 */
+.spot-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.spot-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 4px 0;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.spot-address {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 8px 0;
+    word-break: break-word;
+}
+
+.spot-accessibility {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.accessibility-score {
+    background: #4CAF50;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.barrier-free-info {
+    font-size: 12px;
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+/* 🔄 토글 버튼 */
+.accordion-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4CAF50;
+    font-weight: 600;
+    margin-left: 16px;
+    flex-shrink: 0;
+}
+
+.toggle-icon {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+    width: 20px;
+    text-align: center;
+}
+
+.toggle-text {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+/* 📖 아코디언 콘텐츠 */
+.accordion-content {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.accordion-body {
+    padding: 0 20px 20px 20px;
+}
+
+/* 📊 상세정보 그리드 */
+.spot-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.detail-section {
+    background: #ffffff;
+    border: 1px solid #e8f5e8;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.detail-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2E7D32;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e8f5e8;
+}
+
+.detail-content p {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #555;
+}
+
+.detail-content p:last-child {
+    margin-bottom: 0;
+}
+
+.detail-content strong {
+    color: #333;
+    font-weight: 600;
+    display: inline-block;
+    min-width: 80px;
+}
+
+.detail-content a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.detail-content a:hover {
+    text-decoration: underline;
+}
+
+/* 📖 상세설명 섹션 */
+.overview-section {
+    grid-column: 1 / -1; /* 전체 너비 사용 */
+    background: #fafffe;
+}
+
+.overview-text {
+    color: #444;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ⏳ 로딩 상태 */
+.loading-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.loading-spinner-small {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid #4CAF50;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 12px;
+}
+
+/* ❌ 에러 상태 */
+.error-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 40px 20px;
+    color: #666;
+    text-align: center;
+}
+
+.error-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.error-message {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 16px;
+}
+
+.retry-button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.retry-button:hover {
+    background: #45A049;
+}
+
+
 /* ===========================================
    4️⃣ 투어 이미지 갤러리
    =========================================== */
@@ -998,6 +1288,62 @@ section {
     .fullscreen-title {
         font-size: 0.875rem;
     }
+
+    /*아코디언*/
+    .spot-accordions {
+        gap: 12px;
+    }
+    
+    .accordion-header {
+        padding: 16px;
+        min-height: 70px;
+    }
+    
+    .spot-number {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+        margin-right: 12px;
+    }
+    
+    .spot-header-content {
+        gap: 12px;
+    }
+    
+    .spot-thumb {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .spot-title {
+        font-size: 16px;
+    }
+    
+    .accordion-body {
+        padding: 0 16px 16px 16px;
+    }
+    
+    .spot-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-top: 12px;
+    }
+    
+    .detail-section {
+        padding: 12px;
+    }
+    
+    .detail-content strong {
+        min-width: 70px;
+    }
+    
+    .accordion-toggle {
+        margin-left: 8px;
+    }
+    
+    .toggle-text {
+        display: none; /* 모바일에서는 아이콘만 표시 */
+    }
 }
 
 /* 모바일 */
@@ -1066,6 +1412,35 @@ section {
   .toast {
     max-width: none;
   }
+
+  /*아코디언*/
+  .spot-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .spot-thumb {
+        width: 100%;
+        height: 120px;
+        max-width: 200px;
+    }
+    
+    .accordion-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        min-height: auto;
+    }
+    
+    .spot-number {
+        align-self: flex-start;
+    }
+    
+    .accordion-toggle {
+        align-self: flex-end;
+        margin: 0;
+    }
 }
 
 /* 접근성 개선 */
