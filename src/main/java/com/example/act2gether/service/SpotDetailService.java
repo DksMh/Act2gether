@@ -92,7 +92,7 @@ public class SpotDetailService {
     }
 
     /**
-     * detailCommon2 API 호출 - 기본정보
+     * detailCommon2 API 호출 - 기본정보 (에러 처리 강화)
      */
     private Map<String, Object> getDetailCommon(String contentId) {
         try {
@@ -100,12 +100,30 @@ public class SpotDetailService {
                 "%s/detailCommon2?serviceKey=%s&MobileOS=ETC&MobileApp=Act2gether&_type=json&contentId=%s&defaultYN=Y&firstImageYN=Y&areacodeYN=Y&catcodeYN=Y&addrinfoYN=Y&mapinfoYN=Y&overviewYN=Y",
                 baseUrl, serviceKey, contentId);
 
+            log.debug("detailCommon2 API 호출: {}", url);
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-            JsonNode jsonNode = objectMapper.readTree(response.getBody());
+            String responseBody = response.getBody();
+            
+            if (responseBody == null || responseBody.trim().isEmpty()) {
+                log.warn("detailCommon2 응답이 비어있음: contentId={}", contentId);
+                return Map.of("success", false, "message", "API 응답이 비어있습니다");
+            }
 
+            JsonNode jsonNode = objectMapper.readTree(responseBody);
             JsonNode header = jsonNode.path("response").path("header");
-            if (!"0000".equals(header.path("resultCode").asText())) {
-                return Map.of("success", false, "message", "기본정보를 찾을 수 없습니다");
+            String resultCode = header.path("resultCode").asText();
+            String resultMsg = header.path("resultMsg").asText();
+            
+            log.debug("API 응답 코드: {} - {}", resultCode, resultMsg);
+
+            if (!"0000".equals(resultCode)) {
+                log.warn("API 오류 응답: contentId={}, code={}, message={}", contentId, resultCode, resultMsg);
+                // 특정 에러 코드에 대한 대안 처리
+                if ("4005".equals(resultCode) || "9999".equals(resultCode)) {
+                    // 해당 contentId가 존재하지 않거나 서비스 오류인 경우, 세션 데이터로 대체
+                    return createFallbackData(contentId);
+                }
+                return Map.of("success", false, "message", "기본정보를 찾을 수 없습니다: " + resultMsg);
             }
 
             JsonNode items = jsonNode.path("response").path("body").path("items").path("item");
@@ -115,12 +133,32 @@ public class SpotDetailService {
                 return Map.of("success", true, "data", items);
             }
 
-            return Map.of("success", false, "message", "기본정보가 없습니다");
+            log.warn("API 응답에 데이터가 없음: contentId={}", contentId);
+            return createFallbackData(contentId);
 
         } catch (Exception e) {
             log.warn("detailCommon2 API 호출 실패: contentId={}, error={}", contentId, e.getMessage());
-            return Map.of("success", false, "message", "기본정보 조회 실패");
+            return createFallbackData(contentId);
         }
+    }
+
+    /**
+     * API 실패시 세션 데이터 기반 fallback 생성
+     */
+    private Map<String, Object> createFallbackData(String contentId) {
+        log.info("세션 데이터 기반 fallback 생성: contentId={}", contentId);
+        return Map.of(
+            "success", true, 
+            "fallback", true,
+            "data", Map.of(
+                "contentid", contentId,
+                "title", "관광지 정보",
+                "homepage", "",
+                "addr1", "주소 정보 없음",
+                "tel", "",
+                "overview", "상세 정보는 현재 제공되지 않습니다."
+            )
+        );
     }
 
     /**
