@@ -773,10 +773,9 @@ function openMemberModal() {
                             <span class="stat-value">8명</span>
                         </div>
                     </div>
+
+          <div class="modal-member-list" id="memberList">로딩중...</div>
                     
-                    <div class="modal-member-list">
-                        ${generateMemberList()}
-                    </div>
                 </div>
             </div>
         </div>
@@ -796,6 +795,8 @@ function openMemberModal() {
     const searchTerm = $(this).val().toLowerCase();
     filterMemberList(searchTerm);
   });
+
+  generateMemberList();
 }
 
 // 멤버 리스트 생성
@@ -812,12 +813,15 @@ function generateMemberList() {
     data: JSON.stringify(groupId), //그룹id
     success: function(response, textStatus, jqXHR) {
         console.log("멤버 정보 가져오기 성공 : " + Array.isArray(response)); //데이터 갖고오는 방법,,,,
-        members.push(response);
+        console.log(JSON.stringify(response, null, 2));
+        // members.push(response);
+       $("#memberList").html(memberList(response));
       
     },
     error: function(request, status, error) {
-      
       console.error("멤버 정보 가져오기 오류:", error);
+      $("#memberList").html('<div style="padding:16px;color:red;">불러오기 실패</div>');
+
     }
   });
 
@@ -834,9 +838,16 @@ function generateMemberList() {
   //   { name: "멤버닉네임10", role: "멤버", isOnline: false },
   // ];
 
+  
+}
+
+function memberList(members){
+  // const isOnline = !!m.isOnline; // 서버에 없으면 false 처리
   return members
     .map(
-      (member) => `
+      (member) =>{
+        console.log("username >>> " + member.username);
+        return `
         <div class="modal-member-item" style="
             display: flex;
             align-items: center;
@@ -848,7 +859,7 @@ function generateMemberList() {
            onmouseout="this.style.background='white'">
             <div class="member-avatar" style="position: relative;">
                 <img src="/images/default-avatar.png" alt="${
-                  member.name
+                  member.username
                 }" class="avatar-img" style="width: 50px; height: 50px;">
                 <span class="member-status ${
                   member.isOnline ? "online" : ""
@@ -869,7 +880,7 @@ function generateMemberList() {
             </div>
             <div class="member-info" style="flex: 1;">
                 <div class="member-name" style="font-weight: 600; color: var(--text-primary); font-size: 16px;">${
-                  member.name
+                  member.username
                 }</div>
                 <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
                     <span class="member-role" style="
@@ -877,18 +888,18 @@ function generateMemberList() {
                         font-size: 14px;
                         padding: 2px 8px;
                         background: ${
-                          member.role === "리더"
+                          member.userRole === "리더"
                             ? "var(--warning-color)"
                             : "var(--background-primary)"
                         };
                         color: ${
-                          member.role === "리더"
+                          member.userRole === "리더"
                             ? "white"
                             : "var(--text-secondary)"
                         };
                         border-radius: 12px;
                         font-size: 12px;
-                    ">${member.role}</span>
+                    ">${member.userRole}</span>
                     <span style="color: ${
                       member.isOnline
                         ? "var(--success-color)"
@@ -899,7 +910,7 @@ function generateMemberList() {
                 </div>
             </div>
         </div>
-    `
+    `}
     )
     .join("");
 }

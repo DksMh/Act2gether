@@ -16,7 +16,11 @@ public class TravelGroupMembersDTO {
 
     public static TravelGroupMembersDTO of (TravelGroupMembersEntity travelGroupMembersEntity){
         return TravelGroupMembersDTO.builder()
-
+        .groupId(travelGroupMembersEntity.getGroupId())
+        .userId(travelGroupMembersEntity.getUserId())
+        .memberId(travelGroupMembersEntity.getMemberId())
+        .memberType(travelGroupMembersEntity.getMemberType())
+        .joinedAt(travelGroupMembersEntity.getJoinedAt())
         .build();
     }
 }
