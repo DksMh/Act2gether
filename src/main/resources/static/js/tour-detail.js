@@ -126,7 +126,8 @@ window.tourDetail = {
         }));
          // UI 업데이트
         this.updateTourHeader();
-        this.renderTourSpots();
+        //this.renderTourSpots();
+        this.renderSpotAccordions();
         this.renderImageGallery();
         this.setupEventListeners();
         
@@ -180,7 +181,8 @@ window.tourDetail = {
                 // UI 업데이트
                 this.updateTourHeader();
                 this.initializeKakaoMap();
-                this.renderTourSpots();
+                //this.renderTourSpots();
+                this.renderSpotAccordions();
                 this.renderImageGallery();
                 this.renderRestaurants();
                 this.setupEventListeners();
@@ -577,7 +579,53 @@ window.tourDetail = {
     /**
      * 📋 관광지별 상세정보 렌더링
      */
-    renderTourSpots() {
+    // renderTourSpots() {
+    //     const container = document.getElementById('tourSpotsList');
+    //     if (!container || !this.currentSpots.length) {
+    //         if (container) {
+    //             container.innerHTML = '<p>관광지 정보가 없습니다.</p>';
+    //         }
+    //         return;
+    //     }
+        
+    //     let html = '';
+        
+    //     this.currentSpots.forEach((spot, index) => {
+    //         const order = index + 1;
+    //         const imageUrl = spot.optimizedImage || '/uploads/tour/no-image.png';
+            
+    //         html += `
+    //             <div class="tour-spot-item" data-spot-order="${order}">
+    //                 <div class="spot-order">${order}</div>
+    //                 <img src="${imageUrl}" alt="${spot.title}" class="spot-image" 
+    //                      onerror="this.src='/uploads/tour/no-image.png'">
+    //                 <div class="spot-info">
+    //                     <h3 class="spot-title">${spot.title}</h3>
+    //                     <p class="spot-address">📍 ${spot.addr1}</p>
+    //                     ${spot.tel ? `<p class="spot-tel">📞 ${spot.tel}</p>` : ''}
+                        
+    //                     ${spot.hasBarrierFreeInfo ? `
+    //                         <div class="spot-accessibility">
+    //                             <span class="accessibility-score">${spot.accessibilityScore}점</span>
+    //                             <span class="barrier-free-info">편의시설 정보 포함</span>
+    //                         </div>
+    //                     ` : ''}
+                        
+    //                     ${spot.overview ? `
+    //                         <p class="spot-overview">${this.truncateText(spot.overview, 150)}</p>
+    //                     ` : ''}
+    //                 </div>
+    //             </div>
+    //         `;
+    //     });
+        
+    //     container.innerHTML = html;
+    //     console.log('✅ 관광지 상세정보 렌더링 완료:', this.currentSpots.length + '개');
+    // },
+    /**
+     * 📋 관광지별 상세정보를 아코디언 형태로 렌더링 (기존 renderTourSpots 대체)
+     */
+    renderSpotAccordions() {
         const container = document.getElementById('tourSpotsList');
         if (!container || !this.currentSpots.length) {
             if (container) {
@@ -586,40 +634,195 @@ window.tourDetail = {
             return;
         }
         
-        let html = '';
+        let html = '<div class="spot-accordions">';
         
         this.currentSpots.forEach((spot, index) => {
             const order = index + 1;
             const imageUrl = spot.optimizedImage || '/uploads/tour/no-image.png';
+            const isFirst = index === 0; // 첫 번째 아코디언은 자동 열기
             
             html += `
-                <div class="tour-spot-item" data-spot-order="${order}">
-                    <div class="spot-order">${order}</div>
-                    <img src="${imageUrl}" alt="${spot.title}" class="spot-image" 
-                         onerror="this.src='/uploads/tour/no-image.png'">
-                    <div class="spot-info">
-                        <h3 class="spot-title">${spot.title}</h3>
-                        <p class="spot-address">📍 ${spot.addr1}</p>
-                        ${spot.tel ? `<p class="spot-tel">📞 ${spot.tel}</p>` : ''}
-                        
-                        ${spot.hasBarrierFreeInfo ? `
-                            <div class="spot-accessibility">
-                                <span class="accessibility-score">${spot.accessibilityScore}점</span>
-                                <span class="barrier-free-info">편의시설 정보 포함</span>
+                <div class="spot-accordion ${isFirst ? 'active' : ''}" data-spot-order="${order}">
+                    <!-- 아코디언 헤더 (항상 표시) -->
+                    <div class="accordion-header" onclick="tourDetail.toggleAccordion(${order})">
+                        <div class="spot-number">${order}</div>
+                        <div class="spot-header-content">
+                            <img src="${imageUrl}" alt="${spot.title}" class="spot-thumb" 
+                                onerror="this.src='/uploads/tour/no-image.png'">
+                            <div class="spot-header-info">
+                                <h3 class="spot-title">${spot.title}</h3>
+                                <p class="spot-address">📍 ${spot.addr1}</p>
+                                ${spot.hasBarrierFreeInfo ? `
+                                    <div class="spot-accessibility">
+                                        <span class="accessibility-score">${spot.accessibilityScore}점</span>
+                                        <span class="barrier-free-info">편의시설 정보 포함</span>
+                                    </div>
+                                ` : ''}
                             </div>
-                        ` : ''}
-                        
-                        ${spot.overview ? `
-                            <p class="spot-overview">${this.truncateText(spot.overview, 150)}</p>
-                        ` : ''}
+                        </div>
+                        <div class="accordion-toggle">
+                            <span class="toggle-icon">${isFirst ? '▼' : '▶'}</span>
+                            <span class="toggle-text">${isFirst ? '접기' : '상세보기'}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 아코디언 콘텐츠 (토글) -->
+                    <div class="accordion-content" ${isFirst ? 'style="display: block;"' : 'style="display: none;"'}>
+                        <div class="accordion-body" id="accordion-body-${order}">
+                            ${isFirst ? this.generateLoadingContent() : ''}
+                        </div>
                     </div>
                 </div>
             `;
         });
         
+        html += '</div>';
+        
         container.innerHTML = html;
-        console.log('✅ 관광지 상세정보 렌더링 완료:', this.currentSpots.length + '개');
+        
+        // 첫 번째 아코디언 상세정보 자동 로드
+        if (this.currentSpots.length > 0) {
+            this.loadSpotDetail(this.currentSpots[0].contentid, 1);
+        }
+        
+        console.log('✅ 관광지 아코디언 렌더링 완료:', this.currentSpots.length + '개');
     },
+
+    /**
+     * 🔄 아코디언 토글 함수
+     */
+    toggleAccordion(order) {
+        const accordion = document.querySelector(`[data-spot-order="${order}"]`);
+        const content = accordion.querySelector('.accordion-content');
+        const icon = accordion.querySelector('.toggle-icon');
+        const text = accordion.querySelector('.toggle-text');
+        const body = document.getElementById(`accordion-body-${order}`);
+        
+        const isActive = accordion.classList.contains('active');
+        
+        if (isActive) {
+            // 닫기
+            accordion.classList.remove('active');
+            content.style.display = 'none';
+            icon.textContent = '▶';
+            text.textContent = '상세보기';
+        } else {
+            // 열기
+            accordion.classList.add('active');
+            content.style.display = 'block';
+            icon.textContent = '▼';
+            text.textContent = '접기';
+            
+            // 상세정보가 로드되지 않았으면 로드
+            if (body.innerHTML === '' || body.innerHTML === this.generateLoadingContent()) {
+                const spot = this.currentSpots.find(s => s.order === order);
+                if (spot) {
+                    this.loadSpotDetail(spot.contentid, order);
+                }
+            }
+        }
+        
+        // 부드러운 스크롤
+        setTimeout(() => {
+            accordion.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    },
+    /**
+ * 📡 관광지 상세정보 AJAX 로드
+ */
+async loadSpotDetail(contentId, order) {
+    const bodyElement = document.getElementById(`accordion-body-${order}`);
+    if (!bodyElement) return;
+    
+    try {
+        // 로딩 표시
+        bodyElement.innerHTML = this.generateLoadingContent();
+        
+        const response = await fetch(`/tour-detail/spot-detail/${contentId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const spotData = result.data;
+            bodyElement.innerHTML = this.generateSpotDetailContent(spotData);
+            console.log(`✅ ${order}번째 관광지 상세정보 로드 완료: ${contentId}`);
+        } else {
+            bodyElement.innerHTML = this.generateErrorContent(result.message);
+            console.warn(`⚠️ ${order}번째 관광지 상세정보 로드 실패: ${contentId} - ${result.message}`);
+        }
+        
+    } catch (error) {
+        console.error(`💥 ${order}번째 관광지 상세정보 로드 오류: ${contentId}`, error);
+        bodyElement.innerHTML = this.generateErrorContent('네트워크 오류가 발생했습니다');
+    }
+},
+
+/**
+ * 🎨 상세정보 HTML 생성
+ */
+generateSpotDetailContent(data) {
+    return `
+        <div class="spot-detail-grid">
+            <!-- 기본 정보 -->
+            <div class="detail-section">
+                <h4 class="detail-title">📋 기본정보</h4>
+                <div class="detail-content">
+                    ${data.title ? `<p><strong>명칭:</strong> ${data.title}</p>` : ''}
+                    ${data.addr1 ? `<p><strong>주소:</strong> ${data.addr1}</p>` : ''}
+                    ${data.tel ? `<p><strong>전화:</strong> <a href="tel:${data.tel}">${data.tel}</a></p>` : ''}
+                    ${data.homepage ? `<p><strong>홈페이지:</strong> <a href="${data.homepage}" target="_blank" rel="noopener">바로가기 🔗</a></p>` : ''}
+                </div>
+            </div>
+            
+            <!-- 이용 정보 -->
+            <div class="detail-section">
+                <h4 class="detail-title">🕒 이용정보</h4>
+                <div class="detail-content">
+                    ${data.usetime ? `<p><strong>이용시간:</strong> ${data.usetime}</p>` : '<p><strong>이용시간:</strong> 정보 없음</p>'}
+                    ${data.restdate ? `<p><strong>휴무일:</strong> ${data.restdate}</p>` : '<p><strong>휴무일:</strong> 정보 없음</p>'}
+                    ${data.parking ? `<p><strong>주차:</strong> ${data.parking}</p>` : '<p><strong>주차:</strong> 정보 없음</p>'}
+                    ${data.admission ? `<p><strong>입장료:</strong> ${data.admission}</p>` : '<p><strong>입장료:</strong> 정보 없음</p>'}
+                </div>
+            </div>
+            
+            <!-- 상세 설명 -->
+            ${data.overview ? `
+                <div class="detail-section overview-section">
+                    <h4 class="detail-title">📖 상세설명</h4>
+                    <div class="detail-content">
+                        <p class="overview-text">${data.overview}</p>
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    },
+
+    /**
+     * ⏳ 로딩 콘텐츠 생성
+     */
+    generateLoadingContent() {
+        return `
+            <div class="loading-content">
+                <div class="loading-spinner-small"></div>
+                <p>상세정보를 불러오고 있습니다...</p>
+            </div>
+        `;
+    },
+
+    /**
+     * ❌ 에러 콘텐츠 생성
+     */
+    generateErrorContent(message) {
+        return `
+            <div class="error-content">
+                <div class="error-icon">⚠️</div>
+                <p>상세정보를 불러올 수 없습니다</p>
+                <p class="error-message">${message}</p>
+                <button onclick="location.reload()" class="retry-button">페이지 새로고침</button>
+            </div>
+        `;
+    },
+
 
    /**
      * 🖼️ 이미지 갤러리 렌더링 (수정된 버전)
