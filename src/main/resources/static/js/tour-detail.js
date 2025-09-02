@@ -626,107 +626,115 @@ window.tourDetail = {
      * 📋 관광지별 상세정보를 아코디언 형태로 렌더링 (기존 renderTourSpots 대체)
      */
     renderSpotAccordions() {
-        const container = document.getElementById('tourSpotsList');
-        if (!container || !this.currentSpots.length) {
-            if (container) {
-                container.innerHTML = '<p>관광지 정보가 없습니다.</p>';
-            }
-            return;
+    const container = document.getElementById('tourSpotsList');
+    if (!container || !this.currentSpots.length) {
+        if (container) {
+            container.innerHTML = '<p>관광지 정보가 없습니다.</p>';
         }
+        return;
+    }
+    
+    let html = '<div class="spot-accordions">';
+    
+    this.currentSpots.forEach((spot, index) => {
+        const order = index + 1;
+        const imageUrl = spot.optimizedImage || '/uploads/tour/no-image.png';
+        const isFirst = index === 0; // 첫 번째 아코디언은 자동 열기
         
-        let html = '<div class="spot-accordions">';
-        
-        this.currentSpots.forEach((spot, index) => {
-            const order = index + 1;
-            const imageUrl = spot.optimizedImage || '/uploads/tour/no-image.png';
-            const isFirst = index === 0; // 첫 번째 아코디언은 자동 열기
-            
-            html += `
-                <div class="spot-accordion ${isFirst ? 'active' : ''}" data-spot-order="${order}">
-                    <!-- 아코디언 헤더 (항상 표시) -->
-                    <div class="accordion-header" onclick="tourDetail.toggleAccordion(${order})">
-                        <div class="spot-number">${order}</div>
-                        <div class="spot-header-content">
-                            <img src="${imageUrl}" alt="${spot.title}" class="spot-thumb" 
-                                onerror="this.src='/uploads/tour/no-image.png'">
-                            <div class="spot-header-info">
-                                <h3 class="spot-title">${spot.title}</h3>
-                                <p class="spot-address">📍 ${spot.addr1}</p>
-                                ${spot.hasBarrierFreeInfo ? `
-                                    <div class="spot-accessibility">
-                                        <span class="accessibility-score">${spot.accessibilityScore}점</span>
-                                        <span class="barrier-free-info">편의시설 정보 포함</span>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                        <div class="accordion-toggle">
-                            <span class="toggle-icon">${isFirst ? '▼' : '▶'}</span>
-                            <span class="toggle-text">${isFirst ? '접기' : '상세보기'}</span>
+        html += `
+            <div class="spot-accordion ${isFirst ? 'active' : ''}" data-spot-order="${order}">
+                <!-- 아코디언 헤더 (항상 표시) -->
+                <div class="accordion-header" onclick="tourDetail.toggleAccordion(${order})">
+                    <div class="spot-number">${order}</div>
+                    <div class="spot-header-content">
+                        <img src="${imageUrl}" alt="${spot.title}" class="spot-thumb" 
+                             onerror="this.src='/uploads/tour/no-image.png'">
+                        <div class="spot-header-info">
+                            <h3 class="spot-title">${spot.title}</h3>
+                            <p class="spot-address">📍 ${spot.addr1}</p>
+                            ${spot.hasBarrierFreeInfo ? `
+                                <div class="spot-accessibility">
+                                    <span class="accessibility-score">${spot.accessibilityScore}점</span>
+                                    <span class="barrier-free-info">편의시설 정보 포함</span>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
-                    
-                    <!-- 아코디언 콘텐츠 (토글) -->
-                    <div class="accordion-content" ${isFirst ? 'style="display: block;"' : 'style="display: none;"'}>
-                        <div class="accordion-body" id="accordion-body-${order}">
-                            ${isFirst ? this.generateLoadingContent() : ''}
-                        </div>
+                    <div class="accordion-toggle">
+                        <span class="toggle-icon">${isFirst ? '▼' : '▶'}</span>
+                        <span class="toggle-text">${isFirst ? '접기' : '상세보기'}</span>
                     </div>
                 </div>
-            `;
-        });
-        
-        html += '</div>';
-        
-        container.innerHTML = html;
-        
-        // 첫 번째 아코디언 상세정보 자동 로드
-        if (this.currentSpots.length > 0) {
-            this.loadSpotDetail(this.currentSpots[0].contentid, 1);
-        }
-        
-        console.log('✅ 관광지 아코디언 렌더링 완료:', this.currentSpots.length + '개');
-    },
+                
+                <!-- 아코디언 콘텐츠 (토글) -->
+                <div class="accordion-content" ${isFirst ? 'style="display: block;"' : 'style="display: none;"'}>
+                    <div class="accordion-body" id="accordion-body-${order}">
+                        ${isFirst ? this.generateLoadingContent() : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    
+    container.innerHTML = html;
+    
+    // 첫 번째 아코디언 상세정보 자동 로드
+    if (this.currentSpots.length > 0) {
+        this.loadSpotDetail(this.currentSpots[0].contentid, 1);
+    }
+    
+    console.log('✅ 관광지 아코디언 렌더링 완료:', this.currentSpots.length + '개');
+},
 
     /**
      * 🔄 아코디언 토글 함수
      */
     toggleAccordion(order) {
-        const accordion = document.querySelector(`[data-spot-order="${order}"]`);
+    const clickedAccordion = document.querySelector(`[data-spot-order="${order}"]`);
+    const clickedContent = clickedAccordion.querySelector('.accordion-content');
+    const clickedIcon = clickedAccordion.querySelector('.toggle-icon');
+    const clickedText = clickedAccordion.querySelector('.toggle-text');
+    const clickedBody = document.getElementById(`accordion-body-${order}`);
+    
+    const isCurrentlyActive = clickedAccordion.classList.contains('active');
+    
+    // 먼저 모든 아코디언 닫기
+    document.querySelectorAll('.spot-accordion').forEach(accordion => {
         const content = accordion.querySelector('.accordion-content');
         const icon = accordion.querySelector('.toggle-icon');
         const text = accordion.querySelector('.toggle-text');
-        const body = document.getElementById(`accordion-body-${order}`);
         
-        const isActive = accordion.classList.contains('active');
+        accordion.classList.remove('active');
+        content.style.display = 'none';
+        icon.textContent = '▶';
+        if (text) text.textContent = '상세보기';
+    });
+    
+    // 클릭한 아코디언이 이미 열려있었다면 그대로 닫은 상태 유지
+    // 닫혀있었다면 열기
+    if (!isCurrentlyActive) {
+        clickedAccordion.classList.add('active');
+        clickedContent.style.display = 'block';
+        clickedIcon.textContent = '▼';
+        if (clickedText) clickedText.textContent = '접기';
         
-        if (isActive) {
-            // 닫기
-            accordion.classList.remove('active');
-            content.style.display = 'none';
-            icon.textContent = '▶';
-            text.textContent = '상세보기';
-        } else {
-            // 열기
-            accordion.classList.add('active');
-            content.style.display = 'block';
-            icon.textContent = '▼';
-            text.textContent = '접기';
-            
-            // 상세정보가 로드되지 않았으면 로드
-            if (body.innerHTML === '' || body.innerHTML === this.generateLoadingContent()) {
-                const spot = this.currentSpots.find(s => s.order === order);
-                if (spot) {
-                    this.loadSpotDetail(spot.contentid, order);
-                }
+        // 상세정보가 로드되지 않았으면 로드
+        if (!clickedBody || clickedBody.innerHTML === '' || clickedBody.innerHTML.includes('상세정보를 불러오고 있습니다')) {
+            const spot = this.currentSpots.find(s => s.order === order);
+            if (spot) {
+                console.log(`🔄 ${order}번째 관광지 상세정보 로드 시작: ${spot.contentid}`);
+                this.loadSpotDetail(spot.contentid, order);
             }
         }
         
         // 부드러운 스크롤
         setTimeout(() => {
-            accordion.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            clickedAccordion.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }, 100);
-    },
+    }
+},
     /**
  * 📡 관광지 상세정보 AJAX 로드
  */
@@ -795,34 +803,33 @@ generateSpotDetailContent(data) {
             ` : ''}
         </div>
     `;
-    },
+},
 
-    /**
-     * ⏳ 로딩 콘텐츠 생성
-     */
-    generateLoadingContent() {
-        return `
-            <div class="loading-content">
-                <div class="loading-spinner-small"></div>
-                <p>상세정보를 불러오고 있습니다...</p>
-            </div>
-        `;
-    },
+/**
+ * ⏳ 로딩 콘텐츠 생성
+ */
+generateLoadingContent() {
+    return `
+        <div class="loading-content">
+            <div class="loading-spinner-small"></div>
+            <p>상세정보를 불러오고 있습니다...</p>
+        </div>
+    `;
+},
 
-    /**
-     * ❌ 에러 콘텐츠 생성
-     */
-    generateErrorContent(message) {
-        return `
-            <div class="error-content">
-                <div class="error-icon">⚠️</div>
-                <p>상세정보를 불러올 수 없습니다</p>
-                <p class="error-message">${message}</p>
-                <button onclick="location.reload()" class="retry-button">페이지 새로고침</button>
-            </div>
-        `;
-    },
-
+/**
+ * ❌ 에러 콘텐츠 생성
+ */
+generateErrorContent(message) {
+    return `
+        <div class="error-content">
+            <div class="error-icon">⚠️</div>
+            <p>상세정보를 불러올 수 없습니다</p>
+            <p class="error-message">${message}</p>
+            <button onclick="location.reload()" class="retry-button">페이지 새로고침</button>
+        </div>
+    `;
+},
 
    /**
      * 🖼️ 이미지 갤러리 렌더링 (수정된 버전)
