@@ -1,6 +1,7 @@
 package com.example.act2gether.dto;
 
 import com.example.act2gether.entity.TravelGroupMembersEntity;
+import com.example.act2gether.entity.UserEntity;
 
 import lombok.Builder;
 import lombok.Data;
@@ -11,16 +12,20 @@ public class TravelGroupMembersDTO {
     private String memberId;
     private String groupId; 
     private String userId; 
-    private String memberType;
+    private String memberType; //role
     private String joinedAt;
 
-    public static TravelGroupMembersDTO of (TravelGroupMembersEntity travelGroupMembersEntity){
+    private String username;
+
+
+    public static TravelGroupMembersDTO of (TravelGroupMembersEntity tgEntity, UserEntity userEntity){
         return TravelGroupMembersDTO.builder()
-        .groupId(travelGroupMembersEntity.getGroupId())
-        .userId(travelGroupMembersEntity.getUserId())
-        .memberId(travelGroupMembersEntity.getMemberId())
-        .memberType(travelGroupMembersEntity.getMemberType())
-        .joinedAt(travelGroupMembersEntity.getJoinedAt())
+        .groupId(tgEntity.getGroupId())
+        .userId(tgEntity.getUserId())
+        .memberId(tgEntity.getMemberId())
+        .memberType(tgEntity.getMemberType())
+        .joinedAt(tgEntity.getJoinedAt())
+        .username(userEntity.getUsername())
         .build();
     }
 }

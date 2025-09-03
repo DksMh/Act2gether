@@ -12,11 +12,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.act2gether.dto.MembersDTO;
 import com.example.act2gether.dto.ResetPasswordDTO;
 import com.example.act2gether.dto.TravelGroupMembersDTO;
+import com.example.act2gether.entity.TravelGroupsEntity;
 import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.service.CommunityService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/community")
@@ -29,14 +33,15 @@ public class CommunityController {
     @PostMapping("/members")
     public ResponseEntity<?> getMembers(@RequestBody MembersDTO membersDTO) {
 
-        List<UserEntity> travelGroupMembersDTO = communityService.getMembers(membersDTO.getGroupId());
-        // boolean isReset = loginService.resetPassword(resetPasswordDTO);
-        // if(isReset){
-        //     return ResponseEntity.ok("");
-        // }else {
-        //     return ResponseEntity.badRequest().body("멤버 정보 불러오기 실패");
-        // }
+        List<TravelGroupMembersDTO> travelGroupMembersDTO = communityService.getMembers(membersDTO.getGroupId());
 
         return ResponseEntity.ok(travelGroupMembersDTO);
     }
+
+    @GetMapping("/groups")
+    public ResponseEntity<?> getGroups(@RequestBody MembersDTO membersDTO) {
+        List<TravelGroupsEntity> travelGroupsEntities = communityService.getGroups();
+        return ResponseEntity.ok(travelGroupsEntities);
+    }
+    
 }
