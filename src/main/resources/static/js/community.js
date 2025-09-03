@@ -8,6 +8,8 @@ const USER_PERMISSIONS = {
 };
 
 $(document).ready(function () {
+  const groupId = '1f2d3c4b-5a6e-4f80-9123-456789abcdef';
+  loadSidebarMembers(groupId);
   // 초기화 함수들
   initSeniorFriendlyFeatures();
   initPostInteractions();
@@ -262,14 +264,22 @@ function initWritePost() {
   });
 }
 
+function pad(n){ return String(n).padStart(2, '0'); }
+function formatNow() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = pad(d.getMonth()+1);
+  const day = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const mm = pad(d.getMinutes());
+  const ss = pad(d.getSeconds());
+  return `${y}-${m}-${day} ${hh}:${mm}:${ss}`;
+}
+
 // 새 게시글 생성
 function createNewPost(content) {
-  const currentTime = new Date().toLocaleString("ko-KR", {
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const currentTime = formatNow();
+  const authorName = window.currentUser.username;
 
   const newPostHtml = `
         <article class="post-card" style="display: none;">
@@ -279,8 +289,8 @@ function createNewPost(content) {
                         <img src="/images/default-avatar.png" alt="프로필" class="avatar-img">
                     </div>
                     <div class="author-details">
-                        <span class="author-name">현재로그인사람</span>
-                        <span class="post-time">방금 전</span>
+                        <span class="author-name" >${authorName}</span>
+                        <span class="post-time" >${currentTime}</span>
                     </div>
                 </div>
                 <button class="post-menu-btn">⋯</button>
@@ -731,13 +741,104 @@ function initMemberManagement() {
   });
 }
 
+// ===== 미리보기 한 항목 템플릿 =====
+function previewItemHtml(m) {
+  return `
+    <div class="member-item">
+      <div class="member-avatar">
+        <img src="/images/default-avatar.png"
+             alt="${m.username}"
+             class="avatar-img">
+      </div>
+      <div class="member-info" style="flex: 1;">
+                <div class="member-name" style="font-weight: 600; color: var(--text-primary); font-size: 16px;">${
+                  m.username
+                }</div>
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                    <span class="member-role" style="
+                        color: var(--text-secondary); 
+                        font-size: 14px;
+                        padding: 2px 8px;
+                        background: ${
+                          m.memberType === "owner"
+                            ? "var(--warning-color)"
+                            : "var(--background-primary)"
+                        };
+                        color: ${
+                          m.memberType === "owner"
+                            ? "white"
+                            : "var(--text-secondary)"
+                        };
+                        border-radius: 12px;
+                        font-size: 12px;
+                    ">${m.memberType}</span>
+                </div>
+            </div>
+    </div>
+  `;
+}
+
+// ===== 로딩 스켈레톤(선택) =====
+function sidebarSkeleton(n=3){
+  return Array.from({length:n}).map(()=>`
+    <div class="member-item">
+      <div class="member-avatar">
+        <div style="width:40px;height:40px;border-radius:50%;background:#eef1f4;"></div>
+      </div>
+      <div class="member-info" style="width:100%;">
+        <div style="height:12px;background:#eef1f4;border-radius:6px;width:60%;margin:4px 0;"></div>
+        <div style="height:12px;background:#eef1f4;border-radius:6px;width:30%;"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== 사이드바 멤버 로드 & 렌더 =====
+function loadSidebarMembers(groupId) {
+  // 로딩 상태 표시
+  $('#memberPreview').html(sidebarSkeleton());
+  $('#sidebarMemCount').text('0');
+
+  $.ajax({
+    url: '/community/members',
+    type: 'POST',
+    contentType: 'application/json',
+    dataType: 'json',
+    data: JSON.stringify({ groupId }), // ← 실제 groupId 넣기
+    success: function(response){
+      // 배열 안전화
+      const list = Array.isArray(response)
+        ? response
+        : (Array.isArray(response?.data) ? response.data : []);
+
+      // 총원 표시
+      $('#sidebarMemCount').text(list.length.toLocaleString('ko-KR'));
+
+      // 상위 3명 (정렬 규칙이 있으면 여기서 정렬 후 slice)
+      const top3 = list.slice(0, 3);
+      if (top3.length === 0) {
+        $('#memberPreview').html('<div style="color:#6c757d;">아직 멤버가 없습니다.</div>');
+        return;
+      }
+
+      // 미리보기 카드 렌더
+      const html = top3.map(previewItemHtml).join('');
+      $('#memberPreview').html(html);
+    },
+    error: function(xhr){
+      console.error('멤버 목록 로드 실패', xhr);
+      $('#memberPreview').html('<div style="color:#dc3545;">멤버를 불러오지 못했습니다.</div>');
+    }
+  });
+}
+
 // 멤버 모달 열기
 function openMemberModal() {
   const modalHtml = `
         <div class="modal" id="memberModal" style="display: flex; align-items: center; justify-content: center;">
             <div class="modal-content" style="width: 90%; max-width: 600px;">
                 <div class="modal-header">
-                    <h3>전체 멤버 (16명)</h3>
+                    <h3>전체 멤버 (<span id="memCount">0</span>명)</h3>
                     <button class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
@@ -762,21 +863,12 @@ function openMemberModal() {
                     ">
                         <div class="stat-item">
                             <span class="stat-label">전체 멤버</span>
-                            <span class="stat-value">16명</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">온라인</span>
-                            <span class="stat-value" style="color: var(--success-color);">8명</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">오프라인</span>
-                            <span class="stat-value">8명</span>
+                            <span class="stat-value" id="memNum"></span>
                         </div>
                     </div>
+
+          <div class="modal-member-list" id="memberList">로딩중...</div>
                     
-                    <div class="modal-member-list">
-                        ${generateMemberList()}
-                    </div>
                 </div>
             </div>
         </div>
@@ -796,26 +888,58 @@ function openMemberModal() {
     const searchTerm = $(this).val().toLowerCase();
     filterMemberList(searchTerm);
   });
+
+  generateMemberList();
 }
 
 // 멤버 리스트 생성
 function generateMemberList() {
-  const members = [
-    { name: "멤버닉네임1", role: "리더", isOnline: true },
-    { name: "멤버닉네임2", role: "멤버", isOnline: true },
-    { name: "멤버닉네임3", role: "멤버", isOnline: false },
-    { name: "멤버닉네임4", role: "멤버", isOnline: true },
-    { name: "멤버닉네임5", role: "멤버", isOnline: false },
-    { name: "멤버닉네임6", role: "멤버", isOnline: true },
-    { name: "멤버닉네임7", role: "멤버", isOnline: true },
-    { name: "멤버닉네임8", role: "멤버", isOnline: false },
-    { name: "멤버닉네임9", role: "멤버", isOnline: true },
-    { name: "멤버닉네임10", role: "멤버", isOnline: false },
-  ];
+  const groupId = {
+        groupId: "1f2d3c4b-5a6e-4f80-9123-456789abcdef" //이 정보 화면에서 갖고와야함(임시)
+    };
+  const members = []
+  // 멤버정보 갖고오기
+  $.ajax({
+    url: "/community/members",
+    type: 'POST',
+    contentType: "application/json",
+    data: JSON.stringify(groupId), //그룹id
+    success: function(response, textStatus, jqXHR) {
+        console.log("멤버 정보 가져오기 성공 : " + Array.isArray(response)); //데이터 갖고오는 방법,,,,
+        console.log(JSON.stringify(response, null, 2));
+        // members.push(response);
+       $("#memberList").html(memberList(response));
+        $("#memNum").text(response.length);
+        $("#memCount").text(response.length);
+      
+    },
+    error: function(request, status, error) {
+      console.error("멤버 정보 가져오기 오류:", error);
+      $("#memberList").html('<div style="padding:16px;color:red;">불러오기 실패</div>');
 
+    }
+  });
+
+  // const members = [
+  //   { name: "멤버닉네임1", role: "리더", isOnline: true },
+  //   { name: "멤버닉네임2", role: "멤버", isOnline: true },
+  //   { name: "멤버닉네임3", role: "멤버", isOnline: false },
+  //   { name: "멤버닉네임4", role: "멤버", isOnline: true },
+  //   { name: "멤버닉네임5", role: "멤버", isOnline: false },
+  //   { name: "멤버닉네임6", role: "멤버", isOnline: true },
+  //   { name: "멤버닉네임7", role: "멤버", isOnline: true },
+  //   { name: "멤버닉네임8", role: "멤버", isOnline: false },
+  //   { name: "멤버닉네임9", role: "멤버", isOnline: true },
+  //   { name: "멤버닉네임10", role: "멤버", isOnline: false },
+  // ];
+  
+}
+
+function memberList(members){
   return members
     .map(
-      (member) => `
+      (member) =>{
+        return `
         <div class="modal-member-item" style="
             display: flex;
             align-items: center;
@@ -827,28 +951,12 @@ function generateMemberList() {
            onmouseout="this.style.background='white'">
             <div class="member-avatar" style="position: relative;">
                 <img src="/images/default-avatar.png" alt="${
-                  member.name
+                  member.username
                 }" class="avatar-img" style="width: 50px; height: 50px;">
-                <span class="member-status ${
-                  member.isOnline ? "online" : ""
-                }" style="
-                    position: absolute;
-                    bottom: -2px;
-                    right: -2px;
-                    width: 16px;
-                    height: 16px;
-                    border-radius: 50%;
-                    border: 3px solid white;
-                    background: ${
-                      member.isOnline
-                        ? "var(--success-color)"
-                        : "var(--text-secondary)"
-                    };
-                "></span>
             </div>
             <div class="member-info" style="flex: 1;">
                 <div class="member-name" style="font-weight: 600; color: var(--text-primary); font-size: 16px;">${
-                  member.name
+                  member.username
                 }</div>
                 <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
                     <span class="member-role" style="
@@ -856,29 +964,22 @@ function generateMemberList() {
                         font-size: 14px;
                         padding: 2px 8px;
                         background: ${
-                          member.role === "리더"
+                          member.memberType === "owner"
                             ? "var(--warning-color)"
                             : "var(--background-primary)"
                         };
                         color: ${
-                          member.role === "리더"
+                          member.memberType === "owner"
                             ? "white"
                             : "var(--text-secondary)"
                         };
                         border-radius: 12px;
                         font-size: 12px;
-                    ">${member.role}</span>
-                    <span style="color: ${
-                      member.isOnline
-                        ? "var(--success-color)"
-                        : "var(--text-secondary)"
-                    }; font-size: 14px;">
-                        ${member.isOnline ? "온라인" : "오프라인"}
-                    </span>
+                    ">${member.memberType}</span>
                 </div>
             </div>
         </div>
-    `
+    `}
     )
     .join("");
 }

@@ -113,6 +113,20 @@
               <div class="card-header-flex">
                 <h3 class="card-title">
                   <span class="title-icon">👥</span>
+                  모임 멤버 (<span id="sidebarMemCount">0</span>명)
+                </h3>
+                <button class="btn-text" id="viewAllMembers">전체보기</button>
+              </div>
+
+              <!-- 미리보기 컨테이너만 두고 JS로 채움 -->
+              <div class="member-preview" id="memberPreview"></div>
+            </div>
+
+            <!-- 멤버 목록 -->
+            <!-- <div class="sidebar-card">
+              <div class="card-header-flex">
+                <h3 class="card-title">
+                  <span class="title-icon">👥</span>
                   모임 멤버 (16명)
                 </h3>
                 <button class="btn-text" id="viewAllMembers">전체보기</button>
@@ -164,18 +178,7 @@
                   </div>
                 </div>
               </div>
-
-              <div class="member-stats">
-                <div class="stat-item">
-                  <span class="stat-label">온라인</span>
-                  <span class="stat-value">8명</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-label">오프라인</span>
-                  <span class="stat-value">8명</span>
-                </div>
-              </div>
-            </div>
+            </div> -->
 
             <!-- 빠른 링크 -->
             <div class="sidebar-card">
@@ -221,7 +224,8 @@
                       class="avatar-img"
                     />
                   </div>
-                  <span class="author-name">현재로그인사람</span>
+                  <span class="author-name" th:text="${username != null ? username : '사용자님'}">현재로그인사람</span>
+                  
                 </div>
 
                 <div class="write-content">
@@ -403,4 +407,9 @@
     <!-- Footer -->
     <div th:replace="footer :: footer"></div>
   </body>
+  <script th:inline="javascript">
+  window.currentUser = {
+    username: /*[[${username}]]*/ ""
+  };
+</script>
 </html>
