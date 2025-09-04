@@ -245,9 +245,35 @@ function initWritePost() {
       return;
     }
 
-    createNewPost(content);
-    $textarea.val("").css("height", "120px");
-    showToast("게시글이 성공적으로 작성되었습니다!", "success");
+    const posts = {
+        username: window.currentUser.username,
+        groupId: "1f2d3c4b-5a6e-4f80-9123-456789abcdef", //이거 불러와야함(변수여야함)
+        content: content,
+        pictures: [],
+        files: [],
+        locations: []
+    };
+
+    //posts 데이터 저장
+    $.ajax({
+      url: "/community/posts",
+      type: 'POST',
+      contentType: "application/json",
+      data: JSON.stringify(posts),
+      success: function(response, textStatus, jqXHR) {
+          console.log("게시글 저장 성공");
+          // location.reload();
+          createNewPost(content);
+          $textarea.val("").css("height", "120px");
+          showToast("게시글이 성공적으로 작성되었습니다!", "success");
+      },
+      error: function(request, status, error) {
+        console.error("게시글 저장 오류:", error);
+      }
+    });
+
+    
+    
   });
 
   // Ctrl + Enter로 게시
@@ -660,6 +686,24 @@ function editPost($post) {
 
 // 게시글 삭제
 function deletePost($post) {
+  
+  // $.ajax({
+  //     url: "/community/posts/delete",
+  //     type: 'POST',
+  //     contentType: "application/json",
+  //     data: JSON.stringify(posts),
+  //     success: function(response, textStatus, jqXHR) {
+  //         console.log("게시글 삭제 성공");
+  //         // location.reload();
+  //         createNewPost(content);
+  //         $textarea.val("").css("height", "120px");
+  //         showToast("게시글이 삭제되었습니다", "success");
+  //     },
+  //     error: function(request, status, error) {
+  //       console.error("게시글 삭제 오류:", error);
+  //     }
+  //   });
+
   $post.slideUp(400, function () {
     $(this).remove();
     updatePostCount();
