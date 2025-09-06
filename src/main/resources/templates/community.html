@@ -263,9 +263,58 @@
             </div>
 
             <!-- 게시글 목록 -->
-            <div class="posts-list">
+<div class="posts-list" id="postsList"></div>
+
+<!-- 비었을 때 표시 -->
+<div id="postsEmpty" style="display:none; padding:16px; color:#777;">게시글이 없습니다.</div>
+
+<!-- 로딩 표시(선택) -->
+<div id="postsLoading" style="display:none; padding:16px;">불러오는 중...</div>
+
+<!-- 카드 템플릿 -->
+<template id="postCardTpl">
+  <article class="post-card">
+    <div class="post-header">
+      <div class="author-info">
+        <div class="author-avatar">
+          <img src="/images/default-avatar.png" alt="프로필" class="avatar-img" />
+        </div>
+        <div class="author-details">
+          <span class="author-name"></span>
+          <span class="post-time"></span>
+        </div>
+      </div>
+      <button class="post-menu-btn">⋯</button>
+    </div>
+
+    <div class="post-content">
+      <p class="post-text"></p>
+      <div class="post-images" hidden>
+        <div class="image-grid"></div>
+      </div>
+    </div>
+
+    <div class="post-actions">
+      <button class="action-btn like-btn" data-liked="false">
+        <span class="action-icon">❤️</span>
+        <span class="action-text">좋아요 0</span>
+      </button>
+      <button class="action-btn comment-btn">
+        <span class="action-icon">💬</span>
+        <span class="action-text">댓글 0</span>
+      </button>
+      <button class="action-btn share-btn">
+        <span class="action-icon">📤</span>
+        <span class="action-text">공유</span>
+      </button>
+    </div>
+  </article>
+</template>
+
+            <!-- 게시글 목록 -->
+            <!-- <div class="posts-list"> -->
               <!-- 게시글 1 -->
-              <article class="post-card">
+              <!-- <article class="post-card">
                 <div class="post-header">
                   <div class="author-info">
                     <div class="author-avatar">
@@ -332,10 +381,10 @@
                     <span class="action-text">공유</span>
                   </button>
                 </div>
-              </article>
+              </article> -->
 
               <!-- 게시글 2 -->
-              <article class="post-card">
+              <!-- <article class="post-card">
                 <div class="post-header">
                   <div class="author-info">
                     <div class="author-avatar">
@@ -376,7 +425,7 @@
                   </button>
                 </div>
               </article>
-            </div>
+            </div> -->
 
             <!-- 페이지네이션 -->
             <div class="pagination">
@@ -411,5 +460,158 @@
   window.currentUser = {
     username: /*[[${username}]]*/ ""
   };
+  /* ===== 설정: 엔드포인트만 맞추면 됨 ===== */
+const POSTS_ENDPOINT = '/community/all/posts'; // 예: GET /community/posts -> 배열 또는 {content:[...]}
+
+/* ===== 유틸 ===== */
+const isArr = Array.isArray;
+function normalizeList(v) {
+  if (v == null) return [];
+  if (isArr(v)) return v.filter(Boolean);
+  if (typeof v === 'string') {
+    const s = v.trim();
+    if (!s) return [];
+    try { // JSON 문자열(["a","b"]) 가능성
+      if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('"') && s.endsWith('"'))) {
+        return normalizeList(JSON.parse(s));
+      }
+    } catch(_) {}
+    return s.split(',').map(x => x.trim()).filter(Boolean); // 콤마 구분
+  }
+  return [];
+}
+function timeAgo(iso) {
+  if (!iso) return '';
+  const now = new Date(), then = new Date(iso);
+  const sec = Math.max(0, (now - then) / 1000);
+  if (sec < 60) return '방금 전';
+  const m = Math.floor(sec/60);   if (m < 60) return `${m}분 전`;
+  const h = Math.floor(m/60);     if (h < 24) return `${h}시간 전`;
+  const d = Math.floor(h/24);     if (d < 7) return `${d}일 전`;
+  const w = Math.floor(d/7);      if (w < 5) return `${w}주 전`;
+  const mo = Math.floor(d/30);    if (mo < 12) return `${mo}달 전`;
+  const y = Math.floor(d/365);    return `${y}년 전`;
+}
+// 백엔드 필드명 다를 때 대응(원하는대로 수정 가능)
+function adaptPost(p) {
+  return {
+    id:           p.id ?? p.postId ?? p.post_id,
+    authorName:   p.username,
+    avatarUrl:    p.avatarUrl ?? p.avatar_url ?? '/images/default-avatar.png',
+    content:      p.content ?? p.postContent ?? p.text ?? '',
+    pictures:     p.pictures ?? p.images ?? p.picturesJson ?? p.picturesCsv,
+    likeCount:    p.likeCount ?? p.like_cnt ?? 0,
+    commentCount: p.commentCount ?? p.comment_cnt ?? 0,
+    liked:        !!(p.liked ?? p.isLiked),
+    createdAt:    p.createdAt ?? p.reg_dt ?? p.created_at
+  };
+}
+
+/* ===== 렌더 ===== */
+function renderImages(root, pictures) {
+  const pics = normalizeList(pictures);
+  if (!pics.length) return;
+  const imagesWrap = root.querySelector('.post-images');
+  const grid = root.querySelector('.post-images .image-grid');
+  imagesWrap.hidden = false;
+  pics.slice(0, 9).forEach(src => {
+    const item = document.createElement('div');
+    item.className = 'image-item';
+    const img = document.createElement('img');
+    img.className = 'post-img';
+    img.src = src;
+    img.alt = '여행 사진';
+    item.appendChild(img);
+    grid.appendChild(item);
+  });
+}
+
+function renderPostCard(post) {
+  const tpl = document.getElementById('postCardTpl');
+  const node = tpl.content.firstElementChild.cloneNode(true);
+
+  // header
+  node.querySelector('.author-name').textContent = post.authorName || '익명';
+  node.querySelector('.post-time').textContent = timeAgo(post.createdAt);
+  node.querySelector('.author-avatar img').src = post.avatarUrl || '/images/default-avatar.png';
+
+  // content
+  node.querySelector('.post-text').textContent = post.content || '';
+  renderImages(node, post.pictures);
+
+  // actions
+  const likeBtn = node.querySelector('.like-btn');
+  const likeText = node.querySelector('.like-btn .action-text');
+  const commentText = node.querySelector('.comment-btn .action-text');
+
+  likeBtn.dataset.liked = String(!!post.liked);
+  likeText.textContent = `좋아요 ${post.likeCount ?? 0}`;
+  commentText.textContent = `댓글 ${post.commentCount ?? 0}`;
+
+  // 프론트에서만 토글(서버 호출 없음)
+  likeBtn.addEventListener('click', () => {
+    const was = likeBtn.dataset.liked === 'true';
+    likeBtn.dataset.liked = String(!was);
+    const cur = parseInt(likeText.textContent.replace(/\D/g,''), 10) || 0;
+    likeText.textContent = `좋아요 ${was ? Math.max(0, cur-1) : cur+1}`;
+  });
+
+  return node;
+}
+
+function renderPosts(rows) {
+  const listEl = document.getElementById('postsList');
+  const emptyEl = document.getElementById('postsEmpty');
+  listEl.innerHTML = '';
+
+  if (!rows || !rows.length) {
+    emptyEl.style.display = 'block';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  const frag = document.createDocumentFragment();
+  rows.forEach(raw => frag.appendChild(renderPostCard(adaptPost(raw))));
+  listEl.appendChild(frag);
+}
+
+/* ===== 로딩/호출 ===== */
+function setLoading(on) {
+  document.getElementById('postsLoading').style.display = on ? 'block' : 'none';
+}
+
+async function loadPosts() {
+  setLoading(true);
+  const groupId = '1f2d3c4b-5a6e-4f80-9123-456789abcdef';
+  try {
+    const payload = {
+      groupId: groupId,
+    };
+
+   const res = await fetch(POSTS_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    // 배열 또는 페이지 객체(content 배열) 대응
+    const rows = Array.isArray(data) ? data : (data.content || []);
+    console.log("posts >>> " + JSON.stringify(data));
+    renderPosts(rows);
+  } catch (e) {
+    console.error('게시글 로드 실패:', e);
+    const emptyEl = document.getElementById('postsEmpty');
+    emptyEl.textContent = '게시글을 불러오지 못했습니다.';
+    emptyEl.style.display = 'block';
+  } finally {
+    setLoading(false);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadPosts);
 </script>
 </html>
