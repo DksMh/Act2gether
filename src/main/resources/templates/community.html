@@ -234,24 +234,21 @@
                     placeholder="여행 후기나 추천 장소를 공유해주세요! 사진도 함께 올려주시면 더 좋아요 😊"
                   ></textarea>
 
+                  <!-- ✅ 썸네일 프리뷰가 나올 영역 -->
+                 <div class="write-photo-preview" id="photoPreview"></div>
+
                   <div class="write-toolbar">
                     <div class="toolbar-left">
-                      <button class="toolbar-btn" title="사진 첨부">
+                      <button class="toolbar-btn" id="btnPhoto" title="사진 첨부">
                         <span class="btn-icon">📷</span>
                         <span class="btn-text">사진</span>
-                      </button>
-                      <button class="toolbar-btn" title="파일 첨부">
-                        <span class="btn-icon">📁</span>
-                        <span class="btn-text">파일</span>
-                      </button>
-                      <button class="toolbar-btn" title="위치 태그">
-                        <span class="btn-icon">📍</span>
-                        <span class="btn-text">위치</span>
                       </button>
                     </div>
                     <button class="btn-post-submit">게시하기</button>
                   </div>
                 </div>
+                <!-- ✅ 숨겨진 이미지 선택 input -->
+                <input id="photoInput" type="file" accept="image/*" multiple hidden>
               </div>
             </div>
 
@@ -263,161 +260,45 @@
             </div>
 
             <!-- 게시글 목록 -->
-<div class="posts-list" id="postsList"></div>
+            <div class="posts-list" id="postsList"></div>
 
-<!-- 비었을 때 표시 -->
-<div id="postsEmpty" style="display:none; padding:16px; color:#777;">게시글이 없습니다.</div>
+            <!-- 비었을 때 표시 -->
+            <div id="postsEmpty" style="display:none; padding:16px; color:#777;">게시글이 없습니다.</div>
 
-<!-- 로딩 표시(선택) -->
-<div id="postsLoading" style="display:none; padding:16px;">불러오는 중...</div>
+            <!-- 로딩 표시(선택) -->
+            <div id="postsLoading" style="display:none; padding:16px;">불러오는 중...</div>
 
-<!-- 카드 템플릿 -->
-<template id="postCardTpl">
-  <article class="post-card">
-    <div class="post-header">
-      <div class="author-info">
-        <div class="author-avatar">
-          <img src="/images/default-avatar.png" alt="프로필" class="avatar-img" />
-        </div>
-        <div class="author-details">
-          <span class="author-name"></span>
-          <span class="post-time"></span>
-        </div>
-      </div>
-      <button class="post-menu-btn">⋯</button>
-    </div>
-
-    <div class="post-content">
-      <p class="post-text"></p>
-      <div class="post-images" hidden>
-        <div class="image-grid"></div>
-      </div>
-    </div>
-
-    <div class="post-actions">
-      <button class="action-btn like-btn" data-liked="false">
-        <span class="action-icon">❤️</span>
-        <span class="action-text">좋아요 0</span>
-      </button>
-      <button class="action-btn comment-btn">
-        <span class="action-icon">💬</span>
-        <span class="action-text">댓글 0</span>
-      </button>
-      <button class="action-btn share-btn">
-        <span class="action-icon">📤</span>
-        <span class="action-text">공유</span>
-      </button>
-    </div>
-  </article>
-</template>
-
-            <!-- 게시글 목록 -->
-            <!-- <div class="posts-list"> -->
-              <!-- 게시글 1 -->
-              <!-- <article class="post-card">
+            <!-- 카드 템플릿 -->
+            <template id="postCardTpl">
+              <article class="post-card">
                 <div class="post-header">
                   <div class="author-info">
                     <div class="author-avatar">
-                      <img
-                        src="/images/default-avatar.png"
-                        alt="프로필"
-                        class="avatar-img"
-                      />
+                      <img src="/images/default-avatar.png" alt="프로필" class="avatar-img" />
                     </div>
                     <div class="author-details">
-                      <span class="author-name">여행러버</span>
-                      <span class="post-time">10분 전</span>
+                      <span class="author-name"></span>
+                      <span class="post-time"></span>
                     </div>
                   </div>
                   <button class="post-menu-btn">⋯</button>
                 </div>
 
                 <div class="post-content">
-                  <p class="post-text">
-                    오늘 설악산 다녀왔는데 정말 가을 풍경이 일품이더라고요!
-                    특히나 계곡이 아직도 시원해서 더위가 가시지 않던 몸도
-                    시원하게 식힐 수 있어서 좋더라구요. 다음주에 다시 갈
-                    예정인데 혹시 함께 가실 분 계시나요? 🍂
-                  </p>
-
-                  <div class="post-images">
-                    <div class="image-grid">
-                      <div class="image-item">
-                        <img
-                          src="/images/sample1.jpg"
-                          alt="여행 사진 1"
-                          class="post-img"
-                        />
-                      </div>
-                      <div class="image-item">
-                        <img
-                          src="/images/sample2.jpg"
-                          alt="여행 사진 2"
-                          class="post-img"
-                        />
-                      </div>
-                      <div class="image-item">
-                        <img
-                          src="/images/sample3.jpg"
-                          alt="여행 사진 3"
-                          class="post-img"
-                        />
-                      </div>
-                    </div>
+                  <p class="post-text"></p>
+                  <div class="post-images" hidden>
+                    <div class="image-grid"></div>
                   </div>
                 </div>
 
                 <div class="post-actions">
                   <button class="action-btn like-btn" data-liked="false">
                     <span class="action-icon">❤️</span>
-                    <span class="action-text">좋아요 6</span>
+                    <span class="action-text">좋아요 0</span>
                   </button>
                   <button class="action-btn comment-btn">
                     <span class="action-icon">💬</span>
-                    <span class="action-text">댓글 20</span>
-                  </button>
-                  <button class="action-btn share-btn">
-                    <span class="action-icon">📤</span>
-                    <span class="action-text">공유</span>
-                  </button>
-                </div>
-              </article> -->
-
-              <!-- 게시글 2 -->
-              <!-- <article class="post-card">
-                <div class="post-header">
-                  <div class="author-info">
-                    <div class="author-avatar">
-                      <img
-                        src="/images/default-avatar.png"
-                        alt="프로필"
-                        class="avatar-img"
-                      />
-                    </div>
-                    <div class="author-details">
-                      <span class="author-name">산행매니아</span>
-                      <span class="post-time">1시간 전</span>
-                    </div>
-                  </div>
-                  <button class="post-menu-btn">⋯</button>
-                </div>
-
-                <div class="post-content">
-                  <p class="post-text">
-                    지리산 노고단 코스 다녀온 후기 공유드려요! 날씨가 좋아서
-                    정말 멋진 산행이었습니다. 초보자분들도 무리 없이 오를 수
-                    있는 코스라 추천드려요 👍
-                  </p>
-                </div>
-
-                <div class="post-actions">
-                  <button class="action-btn like-btn" data-liked="true">
-                    <span class="action-icon">❤️</span>
-                    <span class="action-text">좋아요 12</span>
-                  </button>
-                  <button class="action-btn comment-btn">
-                    <span class="action-icon">💬</span>
-                    <span class="action-text">댓글 8</span>
+                    <span class="action-text">댓글 0</span>
                   </button>
                   <button class="action-btn share-btn">
                     <span class="action-icon">📤</span>
@@ -425,7 +306,9 @@
                   </button>
                 </div>
               </article>
-            </div> -->
+            </template>
+
+        
 
             <!-- 페이지네이션 -->
             <div class="pagination">
@@ -450,6 +333,18 @@
         <div class="modal-body">
           <!-- 기존 멤버 리스트 모달 내용 -->
         </div>
+      </div>
+    </div>
+
+    <!-- 이미지 라이트박스 -->
+    <div id="imageLightbox" class="lb" hidden>
+      <div class="lb-backdrop"></div>
+      <div class="lb-dialog">
+        <button class="lb-close" aria-label="닫기">×</button>
+        <button class="lb-prev"  aria-label="이전">‹</button>
+        <img id="lbImage" alt="첨부 이미지 미리보기">
+        <button class="lb-next"  aria-label="다음">›</button>
+        <div class="lb-counter"></div>
       </div>
     </div>
 
@@ -500,7 +395,7 @@ function adaptPost(p) {
     avatarUrl:    p.avatarUrl ?? p.avatar_url ?? '/images/default-avatar.png',
     content:      p.content ?? p.postContent ?? p.text ?? '',
     pictures:     p.pictures ?? p.images ?? p.picturesJson ?? p.picturesCsv,
-    likeCount:    p.likeCount ?? p.like_cnt ?? 0,
+    likeCount:    p.likesCount,
     commentCount: p.commentCount ?? p.comment_cnt ?? 0,
     liked:        !!(p.liked ?? p.isLiked),
     createdAt:    p.createdAt ?? p.reg_dt ?? p.created_at
@@ -510,33 +405,49 @@ function adaptPost(p) {
 /* ===== 렌더 ===== */
 function renderImages(root, pictures) {
   const pics = normalizeList(pictures);
+  const wrap = root.querySelector('.post-images');
+  const grid = wrap.querySelector('.image-grid');
+  grid.innerHTML = '';
+  wrap.hidden = !pics.length;
   if (!pics.length) return;
-  const imagesWrap = root.querySelector('.post-images');
-  const grid = root.querySelector('.post-images .image-grid');
-  imagesWrap.hidden = false;
-  pics.slice(0, 9).forEach(src => {
+
+  // ✅ 이 게시글의 전체 이미지 목록을 컨테이너에 보관
+  wrap.dataset.urls = JSON.stringify(pics);
+
+  pics.slice(0, 9).forEach((src, i) => {
     const item = document.createElement('div');
     item.className = 'image-item';
     const img = document.createElement('img');
     img.className = 'post-img';
-    img.src = src;
+    img.src = String(src).trim();
     img.alt = '여행 사진';
+    img.loading = 'lazy';
+    img.dataset.idx = i;                 // ✅ 클릭 시 시작 인덱스
     item.appendChild(img);
+
+    if (i === 8 && pics.length > 9) {    // +N 오버레이(선택)
+      const overlay = document.createElement('div');
+      overlay.className = 'more-overlay';
+      overlay.textContent = `+${pics.length - 9}`;
+      item.appendChild(overlay);
+    }
     grid.appendChild(item);
   });
 }
 
 function renderPostCard(post) {
+  console.log("aaaa");
   const tpl = document.getElementById('postCardTpl');
   const node = tpl.content.firstElementChild.cloneNode(true);
 
   // header
-  node.querySelector('.author-name').textContent = post.authorName || '익명';
+  node.querySelector('.author-name').textContent = post.username || '익명';
   node.querySelector('.post-time').textContent = timeAgo(post.createdAt);
   node.querySelector('.author-avatar img').src = post.avatarUrl || '/images/default-avatar.png';
 
   // content
   node.querySelector('.post-text').textContent = post.content || '';
+  node.dataset.postId = post.id;     // <article class="post-card" data-post-id="...">
   renderImages(node, post.pictures);
 
   // actions
@@ -544,17 +455,29 @@ function renderPostCard(post) {
   const likeText = node.querySelector('.like-btn .action-text');
   const commentText = node.querySelector('.comment-btn .action-text');
 
-  likeBtn.dataset.liked = String(!!post.liked);
+  likeBtn.dataset.count = String(post.likeCount);
+// commentBtn.dataset.count = String(post.commentCount);
+
+likeBtn.dataset.liked = String(!!post.liked);
+
   likeText.textContent = `좋아요 ${post.likeCount ?? 0}`;
   commentText.textContent = `댓글 ${post.commentCount ?? 0}`;
 
   // 프론트에서만 토글(서버 호출 없음)
-  likeBtn.addEventListener('click', () => {
-    const was = likeBtn.dataset.liked === 'true';
-    likeBtn.dataset.liked = String(!was);
-    const cur = parseInt(likeText.textContent.replace(/\D/g,''), 10) || 0;
-    likeText.textContent = `좋아요 ${was ? Math.max(0, cur-1) : cur+1}`;
-  });
+  // likeBtn.addEventListener('click', () => {
+  //   const was = likeBtn.dataset.liked === 'true';
+  //   likeBtn.dataset.liked = String(!was);
+  //   const cur = parseInt(likeText.textContent.replace(/\D/g,''), 10) || 0;
+  //   likeText.textContent = `좋아요 ${was ? Math.max(0, cur-1) : cur+1}`;
+  // });
+
+  // createdAt 문자열 -> ms로
+const createdIso = (post.createdAt && typeof post.createdAt === 'string' && post.createdAt[10] === ' ')
+  ? post.createdAt.replace(' ', 'T') : post.createdAt;
+const createdMs = toMillis(createdIso);
+
+node.querySelector('.post-time').textContent = timeAgo(createdIso);
+node.dataset.created = String(createdMs);   // ✅ 정렬용 키 저장
 
   return node;
 }
@@ -600,8 +523,14 @@ async function loadPosts() {
     const data = await res.json();
     // 배열 또는 페이지 객체(content 배열) 대응
     const rows = Array.isArray(data) ? data : (data.content || []);
+    // ✅ 최신순(내림차순) 정렬: createdAt / created_at / reg_dt 우선 사용
+    const sorted = [...rows].sort((a, b) => {
+      const aT = toMillis(a.createdAt ?? a.created_at ?? a.reg_dt);
+      const bT = toMillis(b.createdAt ?? b.created_at ?? b.reg_dt);
+      return bT - aT;
+    });
     console.log("posts >>> " + JSON.stringify(data));
-    renderPosts(rows);
+    renderPosts(sorted);
   } catch (e) {
     console.error('게시글 로드 실패:', e);
     const emptyEl = document.getElementById('postsEmpty');
@@ -613,5 +542,73 @@ async function loadPosts() {
 }
 
 document.addEventListener('DOMContentLoaded', loadPosts);
+
+(function(){
+  const lb = document.getElementById('imageLightbox');
+  const imgEl = lb.querySelector('#lbImage');
+  const counterEl = lb.querySelector('.lb-counter');
+  const btnClose = lb.querySelector('.lb-close');
+  const btnPrev  = lb.querySelector('.lb-prev');
+  const btnNext  = lb.querySelector('.lb-next');
+  const backdrop = lb.querySelector('.lb-backdrop');
+
+  let urls = [];
+  let idx = 0;
+
+  function refresh() {
+    imgEl.src = urls[idx] || '';
+    counterEl.textContent = `${idx+1}/${urls.length}`;
+    const many = urls.length > 1;
+    btnPrev.style.display = many ? 'flex' : 'none';
+    btnNext.style.display = many ? 'flex' : 'none';
+    counterEl.style.display = many ? 'block' : 'none';
+  }
+
+  function openLightbox(arr, startIdx){
+    urls = Array.isArray(arr) ? arr : [];
+    idx = Math.max(0, Math.min(startIdx|0, urls.length-1));
+    if (!urls.length) return;
+    refresh();
+    lb.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox(){
+    lb.hidden = true;
+    document.body.style.overflow = '';
+    urls = []; idx = 0; imgEl.removeAttribute('src');
+  }
+
+  function showNext(delta){
+    if (!urls.length) return;
+    idx = (idx + delta + urls.length) % urls.length;
+    refresh();
+  }
+
+  // 버튼/백드롭/키보드
+  btnClose.addEventListener('click', closeLightbox);
+  backdrop.addEventListener('click', closeLightbox);
+  btnPrev .addEventListener('click', () => showNext(-1));
+  btnNext .addEventListener('click', () => showNext(+1));
+  document.addEventListener('keydown', (e)=>{
+    if (lb.hidden) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft')  showNext(-1);
+    if (e.key === 'ArrowRight') showNext(+1);
+  });
+
+  // ✅ 델리게이션: 어떤 게시글의 썸네일이든 클릭 시 열기
+  document.addEventListener('click', (e)=>{
+    const img = e.target.closest('.post-images .post-img');
+    if (!img) return;
+    const wrap = img.closest('.post-images');
+    let arr = [];
+    try { arr = JSON.parse(wrap.dataset.urls || '[]'); } catch(_) {
+      arr = Array.from(wrap.querySelectorAll('.post-img')).map(x=>x.src);
+    }
+    const startIdx = parseInt(img.dataset.idx || '0', 10);
+    openLightbox(arr, startIdx);
+  });
+})();
 </script>
 </html>

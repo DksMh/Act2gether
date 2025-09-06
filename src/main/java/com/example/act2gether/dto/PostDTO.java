@@ -24,8 +24,6 @@ public class PostDTO {
     private String createdAt;
     private String updatedAt;
     private List<String> pictures;
-    private List<String> files;
-    private List<String> locations;
     private String username;
     public static PostDTO of(PostsEntity e, String username) {
         return PostDTO.builder()
@@ -38,8 +36,6 @@ public class PostDTO {
         .createdAt(e.getCreatedAt())
         .updatedAt(e.getUpdatedAt())
         .pictures(e.getPictures())
-        .files(e.getFiles())
-        .locations(e.getLocations())
         .build();
     }
 

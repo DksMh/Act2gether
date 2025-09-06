@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.UUID;
 
 import com.example.act2gether.dto.PostDTO;
+import com.example.act2gether.service.StringListJsonConverter;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -49,14 +51,20 @@ public class PostsEntity {
     @Column(name = "updated_at")
     private String updatedAt;
 
-    @Column(name = "pictures")
+    // ✅ 단일 컬럼(JSON 문자열)로 저장하기 위한 컨버터 적용
+    @Convert(converter = StringListJsonConverter.class)
+    @Column(name = "pictures", columnDefinition = "TEXT")
     private List<String> pictures;
 
-    @Column(name = "files")
-    private List<String> files;
+    // ✅ 서비스에서 값 갱신할 수 있도록 setter 필요
+    public void setPictures(List<String> pictures) { this.pictures = pictures; }
+    public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
 
-    @Column(name = "locations")
-    private List<String> locations;
+    // @Column(name = "files")
+    // private List<String> files;
+
+    // @Column(name = "locations")
+    // private List<String> locations;
 
     public static PostsEntity of(PostDTO postDTO, String memberId) {
         return PostsEntity.builder()
@@ -70,8 +78,8 @@ public class PostsEntity {
         .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
         .updatedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
         .pictures(null)
-        .files(null)
-        .locations(null)
+        // .files(null)
+        // .locations(null)
         .build();
     }
 }

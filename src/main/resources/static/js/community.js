@@ -222,6 +222,16 @@ function addLoadingStates() {
 function initWritePost() {
   const $textarea = $(".write-textarea");
   const $submitBtn = $(".btn-post-submit");
+  const $photoBtn = $("#btnPhoto");
+  const $photoInput = $("#photoInput");
+  const $preview = $("#photoPreview");
+
+  // ----- 설정값 -----
+  const MAX_FILES = 10;
+  const MAX_MB_PER_FILE = 10;
+
+  // 현재 선택된 이미지들 (FileList가 불변이므로 별도 배열로 관리)
+  const selectedImages = []; // { file, url, id }
 
   // 텍스트 영역 자동 높이 조절
   $textarea.on("input", function () {
@@ -229,51 +239,112 @@ function initWritePost() {
     this.style.height = Math.max(120, this.scrollHeight) + "px";
   });
 
+  // ✅ 사진 버튼 → 파일 선택창
+  $photoBtn.on("click", function () {
+    $photoInput.trigger("click");
+  });
+
+  // ✅ 파일 선택 시 썸네일 추가
+  $photoInput.on("change", function (e) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        showToast("이미지 파일만 첨부할 수 있어요.", "warning");
+        continue;
+      }
+      if (file.size > MAX_MB_PER_FILE * 1024 * 1024) {
+        showToast(`파일당 최대 ${MAX_MB_PER_FILE}MB까지 업로드할 수 있어요.`, "warning");
+        continue;
+      }
+      if (selectedImages.length >= MAX_FILES) {
+        showToast(`이미지는 최대 ${MAX_FILES}장까지 첨부할 수 있어요.`, "warning");
+        break;
+      }
+
+      const url = URL.createObjectURL(file);
+      const id = self.crypto?.randomUUID?.() || String(Date.now() + Math.random());
+
+      selectedImages.push({ file, url, id });
+
+      // 썸네일 DOM
+      const $thumb = $(`
+        <div class="thumb" data-id="${id}">
+          <img src="${url}" alt="첨부 이미지">
+          <button type="button" class="del" title="삭제" aria-label="삭제">×</button>
+        </div>
+      `);
+      $preview.append($thumb);
+    }
+
+    // 같은 파일을 다시 선택 가능하도록 초기화
+    $photoInput.val("");
+  });
+
+  // ✅ 썸네일 삭제
+  $preview.on("click", ".del", function () {
+    const $thumb = $(this).closest(".thumb");
+    const id = $thumb.data("id");
+    const idx = selectedImages.findIndex((x) => x.id === id);
+    if (idx >= 0) {
+      URL.revokeObjectURL(selectedImages[idx].url);
+      selectedImages.splice(idx, 1);
+    }
+    $thumb.remove();
+  });
+
   // 게시 버튼 클릭
   $submitBtn.on("click", function () {
     const content = $textarea.val().trim();
-
     if (content === "") {
       showToast("내용을 입력해주세요.", "warning");
       $textarea.focus();
       return;
     }
-
     if (content.length < 10) {
       showToast("최소 10자 이상 입력해주세요.", "warning");
       $textarea.focus();
       return;
     }
 
-    const posts = {
-        username: window.currentUser.username,
-        groupId: "1f2d3c4b-5a6e-4f80-9123-456789abcdef", //이거 불러와야함(변수여야함)
-        content: content,
-        pictures: [],
-        files: [],
-        locations: []
-    };
+    // 🔎 그룹 ID는 실제 값으로 교체
+    const groupId = window.currentGroupId || "1f2d3c4b-5a6e-4f80-9123-456789abcdef";
 
-    //posts 데이터 저장
+   // 항상 FormData 전송 (이미지 유무와 무관)
+    const fd = new FormData();
+
+    // 1) 본문은 JSON으로 "post" 파트에 담아 보냄
+    const post = {
+      username: window.currentUser.username,
+      groupId: groupId,
+      content: content,
+      pictures: []   // 서버에서 저장 후 URL 채울거면 비워둠
+    };
+    fd.append("post", new Blob([JSON.stringify(post)], { type: "application/json" }));
+
+    // 2) 선택된 이미지가 있으면 추가(없으면 생략)
+    selectedImages.forEach(({ file }) => fd.append("images", file));
+
     $.ajax({
       url: "/community/posts",
-      type: 'POST',
-      contentType: "application/json",
-      data: JSON.stringify(posts),
-      success: function(response, textStatus, jqXHR) {
-          console.log("게시글 저장 성공");
-          // location.reload();
-          createNewPost(content);
-          $textarea.val("").css("height", "120px");
-          showToast("게시글이 성공적으로 작성되었습니다!", "success");
+      type: "POST",
+      data: fd,
+      processData: false,   // 반드시 false
+      contentType: false,   // 반드시 false
+      success: function () {
+        $textarea.val("").css("height", "120px");
+        selectedImages.forEach(x => URL.revokeObjectURL(x.url));
+        selectedImages.length = 0;
+        $preview.empty();
+        showToast("게시글이 성공적으로 작성되었습니다!", "success");
+        createNewPost(content);
       },
-      error: function(request, status, error) {
-        console.error("게시글 저장 오류:", error);
+      error: function (req, status, err) {
+        console.error("게시글 저장 오류:", err);
+        showToast("업로드 중 오류가 발생했습니다.", "danger");
       }
     });
-
-    
-    
   });
 
   // Ctrl + Enter로 게시
@@ -283,8 +354,8 @@ function initWritePost() {
     }
   });
 
-  // 파일 첨부 기능
-  $(".toolbar-btn").on("click", function () {
+  // ⚠️ 기존 “준비 중입니다” 토스트는 사진 버튼 제외하고만 유지
+  $(".toolbar-btn").not("#btnPhoto").on("click", function () {
     const type = $(this).find(".btn-text").text();
     showToast(`${type} 첨부 기능은 준비 중입니다.`, "info");
   });
@@ -304,54 +375,55 @@ function formatNow() {
 
 // 새 게시글 생성
 function createNewPost(content) {
-  const currentTime = formatNow();
-  const authorName = window.currentUser.username;
+  loadPosts();
+  // const currentTime = formatNow();
+  // const authorName = window.currentUser.username;
 
-  const newPostHtml = `
-        <article class="post-card" style="display: none;">
-            <div class="post-header">
-                <div class="author-info">
-                    <div class="author-avatar">
-                        <img src="/images/default-avatar.png" alt="프로필" class="avatar-img">
-                    </div>
-                    <div class="author-details">
-                        <span class="author-name" >${authorName}</span>
-                        <span class="post-time" >${currentTime}</span>
-                    </div>
-                </div>
-                <button class="post-menu-btn">⋯</button>
-            </div>
+  // const newPostHtml = `
+  //       <article class="post-card" style="display: none;">
+  //           <div class="post-header">
+  //               <div class="author-info">
+  //                   <div class="author-avatar">
+  //                       <img src="/images/default-avatar.png" alt="프로필" class="avatar-img">
+  //                   </div>
+  //                   <div class="author-details">
+  //                       <span class="author-name" >${authorName}</span>
+  //                       <span class="post-time" >${currentTime}</span>
+  //                   </div>
+  //               </div>
+  //               <button class="post-menu-btn">⋯</button>
+  //           </div>
             
-            <div class="post-content">
-                <p class="post-text">${escapeHtml(content)}</p>
-            </div>
+  //           <div class="post-content">
+  //               <p class="post-text">${escapeHtml(content)}</p>
+  //           </div>
             
-            <div class="post-actions">
-                <button class="action-btn like-btn" data-liked="false">
-                    <span class="action-icon">❤️</span>
-                    <span class="action-text">좋아요 0</span>
-                </button>
-                <button class="action-btn comment-btn">
-                    <span class="action-icon">💬</span>
-                    <span class="action-text">댓글 0</span>
-                </button>
-                <button class="action-btn share-btn">
-                    <span class="action-icon">📤</span>
-                    <span class="action-text">공유</span>
-                </button>
-            </div>
-        </article>
-    `;
+  //           <div class="post-actions">
+  //               <button class="action-btn like-btn" data-liked="false">
+  //                   <span class="action-icon">❤️</span>
+  //                   <span class="action-text">좋아요 0</span>
+  //               </button>
+  //               <button class="action-btn comment-btn">
+  //                   <span class="action-icon">💬</span>
+  //                   <span class="action-text">댓글 0</span>
+  //               </button>
+  //               <button class="action-btn share-btn">
+  //                   <span class="action-icon">📤</span>
+  //                   <span class="action-text">공유</span>
+  //               </button>
+  //           </div>
+  //       </article>
+  //   `;
 
-  $(".posts-list").prepend(newPostHtml);
-  $(".posts-list .post-card")
-    .first()
-    .slideDown(400, function () {
-      // 애니메이션 완료 후 이벤트 바인딩
-      initPostItemEvents($(this));
-    });
+  // $(".posts-list").prepend(newPostHtml);
+  // $(".posts-list .post-card")
+  //   .first()
+  //   .slideDown(400, function () {
+  //     // 애니메이션 완료 후 이벤트 바인딩
+  //     initPostItemEvents($(this));
+  //   });
 
-  updatePostCount();
+  // updatePostCount();
 }
 
 // HTML 이스케이프
@@ -367,82 +439,80 @@ function updatePostCount() {
   $(".post-count").text(`총 ${count}개의 글`);
 }
 
-// 게시글 상호작용 초기화
+// 게시글 상호작용 초기화(위임)
 function initPostInteractions() {
-  // 기존 게시글들에 이벤트 바인딩
-  $(".post-card").each(function () {
-    initPostItemEvents($(this));
-  });
-}
+  // 이전 바인딩 제거(중복 방지) - 네임스페이스 사용
+  $(document).off('.post');
 
-// 개별 게시글 이벤트 설정
-function initPostItemEvents($post) {
-  const $likeBtn = $post.find(".like-btn");
-  const $commentBtn = $post.find(".comment-btn");
-  const $shareBtn = $post.find(".share-btn");
-  const $menuBtn = $post.find(".post-menu-btn");
-
-  // 좋아요 버튼
-  $likeBtn.off("click").on("click", function (e) {
+  // 좋아요
+  $(document).on('click.post', '.like-btn', function (e) {
     e.preventDefault();
     toggleLike($(this));
   });
 
-  // 댓글 버튼
-  $commentBtn.off("click").on("click", function (e) {
+  // 댓글
+  $(document).on('click.post', '.comment-btn', function (e) {
     e.preventDefault();
-    showToast("댓글 기능은 준비 중입니다.", "info");
+    showToast('댓글 기능은 준비 중입니다.', 'info');
   });
 
-  // 공유 버튼
-  $shareBtn.off("click").on("click", function (e) {
+  // 공유
+  $(document).on('click.post', '.share-btn', function (e) {
     e.preventDefault();
+    const $post = $(this).closest('.post-card');
     sharePost($post);
   });
 
-  // 메뉴 버튼
-  $menuBtn.off("click").on("click", function (e) {
+  // … 메뉴
+  $(document).on('click.post', '.post-menu-btn', function (e) {
     e.preventDefault();
     e.stopPropagation();
+    const $post = $(this).closest('.post-card');
     showPostMenu(e, $post);
   });
 
-  // 이미지 클릭 이벤트
-  $post
-    .find(".post-img")
-    .off("click")
-    .on("click", function () {
-      const src = $(this).attr("src");
-      showImageModal(src);
-    });
+  // ✅ 이미지 클릭은 라이트박스가 document 위임으로 이미 처리 중이므로
+  // 여기서 .post-img 클릭 바인딩은 더 이상 필요 없습니다.
 }
 
-// 좋아요 토글
+// 좋아요 토글 (dataset 일관 사용)
 function toggleLike($btn) {
-  const isLiked = $btn.attr("data-liked") === "true";
-  const $text = $btn.find(".action-text");
-  const currentCount = parseInt($text.text().match(/\d+/)[0]) || 0;
+  const btn = $btn.get(0);
+  if (!btn) return;
 
-  if (isLiked) {
-    $btn.attr("data-liked", "false").removeClass("liked").css({
-      background: "var(--background-primary)",
-      color: "var(--text-primary)",
-      "border-color": "var(--border-color)",
-    });
-    $text.text(`좋아요 ${Math.max(0, currentCount - 1)}`);
-    showToast("좋아요를 취소했습니다.", "info");
-  } else {
-    $btn.attr("data-liked", "true").addClass("liked").css({
-      background: "var(--accent-color)",
-      color: "white",
-      "border-color": "var(--accent-color)",
-    });
-    $text.text(`좋아요 ${currentCount + 1}`);
-    showToast("좋아요를 눌렀습니다! ❤️", "success");
-
-    // 하트 애니메이션 효과
-    addHeartAnimation($btn);
+  // action-text가 버튼 안에 없을 수도 있으니 카드 범위로 재검색 백업
+  let $text = $btn.find('.action-text').eq(0);
+  if (!$text.length) {
+    $text = $btn.closest('.post-card').find('.like-btn .action-text').eq(0);
   }
+
+  const isLiked = btn.dataset.liked === 'true';
+  let count = Number(btn.dataset.count);
+  if (!Number.isFinite(count)) {
+    const m = ($text.text() || '').match(/\d+/);
+    count = m ? parseInt(m[0], 10) : 0;
+  }
+
+  const nextLiked = !isLiked;
+  const nextCount = Math.max(0, count + (nextLiked ? 1 : -1));
+
+  // 상태 저장
+  btn.dataset.liked = String(nextLiked);
+  btn.dataset.count = String(nextCount);
+
+  // UI 반영 (텍스트 엘리먼트가 있으면 그쪽, 없으면 버튼 자체 텍스트)
+  if ($text.length) {
+    $text.text(`좋아요 ${nextCount}`);
+  } else {
+    $btn.text(`좋아요 ${nextCount}`);
+  }
+
+  $btn.toggleClass('liked', nextLiked)
+      .attr('aria-pressed', String(nextLiked));
+
+  showToast(nextLiked ? '좋아요를 눌렀습니다! ❤️' : '좋아요를 취소했습니다.', nextLiked ? 'success' : 'info');
+
+  if (nextLiked) addHeartAnimation($btn);
 }
 
 // 하트 애니메이션 추가
@@ -686,29 +756,34 @@ function editPost($post) {
 
 // 게시글 삭제
 function deletePost($post) {
+  const postId =
+  $post.data('postId') ||                 // jQuery data-api
+  $post.attr('data-post-id') ||           // HTML data attribute
+  ($post.data('post') && $post.data('post').id);  // 전체 객체에 있으면
+  console.log("postId : " + $post.attr('data-post-id'));
+  const data = {
+    postId: postId
+  };
   
-  // $.ajax({
-  //     url: "/community/posts/delete",
-  //     type: 'POST',
-  //     contentType: "application/json",
-  //     data: JSON.stringify(posts),
-  //     success: function(response, textStatus, jqXHR) {
-  //         console.log("게시글 삭제 성공");
-  //         // location.reload();
-  //         createNewPost(content);
-  //         $textarea.val("").css("height", "120px");
-  //         showToast("게시글이 삭제되었습니다", "success");
-  //     },
-  //     error: function(request, status, error) {
-  //       console.error("게시글 삭제 오류:", error);
-  //     }
-  //   });
+  $.ajax({
+      url: "/community/post/delete",
+      type: 'POST',
+      contentType: "application/json",
+      data: JSON.stringify(data),
+      success: function(response, textStatus, jqXHR) {
+          console.log("게시글 삭제 성공");
+          $post.slideUp(400, function () {
+            $(this).remove();
+            updatePostCount();
+            showToast("게시글이 삭제되었습니다.", "success");
+          });
+      },
+      error: function(request, status, error) {
+        console.error("게시글 삭제 오류:", error);
+      }
+    });
 
-  $post.slideUp(400, function () {
-    $(this).remove();
-    updatePostCount();
-    showToast("게시글이 삭제되었습니다.", "success");
-  });
+  
 }
 
 // 정렬 탭 초기화
@@ -723,50 +798,59 @@ function initSortTabs() {
   });
 }
 
-// 게시글 정렬
+function toMillis(v) {
+  if (v == null) return 0;
+  if (v instanceof Date) return v.getTime();
+  if (typeof v === 'number') return v < 1e12 ? v * 1000 : v;   // sec -> ms
+  if (typeof v === 'string') {
+    let s = v.trim();
+    // epoch string
+    if (/^\d{10,13}$/.test(s)) {
+      const n = parseInt(s, 10);
+      return s.length === 13 ? n : n * 1000;
+    }
+    // "yyyy-MM-dd HH:mm:ss" -> ISO
+    if (s.length >= 19 && s[10] === ' ') s = s.replace(' ', 'T');
+    const t = Date.parse(s);
+    return isNaN(t) ? 0 : t;
+  }
+  return 0;
+}
+
 function sortPosts(sortType) {
   const $postsList = $(".posts-list");
-  const $posts = $postsList.find(".post-card").detach();
+  const posts = $postsList.children(".post-card").detach().get(); // 배열로
 
-  let sortedPosts;
+  const byCreatedDesc = (a, b) => (Number(b.dataset.created||0) - Number(a.dataset.created||0));
+  const byCreatedAsc  = (a, b) => (Number(a.dataset.created||0) - Number(b.dataset.created||0));
 
+  let sorted;
   switch (sortType) {
-    case "latest":
-      // 최신순 (기본 순서 유지)
-      sortedPosts = $posts;
+    case "latest":   // ✅ 항상 최신순으로 다시 정렬
+      sorted = posts.sort(byCreatedDesc);
       break;
-    case "popular":
-      // 인기순 (좋아요 수 기준)
-      sortedPosts = $posts.sort((a, b) => {
-        const likesA =
-          parseInt(
-            $(a).find(".like-btn .action-text").text().match(/\d+/)[0]
-          ) || 0;
-        const likesB =
-          parseInt(
-            $(b).find(".like-btn .action-text").text().match(/\d+/)[0]
-          ) || 0;
-        return likesB - likesA;
+
+    case "oldest":   // ✅ 항상 오래된순으로 정렬
+      sorted = posts.sort(byCreatedAsc);
+      break;
+
+    case "popular":  // 좋아요 desc, 동점이면 최신순
+      sorted = posts.sort((a, b) => {
+        const likesA = parseInt($(a).find(".like-btn .action-text").text().replace(/\D/g,'')) || 0;
+        const likesB = parseInt($(b).find(".like-btn .action-text").text().replace(/\D/g,'')) || 0;
+        if (likesB !== likesA) return likesB - likesA;
+        return byCreatedDesc(a, b);
       });
       break;
-    case "oldest":
-      // 오래된순
-      sortedPosts = $posts.get().reverse();
-      break;
+
     default:
-      sortedPosts = $posts;
+      sorted = posts; // 혹시 모를 기본
   }
 
-  // 정렬된 게시글들을 다시 추가
-  $postsList.append(sortedPosts);
+  $postsList.append(sorted);
 
-  const sortNames = {
-    latest: "최신순",
-    popular: "인기순",
-    oldest: "오래된순",
-  };
-
-  showToast(`${sortNames[sortType]}로 정렬되었습니다.`, "info");
+  const sortNames = { latest: "최신순", popular: "인기순", oldest: "오래된순" };
+  showToast(`${sortNames[sortType] || '정렬'}로 정렬되었습니다.`, "info");
 }
 
 // 멤버 관리 초기화
