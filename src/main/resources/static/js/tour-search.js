@@ -1610,7 +1610,15 @@ let tourSearchManager = {
         mainImage: tourProduct.mainImage,
         tourCount: tourProduct.tourCount,
         totalAccessibilityScore: tourProduct.totalAccessibilityScore,
-        accessibilityInfo: tourProduct.accessibilityInfo,
+        //accessibilityInfo: tourProduct.accessibilityInfo,
+        // 🔥 핵심 수정: accessibilityInfo 완전히 포함
+        accessibilityInfo: {
+          features: tourProduct.accessibilityInfo?.features || {},
+          validCount: tourProduct.accessibilityInfo?.validCount || 0,
+          totalCount: tourProduct.accessibilityInfo?.totalCount || tourProduct.tourCount,
+          selectedNeedsType: tourProduct.accessibilityInfo?.selectedNeedsType || this.currentFilters.needs, // 현재 필터에서 직접 가져오기
+          hasAccessibilityFilter: tourProduct.accessibilityInfo?.hasAccessibilityFilter || (this.currentFilters.needs && this.currentFilters.needs !== "필요없음")
+        },        
         // 🔥 핵심: tours 배열에 이미 모든 정보가 다 들어있음!
         spots: tourProduct.tours.map((tour, index) => ({
             order: index + 1,

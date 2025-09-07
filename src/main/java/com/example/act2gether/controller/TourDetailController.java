@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +26,7 @@ import com.example.act2gether.service.SpotDetailService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,152 +75,160 @@ public class TourDetailController {
    * @param tourId - contentid 조합 (예: "1115042113127512955")
    * @return 투어 상품 전체 정보 (관광지 + 맛집 + 메타데이터 + API키)
    */
-  @GetMapping("/{tourId}")
-  public ResponseEntity<Map<String, Object>> getTourDetail(@PathVariable String tourId) {
+  
+@GetMapping("/{tourId}")
+public ResponseEntity<Map<String, Object>> getTourDetail(@PathVariable String tourId) {
     log.info("🎯 투어 상세페이지 요청 - tourId: {}", tourId);
 
     try {
-      // 1단계: tourId 파싱
-      List<String> contentIds = parseTourId(tourId);
-      if (contentIds.isEmpty()) {
-        return ResponseEntity.badRequest().body(Map.of(
-            "success", false,
-            "message", "잘못된 투어 ID 형식입니다."));
-      }
-
-      log.info("📋 파싱된 관광지 ID 목록: {}개 - {}", contentIds.size(), contentIds);
-
-     // 🆕 2단계: 세션 스토리지 활용 안내
-    // 프론트엔드에서 세션 데이터를 우선 확인하도록 응답
-    Map<String, Object> response = new HashMap<>();
-    response.put("success", true);
-    response.put("tourId", tourId);
-    response.put("useSessionFirst", true); // 세션 우선 사용 플래그
-    // 세션 데이터가 없을 경우를 위한 기본 구조
-            response.put("tour", generateBasicTourMetadata(contentIds, tourId));
-            response.put("spots", Collections.emptyList()); // 빈 배열
-            response.put("restaurants", getRestaurantInfoGrouped(getAreaCodeFromTourId(tourId)));
-            response.put("kakaoMapApiKey", kakaoMapApiKey);
-            response.put("version", "v3.0-session");
-            response.put("message", "프론트엔드 세션 데이터를 우선 확인하세요");
-
-            log.info("✅ 세션 우선 응답 준비 완료: tourId={}", tourId);
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("💥 투어 상세정보 조회 실패: tourId={}, error={}", tourId, e.getMessage(), e);
-            return ResponseEntity.ok(Map.of(
+        // 1단계: tourId 파싱
+        List<String> contentIds = parseTourId(tourId);
+        if (contentIds.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", "투어 상세정보 조회 중 오류가 발생했습니다: " + e.getMessage()));
+                "message", "잘못된 투어 ID 형식입니다."));
         }
-  } 
-  /**
-     * 🔧 기존 API 호출 로직을 별도 메서드로 분리
-     */
-    private ResponseEntity<Map<String, Object>> getTourDetailByApi(String tourId) {
-        try {
-            List<String> contentIds = parseTourId(tourId);
-            if (contentIds.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "잘못된 투어 ID 형식입니다."));
-            }
-      // 2단계: 각 관광지 상세정보 조회
-      List<Map<String, Object>> tourSpots = new ArrayList<>();
-      String primaryAreaCode = null;
-      String primarySigunguCode = null;
-      String primaryRegion = null;
 
-      for (int i = 0; i < contentIds.size(); i++) {
-        String contentId = contentIds.get(i);
-        Map<String, Object> spotDetail = tourFilterService.getTourDetail(contentId);
+        log.info("📋 파싱된 관광지 ID 목록: {}개 - {}", contentIds.size(), contentIds);
 
-        if (spotDetail != null && (Boolean) spotDetail.get("success")) {
-          JsonNode spotData = (JsonNode) spotDetail.get("data");
+        // 🆕 2단계: 세션 스토리지 활용 안내
+        // 프론트엔드에서 세션 데이터를 우선 확인하도록 응답
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("tourId", tourId);
+        response.put("useSessionFirst", true); // 세션 우선 사용 플래그
+        response.put("tour", generateBasicTourMetadata(contentIds, tourId));
+        response.put("spots", Collections.emptyList()); // 빈 배열
+        response.put("restaurants", new HashMap<>());
+        response.put("kakaoMapApiKey", kakaoMapApiKey);
+        response.put("version", "v3.0-session");
+        // response.put("message", "프론트엔드 세션 데이터를 우선 확인하세요");
 
-          // 첫 번째 관광지에서 지역 정보 추출
-          if (i == 0) {
-            primaryAreaCode = spotData.path("areacode").asText();
-            primarySigunguCode = spotData.path("sigungucode").asText();
-            primaryRegion = getRegionNameByAreaCode(primaryAreaCode);
-            log.info("🗺️ 주요 지역 정보: {} ({}), 시군구코드: {}", primaryRegion, primaryAreaCode, primarySigunguCode);
-          }
-
-  //         // 관광지 정보 구성
-          Map<String, Object> spot = new HashMap<>();
-          spot.put("order", i + 1);
-          spot.put("contentid", contentId);
-          spot.put("title", spotData.path("title").asText());
-          spot.put("addr1", spotData.path("addr1").asText());
-          spot.put("addr2", spotData.path("addr2").asText());
-          spot.put("tel", spotData.path("tel").asText());
-          spot.put("homepage", spotData.path("homepage").asText());
-          spot.put("overview", spotData.path("overview").asText());
-          spot.put("firstimage", spotData.path("firstimage").asText());
-          spot.put("firstimage2", spotData.path("firstimage2").asText());
-          spot.put("mapx", spotData.path("mapx").asText());
-          spot.put("mapy", spotData.path("mapy").asText());
-          spot.put("cat1", spotData.path("cat1").asText());
-          spot.put("cat2", spotData.path("cat2").asText());
-          spot.put("cat3", spotData.path("cat3").asText());
-          spot.put("areacode", spotData.path("areacode").asText());
-          spot.put("sigungucode", spotData.path("sigungucode").asText());
-
-  //         // 이미지 최적화
-          String optimizedImage = optimizeImageUrl(spotData.path("firstimage").asText());
-          spot.put("optimizedImage", optimizedImage);
-
-          tourSpots.add(spot);
-          log.info("✅ {}번째 관광지 정보 수집 완료: {}", i + 1, spot.get("title"));
-        } else {
-          log.warn("⚠️ 관광지 정보 조회 실패: contentId={}", contentId);
-        }
-      }
-
-      if (tourSpots.isEmpty()) {
-        return ResponseEntity.ok(Map.of(
-            "success", false,
-            "message", "투어 관광지 정보를 찾을 수 없습니다."));
-      }
-
-      // 3단계: 무장애여행 정보 통합
-      List<JsonNode> spotsAsJsonNodes = convertToJsonNodes(tourSpots);
-      List<JsonNode> enrichedSpots = barrierFreeService.enrichWithBarrierFreeInfo(
-          spotsAsJsonNodes, primaryAreaCode, null);
-
-      // JsonNode를 다시 Map으로 변환하면서 무장애 정보 통합
-      List<Map<String, Object>> finalSpots = convertFromJsonNodes(enrichedSpots, tourSpots);
-
-      // 4단계: 투어 메타데이터 생성 (✅ 시/군/구 정보 추가)
-      Map<String, Object> tourMetadata = generateTourMetadata(finalSpots, primaryRegion, primaryAreaCode, primarySigunguCode, tourId);
-
-      // 5단계: 맛집 정보 조회 (✅ 카테고리별 그룹화)
-      Map<String, List<Map<String, Object>>> groupedRestaurants = getRestaurantInfoGrouped(primaryAreaCode);
-
-      // 6단계: 최종 응답 구성 (✅ 카카오맵 API 키 포함)
-      Map<String, Object> response = new HashMap<>();
-      response.put("success", true);
-      response.put("tourId", tourId);
-      response.put("tour", tourMetadata);
-      response.put("spots", finalSpots);
-      response.put("restaurants", groupedRestaurants);  // ✅ 카테고리별 그룹화된 맛집
-      response.put("kakaoMapApiKey", kakaoMapApiKey);    // ✅ 카카오맵 API 키
-      response.put("version", "v3.0-api");
-      response.put("features", List.of("투어상품화", "무장애통합", "맛집연동", "상세페이지", "카카오맵", "시군구정보"));
-
-      log.info("🎉 투어 상세정보 조회 완료: {}개 관광지, {}개 맛집 카테고리, 접근성점수: {}점, API키: {}",
-          finalSpots.size(), groupedRestaurants.size(), tourMetadata.get("totalAccessibilityScore"), 
-          kakaoMapApiKey != null ? "포함" : "누락");
-
-      return ResponseEntity.ok(response);
+        log.info("✅ 세션 우선 응답 준비 완료: tourId={}", tourId);
+        return ResponseEntity.ok(response);
 
     } catch (Exception e) {
-            log.error("💥 API fallback 실패: tourId={}, error={}", tourId, e.getMessage(), e);
+        log.error("💥 투어 상세정보 조회 실패: tourId={}, error={}", tourId, e.getMessage(), e);
+        return ResponseEntity.ok(Map.of(
+            "success", false,
+            "message", "투어 상세정보 조회 중 오류가 발생했습니다: " + e.getMessage()));
+    }
+}
+  /**
+     * 🔧 기존 API 호출 로직을 별도 메서드로 분리 -🔧 API fallback 메서드 - 여기서 실제 맛집 검색 수행 
+     */
+    private ResponseEntity<Map<String, Object>> getTourDetailByApi(String tourId) {
+    try {
+        List<String> contentIds = parseTourId(tourId);
+        if (contentIds.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", "잘못된 투어 ID 형식입니다."));
+        }
+        
+        // 2단계: 각 관광지 상세정보 조회
+        List<Map<String, Object>> tourSpots = new ArrayList<>();
+        String primaryAreaCode = null;
+        String primarySigunguCode = null;
+        String primaryRegion = null;
+
+        for (int i = 0; i < contentIds.size(); i++) {
+            String contentId = contentIds.get(i);
+            Map<String, Object> spotDetail = tourFilterService.getTourDetail(contentId);
+
+            if (spotDetail != null && (Boolean) spotDetail.get("success")) {
+                JsonNode spotData = (JsonNode) spotDetail.get("data");
+
+                // 첫 번째 관광지에서 지역 정보 추출
+                if (i == 0) {
+                    primaryAreaCode = spotData.path("areacode").asText();
+                    primarySigunguCode = spotData.path("sigungucode").asText();
+                    primaryRegion = getRegionNameByAreaCode(primaryAreaCode);
+                    log.info("🗺️ 주요 지역 정보: {} ({}), 시군구코드: {}", primaryRegion, primaryAreaCode, primarySigunguCode);
+                }
+
+                // 관광지 정보 구성 (mapx, mapy 좌표 포함 - 맛집 검색에 필수)
+                Map<String, Object> spot = new HashMap<>();
+                spot.put("order", i + 1);
+                spot.put("contentid", contentId);
+                spot.put("title", spotData.path("title").asText());
+                spot.put("addr1", spotData.path("addr1").asText());
+                spot.put("addr2", spotData.path("addr2").asText());
+                spot.put("tel", spotData.path("tel").asText());
+                spot.put("homepage", spotData.path("homepage").asText());
+                spot.put("overview", spotData.path("overview").asText());
+                spot.put("firstimage", spotData.path("firstimage").asText());
+                spot.put("firstimage2", spotData.path("firstimage2").asText());
+                spot.put("mapx", spotData.path("mapx").asText());  // ⭐ 맛집 검색에 필수
+                spot.put("mapy", spotData.path("mapy").asText());  // ⭐ 맛집 검색에 필수
+                spot.put("cat1", spotData.path("cat1").asText());
+                spot.put("cat2", spotData.path("cat2").asText());
+                spot.put("cat3", spotData.path("cat3").asText());
+                spot.put("areacode", spotData.path("areacode").asText());
+                spot.put("sigungucode", spotData.path("sigungucode").asText());
+
+                String optimizedImage = optimizeImageUrl(spotData.path("firstimage").asText());
+                spot.put("optimizedImage", optimizedImage);
+
+                tourSpots.add(spot);
+                log.info("✅ {}번째 관광지 정보 수집 완료: {}", i + 1, spot.get("title"));
+            } else {
+                log.warn("⚠️ 관광지 정보 조회 실패: contentId={}", contentId);
+            }
+        }
+
+        if (tourSpots.isEmpty()) {
             return ResponseEntity.ok(Map.of(
                 "success", false,
-                "message", "API를 통한 투어 정보 조회에 실패했습니다."));
+                "message", "투어 관광지 정보를 찾을 수 없습니다."));
         }
+
+        // 3단계: 무장애여행 정보 통합
+        List<JsonNode> spotsAsJsonNodes = convertToJsonNodes(tourSpots);
+        List<JsonNode> enrichedSpots = barrierFreeService.enrichWithBarrierFreeInfo(
+            spotsAsJsonNodes, primaryAreaCode, null);
+
+        List<Map<String, Object>> finalSpots = convertFromJsonNodes(enrichedSpots, tourSpots);
+
+        // 4단계: 투어 메타데이터 생성 (✅ 시/군/구 정보 추가)
+        Map<String, Object> tourMetadata = generateTourMetadata(finalSpots, primaryRegion, primaryAreaCode,
+            primarySigunguCode, tourId);
+
+        // ⭐ 5단계: 맛집 정보 조회 - 핵심 수정 부분
+        Map<String, List<Map<String, Object>>> groupedRestaurants;
+        
+        if (!finalSpots.isEmpty()) {
+            log.info("🍽️ 다중 중심점 맛집 검색 시작: {}개 관광지", finalSpots.size());
+            groupedRestaurants = tourFilterService.getRestaurantsAroundMultipleSpots(finalSpots);
+        } else {
+            log.warn("🍽️ 관광지 정보 없음, 지역 기반 맛집 검색으로 fallback");
+            groupedRestaurants = getRestaurantInfoGrouped(primaryAreaCode);
+        }
+
+        // 6단계: 최종 응답 구성 (✅ 카카오맵 API 키 포함)
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("tourId", tourId);
+        response.put("tour", tourMetadata);
+        response.put("spots", finalSpots);
+        response.put("restaurants", groupedRestaurants); // 실제 맛집 데이터
+        response.put("kakaoMapApiKey", kakaoMapApiKey);
+        response.put("version", "v3.0-api");
+        response.put("features", List.of("투어상품화", "무장애통합", "다중중심점맛집검색", "상세페이지", "카카오맵", "시군구정보"));
+
+        log.info("🎉 투어 상세정보 조회 완료: {}개 관광지, {}개 맛집 카테고리, 접근성점수: {}점, API키: {}",
+            finalSpots.size(), groupedRestaurants.size(), tourMetadata.get("totalAccessibilityScore"),
+            kakaoMapApiKey != null ? "포함" : "누락");
+
+        return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+        log.error("💥 API fallback 실패: tourId={}, error={}", tourId, e.getMessage(), e);
+        return ResponseEntity.ok(Map.of(
+            "success", false,
+            "message", "API를 통한 투어 정보 조회에 실패했습니다."));
     }
+}
 
   /**
      * 🆕 API 호출 대체 엔드포인트 (세션 데이터가 없을 때만 사용)
@@ -228,7 +240,7 @@ public class TourDetailController {
         // 기존의 API 호출 로직 실행
         return getTourDetailByApi(tourId);
     }
- /**
+     /**
      * 🔧 기본 투어 메타데이터 생성 (세션 데이터 없을 때 사용)
      */
     private Map<String, Object> generateBasicTourMetadata(List<String> contentIds, String tourId) {
@@ -415,6 +427,54 @@ public class TourDetailController {
     return totalScore / spots.size(); // 평균 점수
   }
 
+   /**
+   * 맛집 정보 전용 엔드포인트 (관광지 상세정보와 동일한 패턴)
+   */
+    @PostMapping("/{tourId}/restaurants")
+    public ResponseEntity<Map<String, Object>> getTourRestaurantsWithSpots(
+            @PathVariable String tourId,
+            @RequestBody Map<String, Object> requestBody) {
+        
+        log.info("🍽️ 투어 맛집 정보 요청 (좌표 포함): tourId={}", tourId);
+        
+        try {
+            List<Map<String, Object>> spots = (List<Map<String, Object>>) requestBody.get("spots");
+            
+            if (spots != null && !spots.isEmpty()) {
+                log.info("✅ 클라이언트에서 전송한 좌표 사용: {}개 관광지", spots.size());
+                
+                // TourFilterService 호출
+                Map<String, List<Map<String, Object>>> groupedRestaurants = 
+                    tourFilterService.getRestaurantsAroundMultipleSpots(spots);
+                
+                int totalCount = groupedRestaurants.values().stream()
+                    .mapToInt(List::size)
+                    .sum();
+                
+                log.info("🍽️ 맛집 검색 완료: 총 {}개", totalCount);
+                
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "restaurants", groupedRestaurants,
+                    "searchedSpots", spots.size()
+                ));
+            }
+            
+            return ResponseEntity.ok(Map.of(
+                "success", false,
+                "message", "좌표 정보가 없습니다"
+            ));
+            
+        } catch (Exception e) {
+            log.error("💥 맛집 정보 조회 실패: {}", e.getMessage(), e);
+            return ResponseEntity.ok(Map.of(
+                "success", false,
+                "message", "맛집 정보를 불러올 수 없습니다"
+            ));
+        }
+    }
+
+
   /**
    * 🍽️ 맛집 정보 조회 (✅ 카테고리별 그룹화된 Map 반환)
    */
@@ -505,7 +565,8 @@ public class TourDetailController {
 
     return groupedRestaurants;
   }
-
+  
+ 
   /**
    * ✅ 시/군/구 이름 조회 (새로 추가)
    */
