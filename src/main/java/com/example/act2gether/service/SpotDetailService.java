@@ -97,7 +97,7 @@ public class SpotDetailService {
     private Map<String, Object> getDetailCommon(String contentId) {
         try {
             String url = String.format(
-                "%s/detailCommon2?serviceKey=%s&MobileOS=ETC&MobileApp=Act2gether&_type=json&contentId=%s&defaultYN=Y&firstImageYN=Y&areacodeYN=Y&catcodeYN=Y&addrinfoYN=Y&mapinfoYN=Y&overviewYN=Y",
+                "%s/detailCommon2?serviceKey=%s&MobileOS=ETC&MobileApp=Act2gether&_type=json&contentId=%s",
                 baseUrl, serviceKey, contentId);
 
             log.debug("detailCommon2 API 호출: {}", url);

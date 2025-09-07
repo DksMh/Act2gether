@@ -212,174 +212,165 @@ public class TourFilterService {
             return Map.of("success", false, "message", "검색에 실패했습니다: " + e.getMessage());
         }
     }
+    /**
+     * 다중 중심점 맛집 검색 - 각 관광지를 중심으로 개별 검색
+     * 
+     * @param spots 관광지 리스트 (mapx, mapy 좌표 포함)
+     * @return 카테고리별 그룹화된 맛집 정보
+     */
+    public Map<String, List<Map<String, Object>>> getRestaurantsAroundMultipleSpots(List<Map<String, Object>> spots) {
+        Map<String, List<Map<String, Object>>> groupedRestaurants = new HashMap<>();
 
-    // ========================================
-    // 장소별 그룹화 (cat3 소분류 기준) -250819
-    // ========================================
-    // private Map<String, List<JsonNode>> groupResultsByPlace(List<JsonNode> allResults, List<String> places) {
-    //     Map<String, List<JsonNode>> placeGroups = new HashMap<>();
+        if (spots == null || spots.isEmpty()) {
+            return groupedRestaurants;
+        }
 
-    //     // 각 결과를 적절한 장소 그룹에 분류
-    //     for (JsonNode result : allResults) {
-    //         String cat3 = result.path("cat3").asText();
+        try {
+            // 음식점 카테고리별 조회
+            Map<String, String> foodCategories = Map.of(
+                    "A05020100", "한식",
+                    "A05020200", "서양식",
+                    "A05020300", "일식",
+                    "A05020400", "중식",
+                    "A05020700", "이색음식점",
+                    "A05020900", "카페/전통찻집");
 
-    //         // 각 선택된 장소와 매칭 시도
-    //         for (String place : places) {
-    //             List<String> placeCodes = mapPlaceToMultipleCat3(place);
+            // 각 카테고리별로 빈 리스트 초기화
+            foodCategories.values().forEach(category -> groupedRestaurants.put(category, new ArrayList<>()));
 
-    //             if (placeCodes.contains(cat3)) {
-    //                 placeGroups.computeIfAbsent(place, k -> new ArrayList<>()).add(result);
-    //                 break; // 첫 번째 매칭에서 중단 (중복 방지)
-    //             }
-    //         }
-    //     }
+            // 중복 제거를 위한 Set (카테고리별로 관리)
+            Map<String, Set<String>> uniqueRestaurants = new HashMap<>();
+            foodCategories.values().forEach(category -> uniqueRestaurants.put(category, new HashSet<>()));
 
-    //     return placeGroups;
-    // }
+            // 각 관광지를 중심으로 검색
+            for (int i = 0; i < spots.size(); i++) {
+                Map<String, Object> spot = spots.get(i);
+                String centerX = (String) spot.get("mapx");
+                String centerY = (String) spot.get("mapy");
 
-    // ========================================
-    // * 🔥 핵심: Weighted Fair Distribution 알고리즘
-    // * 각 장소가 공정하게 배분되도록 하되, 품질도 고려
-    // ========================================
-    // private List<JsonNode> distributeResultsFairly(Map<String, List<JsonNode>> placeGroups,
-    //         int targetCount,
-    //         List<String> themes,
-    //         List<String> activities,
-    //         List<String> places) {
+                if (centerX == null || centerY == null) {
+                    log.warn("{}번째 관광지 좌표 누락: {}", i + 1, spot.get("title"));
+                    continue;
+                }
 
-    //     List<JsonNode> balancedResults = new ArrayList<>();
-    //     int placesCount = placeGroups.size();
+                log.info("{}번째 관광지 '{}' 주변 맛집 검색 중...",
+                        i + 1, spot.get("title"));
 
-    //     if (placesCount == 0) {
-    //         return balancedResults;
-    //     }
+                // 각 카테고리별로 이 관광지 주변 검색
+                for (Map.Entry<String, String> category : foodCategories.entrySet()) {
+                    searchRestaurantsAroundSpot(centerX, centerY, category,
+                            uniqueRestaurants, groupedRestaurants, i + 1);
+                }
+            }
 
-    //     // 3단계: 기본 할당량 계산
-    //     int basePerPlace = targetCount / placesCount;
-    //     int extraSlots = targetCount % placesCount;
+            // 최종 결과 로깅
+            int totalRestaurants = groupedRestaurants.values().stream()
+                    .mapToInt(List::size)
+                    .sum();
 
-    //     log.info("📊 균등 분배 계획: {}개 장소, 기본 {}개씩, 추가 {}개",
-    //             placesCount, basePerPlace, extraSlots);
+            log.info("다중 중심점 맛집 검색 완료: {}개 관광지 기준, {}개 카테고리, 총 {}개 맛집",
+                    spots.size(), groupedRestaurants.size(), totalRestaurants);
 
-    //     // 4단계: 각 장소별 품질 기준 정렬
-    //     Map<String, List<JsonNode>> sortedPlaceGroups = new HashMap<>();
-    //     for (Map.Entry<String, List<JsonNode>> entry : placeGroups.entrySet()) {
-    //         String placeName = entry.getKey();
-    //         List<JsonNode> placeResults = new ArrayList<>(entry.getValue());
+        } catch (Exception e) {
+            log.error("다중 중심점 맛집 검색 실패: error={}", e.getMessage());
 
-    //         // 🔥 품질 점수 기준 정렬 (접근성 점수 + 관련성 점수)
-    //         placeResults.sort((a, b) -> {
-    //             // 접근성 점수 (20% 가중치)
-    //             int accessibilityA = a.path("accessibilityScore").asInt(0);
-    //             int accessibilityB = b.path("accessibilityScore").asInt(0);
+            // 오류 시 빈 카테고리 맵 반환
+            Map<String, String> foodCategories = Map.of(
+                    "A05020100", "한식",
+                    "A05020200", "서양식",
+                    "A05020300", "일식",
+                    "A05020400", "중식",
+                    "A05020700", "이색음식점",
+                    "A05020900", "카페/전통찻집");
+            foodCategories.values().forEach(category -> groupedRestaurants.put(category, new ArrayList<>()));
+        }
 
-    //             // 관련성 점수 (80% 가중치)
-    //             int relevanceA = calculateRelevanceScore(a, themes, activities, places);
-    //             int relevanceB = calculateRelevanceScore(b, themes, activities, places);
+        return groupedRestaurants;
+    }
 
-    //             // 총 점수 계산
-    //             double totalScoreA = accessibilityA * 0.2 + relevanceA * 0.8;
-    //             double totalScoreB = accessibilityB * 0.2 + relevanceB * 0.8;
+    /**
+     * 개별 관광지 주변 맛집 검색 (locationBasedList2 API 사용)
+     */
+    private void searchRestaurantsAroundSpot(String centerX, String centerY,
+            Map.Entry<String, String> category,
+            Map<String, Set<String>> uniqueRestaurants,
+            Map<String, List<Map<String, Object>>> groupedRestaurants,
+            int spotNumber) {
 
-    //             return Double.compare(totalScoreB, totalScoreA); // 높은 점수 먼저
-    //         });
+        try {
+            // locationBasedList2 API 사용 (지역 기반이 아닌 좌표 기반)
+            String url = String.format(
+                    "%s/locationBasedList2?serviceKey=%s&MobileOS=ETC&MobileApp=Act2gether&_type=json" +
+                            "&mapX=%s&mapY=%s&radius=1500&contentTypeId=39&cat1=A05&cat2=A0502&cat3=%s&numOfRows=3",
+                    baseUrl, serviceKey, centerX, centerY, category.getKey());
 
-    //         sortedPlaceGroups.put(placeName, placeResults);
-    //         log.debug("🔍 {} 정렬 완료: {}개 → 최고점수 {}",
-    //                 placeName, placeResults.size(),
-    //                 placeResults.isEmpty() ? 0
-    //                         : (placeResults.get(0).path("accessibilityScore").asInt(0) * 0.2 +
-    //                                 calculateRelevanceScore(placeResults.get(0), themes, activities, places) * 0.8));
-    //     }
+            log.debug("API 호출: {}번째 관광지 {} 검색", spotNumber, category.getValue());
 
-    //     // 5단계: 공정한 선별 (Round-Robin + 우선순위)
-    //     List<String> placeNames = new ArrayList<>(sortedPlaceGroups.keySet());
-    //     Map<String, Integer> placeCounts = new HashMap<>();
-    //     Map<String, Integer> placeMaxCounts = new HashMap<>();
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            JsonNode jsonNode = objectMapper.readTree(response.getBody());
 
-    //     // 각 장소별 최대 할당량 계산 (가용성 기반)
-    //     for (int i = 0; i < placeNames.size(); i++) {
-    //         String placeName = placeNames.get(i);
-    //         int availableCount = sortedPlaceGroups.get(placeName).size();
-    //         int maxCount = basePerPlace + (i < extraSlots ? 1 : 0);
+            JsonNode header = jsonNode.path("response").path("header");
+            if (!"0000".equals(header.path("resultCode").asText())) {
+                log.warn("API 오류: {}번 관광지 {} - 코드: {}, 메시지: {}",
+                        spotNumber, category.getValue(),
+                        header.path("resultCode").asText(),
+                        header.path("resultMsg").asText());
+                return;
+            }
 
-    //         placeMaxCounts.put(placeName, Math.min(maxCount, availableCount));
-    //         placeCounts.put(placeName, 0);
-    //     }
+            JsonNode items = jsonNode.path("response").path("body").path("items").path("item");
 
-    //     log.info("📋 장소별 최대 할당: {}", placeMaxCounts);
+            if (items.isArray()) {
+                for (JsonNode restaurant : items) {
+                    addUniqueRestaurant(restaurant, category.getValue(),
+                            uniqueRestaurants, groupedRestaurants, spotNumber);
+                }
+            } else if (!items.isMissingNode()) {
+                addUniqueRestaurant(items, category.getValue(),
+                        uniqueRestaurants, groupedRestaurants, spotNumber);
+            }
 
-    //     // 6단계: Round-Robin 선별
-    //     int selectedCount = 0;
-    //     int maxRounds = targetCount; // 무한루프 방지
+        } catch (Exception e) {
+            log.warn("{}번 관광지 {} 맛집 검색 실패: {}", spotNumber, category.getValue(), e.getMessage());
+        }
+    }
 
-    //     while (selectedCount < targetCount && maxRounds-- > 0) {
-    //         boolean selectedInThisRound = false;
+    /**
+     * 중복 제거하면서 맛집 추가
+     */
+    private void addUniqueRestaurant(JsonNode restaurant, String categoryName,
+            Map<String, Set<String>> uniqueRestaurants,
+            Map<String, List<Map<String, Object>>> groupedRestaurants,
+            int nearSpotNumber) {
 
-    //         for (String placeName : placeNames) {
-    //             if (selectedCount >= targetCount)
-    //                 break;
+        String contentId = restaurant.path("contentid").asText();
 
-    //             List<JsonNode> placeResults = sortedPlaceGroups.get(placeName);
-    //             int currentCount = placeCounts.get(placeName);
-    //             int maxCount = placeMaxCounts.get(placeName);
+        // 이미 추가된 맛집은 건너뛰기
+        if (uniqueRestaurants.get(categoryName).contains(contentId)) {
+            log.debug("중복 맛집 스킵: {} - {}", contentId, restaurant.path("title").asText());
+            return;
+        }
 
-    //             // 이 장소에서 더 선별할 수 있는지 확인
-    //             if (currentCount < maxCount && currentCount < placeResults.size()) {
-    //                 JsonNode selected = placeResults.get(currentCount);
-    //                 balancedResults.add(selected);
-    //                 placeCounts.put(placeName, currentCount + 1);
-    //                 selectedCount++;
-    //                 selectedInThisRound = true;
+        uniqueRestaurants.get(categoryName).add(contentId);
 
-    //                 log.debug("✅ {} 선별: {} ({}번째)", placeName,
-    //                         selected.path("title").asText(), currentCount + 1);
-    //             }
-    //         }
+        Map<String, Object> restaurantInfo = new HashMap<>();
+        restaurantInfo.put("contentid", contentId);
+        restaurantInfo.put("title", restaurant.path("title").asText());
+        restaurantInfo.put("addr1", restaurant.path("addr1").asText());
+        restaurantInfo.put("tel", restaurant.path("tel").asText());
+        restaurantInfo.put("firstimage", restaurant.path("firstimage").asText());
+        restaurantInfo.put("mapx", restaurant.path("mapx").asText());
+        restaurantInfo.put("mapy", restaurant.path("mapy").asText());
+        restaurantInfo.put("nearSpot", nearSpotNumber); // 어느 관광지 근처인지 정보
 
-    //         // 이번 라운드에서 아무것도 선별되지 않았으면 종료
-    //         if (!selectedInThisRound) {
-    //             break;
-    //         }
-    //     }
+        String optimizedImage = optimizeImageUrl(restaurant.path("firstimage").asText(), "A05");
+        restaurantInfo.put("optimizedImage", optimizedImage);
 
-    //     // 7단계: 부족한 경우 추가 선별 (품질 순)
-    //     if (selectedCount < targetCount) {
-    //         log.info("🔧 추가 선별 필요: {}개 → {}개", selectedCount, targetCount);
+        groupedRestaurants.get(categoryName).add(restaurantInfo);
 
-    //         Set<String> selectedIds = balancedResults.stream()
-    //                 .map(node -> node.path("contentid").asText())
-    //                 .collect(Collectors.toSet());
-
-    //         List<JsonNode> remainingResults = placeGroups.values().stream()
-    //                 .flatMap(List::stream)
-    //                 .filter(node -> !selectedIds.contains(node.path("contentid").asText()))
-    //                 .sorted((a, b) -> {
-    //                     double scoreA = a.path("accessibilityScore").asInt(0) * 0.2 +
-    //                             calculateRelevanceScore(a, themes, activities, places) * 0.8;
-    //                     double scoreB = b.path("accessibilityScore").asInt(0) * 0.2 +
-    //                             calculateRelevanceScore(b, themes, activities, places) * 0.8;
-    //                     return Double.compare(scoreB, scoreA);
-    //                 })
-    //                 .collect(Collectors.toList());
-
-    //         int needed = targetCount - selectedCount;
-    //         for (int i = 0; i < Math.min(needed, remainingResults.size()); i++) {
-    //             balancedResults.add(remainingResults.get(i));
-    //         }
-    //     }
-
-    //     // 8단계: 최종 결과 로깅
-    //     Map<String, Long> finalDistribution = balancedResults.stream()
-    //             .collect(Collectors.groupingBy(
-    //                     node -> findPlaceNameByCat3(node.path("cat3").asText(), places),
-    //                     Collectors.counting()));
-
-    //     log.info("🎯 Phase 2 균형 선별 완료: {} → 최종 분배: {}",
-    //             targetCount, finalDistribution);
-
-    //     return balancedResults;
-    // }
+        log.debug("{} - {} ({}번 관광지 근처)", categoryName,
+                restaurant.path("title").asText(), nearSpotNumber);
+    }
 
     // ========================================
     // cat3 코드로 장소명 찾기
