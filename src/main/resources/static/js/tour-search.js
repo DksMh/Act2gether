@@ -81,6 +81,24 @@ let tourSearchManager = {
       this.showLoginStatus(false);
     }
   },
+  // 유저 로그인 상태 체크
+  async checkUserLoginStatus() {
+    try {
+      const response = await fetch("/api/current-user", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        return result.isAuthenticated === true;
+      }
+      return false;
+    } catch (error) {
+      console.error("로그인 상태 확인 실패:", error);
+      return false;
+    }
+  },
 
   // ========================================
   // 2. 필터 생성 (장소 중심 단순화)
@@ -524,185 +542,199 @@ let tourSearchManager = {
   // ========================================
 
   async performSearch() {
-      if (this.isSearching) return;
+    if (this.isSearching) return;
 
-      this.isSearching = true;
-      this.updateCurrentFilters();
-      this.showLoading();
+    this.isSearching = true;
+    this.updateCurrentFilters();
+    this.showLoading();
 
-      try {
-          const searchParams = new URLSearchParams();
+    try {
+      const searchParams = new URLSearchParams();
 
-          console.log("🔍 v3.0 현재 필터:", this.currentFilters);
+      console.log("🔍 v3.0 현재 필터:", this.currentFilters);
 
-          // 지역 파라미터
-          if (this.currentFilters.region) {
-              const areaCode = this.getAreaCodeByName(this.currentFilters.region);
-              if (areaCode) {
-                  searchParams.append("areaCode", areaCode);
-                  console.log("✅ 지역코드 설정:", {
-                      지역명: this.currentFilters.region,
-                      지역코드: areaCode,
-                  });
-              }
-          }
-
-          // 시군구 파라미터
-          if (this.currentFilters.sigungu) {
-              searchParams.append("sigunguCode", this.currentFilters.sigungu);
-              console.log("✅ 시군구코드 설정:", this.currentFilters.sigungu);
-          }
-
-          // 장소 파라미터 (JSON 배열) - v3.0: 장소에서 테마/활동 자동 매칭
-          if (this.currentFilters.places?.length > 0) {
-              searchParams.append(
-                  "places",
-                  JSON.stringify(this.currentFilters.places)
-              );
-              console.log("✅ 장소 설정:", this.currentFilters.places);
-
-              // 장소 기반 자동 테마/활동 매칭
-              const mappedThemes = this.mapPlacesToThemes(this.currentFilters.places);
-              const mappedActivities = this.mapPlacesToActivities(
-                  this.currentFilters.places
-              );
-
-              if (mappedThemes.length > 0) {
-                  searchParams.append("themes", JSON.stringify(mappedThemes));
-                  console.log("🔄 자동 매칭된 테마:", mappedThemes);
-              }
-
-              if (mappedActivities.length > 0) {
-                  searchParams.append("activities", JSON.stringify(mappedActivities));
-                  console.log("🔄 자동 매칭된 활동:", mappedActivities);
-              }
-          }
-
-          // v3.0: 편의시설 파라미터
-          if (
-              this.currentFilters.needs &&
-              this.currentFilters.needs !== "필요없음"
-          ) {
-              searchParams.append("needs", this.currentFilters.needs);
-              console.log("✅ 편의시설 설정:", this.currentFilters.needs);
-          }
-
-          // 방문지 수
-          searchParams.append("numOfRows", this.currentFilters.numOfRows || "6");
-          searchParams.append("pageNo", this.currentPage.toString());
-
-          const finalUrl = `/api/tours/search?${searchParams.toString()}`;
-          console.log("🔍 v3.0 최종 검색 URL:", finalUrl);
-
-          const response = await fetch(finalUrl);
-          const result = await response.json();
-
-          // 🆕 개수 부족 디버깅 로그 추가
-          console.log("📊 요청 개수:", this.currentFilters.numOfRows);
-          console.log("📊 받은 개수:", result.data?.length);
-
-          if (result.data && result.data.length < parseInt(this.currentFilters.numOfRows || "6")) {
-              console.warn(`⚠️ 부족: 요청 ${this.currentFilters.numOfRows}개 → 받음 ${result.data.length}개`);
-              console.warn("백엔드 카테고리 배분 알고리즘 확인 필요");
-          }
-
-          console.log("📊 v3.0 검색 결과:", result);
-
-          if (result.success) {
-              const actualCount = result.data?.length || 0;
-              const requestedCount = parseInt(this.currentFilters.numOfRows || "6");
-              
-              // 🔥 개수 부족 시 사용자에게 명확한 안내
-              if (actualCount < requestedCount) {
-                  console.warn(`⚠️ 요청: ${requestedCount}곳, 받음: ${actualCount}곳`);
-                  
-                  // 필터 요약
-                  const filterSummary = this.getFilterSummary();
-                  const shortage = requestedCount - actualCount;
-                  
-                  let guidanceMessage = `${filterSummary} 조건에서 ${actualCount}곳만 찾았습니다 (${shortage}곳 부족)`;
-                  
-                  // 구체적인 해결책 제안
-                  if (this.currentFilters.sigungu && this.currentFilters.sigungu !== "") {
-                      guidanceMessage += "\n💡 해결책: 시군구 → 전체 지역으로 확대";
-                  } else if (this.currentFilters.places?.length > 3) {
-                      guidanceMessage += "\n💡 해결책: 선택 장소 줄이기 (현재 " + this.currentFilters.places.length + "개)";
-                  } else if (this.currentFilters.needs && this.currentFilters.needs !== "필요없음") {
-                      guidanceMessage += "\n💡 해결책: 편의시설 조건 완화";
-                  } else {
-                      guidanceMessage += "\n💡 해당 지역은 관광지가 제한적입니다";
-                  }
-                  
-                  window.tourUtils?.showToast(guidanceMessage, "warning", 5000); // 5초간 표시
-                  
-                  // 콘솔에도 상세 로그
-                  console.warn("📊 데이터 부족 상황:");
-                  console.warn("- 요청 조건:", this.currentFilters);
-                  console.warn("- 실제 결과:", actualCount + "개");
-                  console.warn("- 부족분:", shortage + "개");
-              }
-              this.updateRecommendedSection(
-                  result.data,
-                  "맞춤 투어 검색 결과",
-                  result
-              );
-              this.totalCount = result.totalCount || 0;
-
-              const filterSummary = this.getFilterSummary();
-
-              // v3.0: 투어 상품 생성 완료 알림
-              let successMessage = `${filterSummary} 맞춤 투어 상품 생성 완료!`;
-              if (result.barrierFreeCount > 0) {
-                  successMessage += ` (편의시설 정보 포함: ${result.barrierFreeCount}개)`;
-              } else if (result.hasAccessibilityFilter) {
-                  successMessage += ` (편의시설 조건 완화 적용)`;
-              }
-
-              window.tourUtils?.showToast(successMessage, "success");
-
-              // 결과가 적을 때 사용자에게 안내
-              if (result.finalCount < 3 && result.hasAccessibilityFilter) {
-                  setTimeout(() => {
-                      window.tourUtils?.showToast(
-                          "편의시설 조건을 완화하여 더 많은 결과를 찾았습니다",
-                          "info"
-                      );
-                  }, 2000);
-              }
-          } else {
-              // 개선된 에러 처리
-              let errorMessage = result.message || "검색 결과가 없습니다.";
-
-              if (result.message && result.message.includes("무장애")) {
-                  errorMessage =
-                      "편의시설 정보 조회 중 일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
-              } else if (
-                  this.currentFilters.needs &&
-                  this.currentFilters.needs !== "필요없음"
-              ) {
-                  errorMessage =
-                      "선택하신 편의시설 조건에 맞는 관광지를 찾지 못했습니다. 조건을 완화해보세요.";
-              }
-
-              this.showNoResults(errorMessage);
-              window.tourUtils?.showToast(errorMessage, "warning");
-          }
-      } catch (error) {
-          console.error("💥 v3.0 검색 실패:", error);
-
-          let errorMessage = "검색에 실패했습니다";
-          if (error.name === "TypeError" && error.message.includes("fetch")) {
-              errorMessage = "네트워크 연결을 확인해주세요";
-          } else if (error.message.includes("JSON")) {
-              errorMessage = "검색 결과 처리 중 오류가 발생했습니다";
-          }
-
-          this.showNoResults(errorMessage);
-          window.tourUtils?.showToast(errorMessage, "error");
-      } finally {
-          this.hideLoading();
-          this.isSearching = false;
+      // 지역 파라미터
+      if (this.currentFilters.region) {
+        const areaCode = this.getAreaCodeByName(this.currentFilters.region);
+        if (areaCode) {
+          searchParams.append("areaCode", areaCode);
+          console.log("✅ 지역코드 설정:", {
+            지역명: this.currentFilters.region,
+            지역코드: areaCode,
+          });
+        }
       }
+
+      // 시군구 파라미터
+      if (this.currentFilters.sigungu) {
+        searchParams.append("sigunguCode", this.currentFilters.sigungu);
+        console.log("✅ 시군구코드 설정:", this.currentFilters.sigungu);
+      }
+
+      // 장소 파라미터 (JSON 배열) - v3.0: 장소에서 테마/활동 자동 매칭
+      if (this.currentFilters.places?.length > 0) {
+        searchParams.append(
+          "places",
+          JSON.stringify(this.currentFilters.places)
+        );
+        console.log("✅ 장소 설정:", this.currentFilters.places);
+
+        // 장소 기반 자동 테마/활동 매칭
+        const mappedThemes = this.mapPlacesToThemes(this.currentFilters.places);
+        const mappedActivities = this.mapPlacesToActivities(
+          this.currentFilters.places
+        );
+
+        if (mappedThemes.length > 0) {
+          searchParams.append("themes", JSON.stringify(mappedThemes));
+          console.log("🔄 자동 매칭된 테마:", mappedThemes);
+        }
+
+        if (mappedActivities.length > 0) {
+          searchParams.append("activities", JSON.stringify(mappedActivities));
+          console.log("🔄 자동 매칭된 활동:", mappedActivities);
+        }
+      }
+
+      // v3.0: 편의시설 파라미터
+      if (
+        this.currentFilters.needs &&
+        this.currentFilters.needs !== "필요없음"
+      ) {
+        searchParams.append("needs", this.currentFilters.needs);
+        console.log("✅ 편의시설 설정:", this.currentFilters.needs);
+      }
+
+      // 방문지 수
+      searchParams.append("numOfRows", this.currentFilters.numOfRows || "6");
+      searchParams.append("pageNo", this.currentPage.toString());
+
+      const finalUrl = `/api/tours/search?${searchParams.toString()}`;
+      console.log("🔍 v3.0 최종 검색 URL:", finalUrl);
+
+      const response = await fetch(finalUrl);
+      const result = await response.json();
+
+      // 🆕 개수 부족 디버깅 로그 추가
+      console.log("📊 요청 개수:", this.currentFilters.numOfRows);
+      console.log("📊 받은 개수:", result.data?.length);
+
+      if (
+        result.data &&
+        result.data.length < parseInt(this.currentFilters.numOfRows || "6")
+      ) {
+        console.warn(
+          `⚠️ 부족: 요청 ${this.currentFilters.numOfRows}개 → 받음 ${result.data.length}개`
+        );
+        console.warn("백엔드 카테고리 배분 알고리즘 확인 필요");
+      }
+
+      console.log("📊 v3.0 검색 결과:", result);
+
+      if (result.success) {
+        const actualCount = result.data?.length || 0;
+        const requestedCount = parseInt(this.currentFilters.numOfRows || "6");
+
+        // 🔥 개수 부족 시 사용자에게 명확한 안내
+        if (actualCount < requestedCount) {
+          console.warn(`⚠️ 요청: ${requestedCount}곳, 받음: ${actualCount}곳`);
+
+          // 필터 요약
+          const filterSummary = this.getFilterSummary();
+          const shortage = requestedCount - actualCount;
+
+          let guidanceMessage = `${filterSummary} 조건에서 ${actualCount}곳만 찾았습니다 (${shortage}곳 부족)`;
+
+          // 구체적인 해결책 제안
+          if (
+            this.currentFilters.sigungu &&
+            this.currentFilters.sigungu !== ""
+          ) {
+            guidanceMessage += "\n💡 해결책: 시군구 → 전체 지역으로 확대";
+          } else if (this.currentFilters.places?.length > 3) {
+            guidanceMessage +=
+              "\n💡 해결책: 선택 장소 줄이기 (현재 " +
+              this.currentFilters.places.length +
+              "개)";
+          } else if (
+            this.currentFilters.needs &&
+            this.currentFilters.needs !== "필요없음"
+          ) {
+            guidanceMessage += "\n💡 해결책: 편의시설 조건 완화";
+          } else {
+            guidanceMessage += "\n💡 해당 지역은 관광지가 제한적입니다";
+          }
+
+          window.tourUtils?.showToast(guidanceMessage, "warning", 5000); // 5초간 표시
+
+          // 콘솔에도 상세 로그
+          console.warn("📊 데이터 부족 상황:");
+          console.warn("- 요청 조건:", this.currentFilters);
+          console.warn("- 실제 결과:", actualCount + "개");
+          console.warn("- 부족분:", shortage + "개");
+        }
+        this.updateRecommendedSection(
+          result.data,
+          "맞춤 투어 검색 결과",
+          result
+        );
+        this.totalCount = result.totalCount || 0;
+
+        const filterSummary = this.getFilterSummary();
+
+        // v3.0: 투어 상품 생성 완료 알림
+        let successMessage = `${filterSummary} 맞춤 투어 상품 생성 완료!`;
+        if (result.barrierFreeCount > 0) {
+          successMessage += ` (편의시설 정보 포함: ${result.barrierFreeCount}개)`;
+        } else if (result.hasAccessibilityFilter) {
+          successMessage += ` (편의시설 조건 완화 적용)`;
+        }
+
+        window.tourUtils?.showToast(successMessage, "success");
+
+        // 결과가 적을 때 사용자에게 안내
+        if (result.finalCount < 3 && result.hasAccessibilityFilter) {
+          setTimeout(() => {
+            window.tourUtils?.showToast(
+              "편의시설 조건을 완화하여 더 많은 결과를 찾았습니다",
+              "info"
+            );
+          }, 2000);
+        }
+      } else {
+        // 개선된 에러 처리
+        let errorMessage = result.message || "검색 결과가 없습니다.";
+
+        if (result.message && result.message.includes("무장애")) {
+          errorMessage =
+            "편의시설 정보 조회 중 일시적 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+        } else if (
+          this.currentFilters.needs &&
+          this.currentFilters.needs !== "필요없음"
+        ) {
+          errorMessage =
+            "선택하신 편의시설 조건에 맞는 관광지를 찾지 못했습니다. 조건을 완화해보세요.";
+        }
+
+        this.showNoResults(errorMessage);
+        window.tourUtils?.showToast(errorMessage, "warning");
+      }
+    } catch (error) {
+      console.error("💥 v3.0 검색 실패:", error);
+
+      let errorMessage = "검색에 실패했습니다";
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        errorMessage = "네트워크 연결을 확인해주세요";
+      } else if (error.message.includes("JSON")) {
+        errorMessage = "검색 결과 처리 중 오류가 발생했습니다";
+      }
+
+      this.showNoResults(errorMessage);
+      window.tourUtils?.showToast(errorMessage, "error");
+    } finally {
+      this.hideLoading();
+      this.isSearching = false;
+    }
   },
 
   /**
@@ -855,39 +887,43 @@ let tourSearchManager = {
   },
 
   getFilterSummary() {
-      const summaryParts = [];
+    const summaryParts = [];
 
-      // 지역 + 시군구 표시 개선
-      if (this.currentFilters.region) {
-          let regionText = this.currentFilters.region;
-          
-          // 시군구가 선택되었고 표시 중인 경우 함께 표시
-          const sigunguFilter = document.getElementById("sigunguFilter");
-          if (
-              this.currentFilters.sigungu && 
-              sigunguFilter && 
-              sigunguFilter.style.display !== "none" &&
-              sigunguFilter.selectedIndex > 0
-          ) {
-              const sigunguName = sigunguFilter.options[sigunguFilter.selectedIndex].text;
-              regionText += ` ${sigunguName}`;
-          }
-          
-          summaryParts.push(`📍 ${regionText}`);
+    // 지역 + 시군구 표시 개선
+    if (this.currentFilters.region) {
+      let regionText = this.currentFilters.region;
+
+      // 시군구가 선택되었고 표시 중인 경우 함께 표시
+      const sigunguFilter = document.getElementById("sigunguFilter");
+      if (
+        this.currentFilters.sigungu &&
+        sigunguFilter &&
+        sigunguFilter.style.display !== "none" &&
+        sigunguFilter.selectedIndex > 0
+      ) {
+        const sigunguName =
+          sigunguFilter.options[sigunguFilter.selectedIndex].text;
+        regionText += ` ${sigunguName}`;
       }
 
-      if (this.currentFilters.places?.length > 0) {
-          const placeText = this.currentFilters.places.length > 3
-              ? `${this.currentFilters.places.slice(0, 3).join(", ")} 외 ${this.currentFilters.places.length - 3}개`
-              : this.currentFilters.places.join(", ");
-          summaryParts.push(`🛏️ ${placeText}`);
-      }
+      summaryParts.push(`📍 ${regionText}`);
+    }
 
-      if (this.currentFilters.needs && this.currentFilters.needs !== "해당없음") {
-          summaryParts.push(`🔧 ${this.currentFilters.needs}`);
-      }
+    if (this.currentFilters.places?.length > 0) {
+      const placeText =
+        this.currentFilters.places.length > 3
+          ? `${this.currentFilters.places.slice(0, 3).join(", ")} 외 ${
+              this.currentFilters.places.length - 3
+            }개`
+          : this.currentFilters.places.join(", ");
+      summaryParts.push(`🛏️ ${placeText}`);
+    }
 
-      return summaryParts.length > 0 ? summaryParts.join(" • ") : "기본 검색";
+    if (this.currentFilters.needs && this.currentFilters.needs !== "해당없음") {
+      summaryParts.push(`🔧 ${this.currentFilters.needs}`);
+    }
+
+    return summaryParts.length > 0 ? summaryParts.join(" • ") : "기본 검색";
   },
 
   // ========================================
@@ -1081,20 +1117,22 @@ let tourSearchManager = {
     // 🚨 수정: 실제 받은 개수를 사용 (tourCount가 아닌 tours.length)
     const actualCount = tours.length; // 실제 받은 개수
     const requestedCount = tourCount; // 요청한 개수
-    
+
     // ⚠️ 개수 부족 경고 로깅
     if (actualCount < requestedCount) {
-        console.warn(`🚨 개수 부족: 요청 ${requestedCount}개 → 받음 ${actualCount}개`);
-        console.warn("백엔드에서 부족분 보완 로직 확인 필요");
+      console.warn(
+        `🚨 개수 부족: 요청 ${requestedCount}개 → 받음 ${actualCount}개`
+      );
+      console.warn("백엔드에서 부족분 보완 로직 확인 필요");
     }
-    
+
     // 투어 카테고리 결정 (3,6,9,12,15만 사용)
     const tourCategories = {
-        3: "간단한 투어",
-        6: "적당한 투어", 
-        9: "풍성한 투어",
-        12: "완전한 투어",
-        15: "최대 투어",
+      3: "간단한 투어",
+      6: "적당한 투어",
+      9: "풍성한 투어",
+      12: "완전한 투어",
+      15: "최대 투어",
     };
 
     // 🚨 실제 개수로 카테고리 결정
@@ -1102,83 +1140,92 @@ let tourSearchManager = {
 
     // 지역 정보 추출 (기존과 동일)
     const regions = [
-        ...new Set(
-            tours
-                .map((tour) => {
-                    if (tour.addr1) {
-                        const addrParts = tour.addr1.split(" ");
-                        const region = addrParts[0];
-                        if (region.includes("서울")) return "서울";
-                        if (region.includes("부산")) return "부산";
-                        if (region.includes("대구")) return "대구";
-                        if (region.includes("인천")) return "인천";
-                        if (region.includes("광주")) return "광주";
-                        if (region.includes("대전")) return "대전";
-                        if (region.includes("울산")) return "울산";
-                        if (region.includes("세종")) return "세종";
-                        if (region.includes("경기")) return "경기";
-                        if (region.includes("강원")) return "강원";
-                        if (region.includes("충북") || region.includes("충청북")) return "충북";
-                        if (region.includes("충남") || region.includes("충청남")) return "충남";
-                        if (region.includes("전북") || region.includes("전라북")) return "전북";
-                        if (region.includes("전남") || region.includes("전라남")) return "전남";
-                        if (region.includes("경북") || region.includes("경상북")) return "경북";
-                        if (region.includes("경남") || region.includes("경상남")) return "경남";
-                        if (region.includes("제주")) return "제주";
-                        return region;
-                    }
-                    return this.currentFilters.region || "전국";
-                })
-                .filter(Boolean)
-          ),
-      ];
+      ...new Set(
+        tours
+          .map((tour) => {
+            if (tour.addr1) {
+              const addrParts = tour.addr1.split(" ");
+              const region = addrParts[0];
+              if (region.includes("서울")) return "서울";
+              if (region.includes("부산")) return "부산";
+              if (region.includes("대구")) return "대구";
+              if (region.includes("인천")) return "인천";
+              if (region.includes("광주")) return "광주";
+              if (region.includes("대전")) return "대전";
+              if (region.includes("울산")) return "울산";
+              if (region.includes("세종")) return "세종";
+              if (region.includes("경기")) return "경기";
+              if (region.includes("강원")) return "강원";
+              if (region.includes("충북") || region.includes("충청북"))
+                return "충북";
+              if (region.includes("충남") || region.includes("충청남"))
+                return "충남";
+              if (region.includes("전북") || region.includes("전라북"))
+                return "전북";
+              if (region.includes("전남") || region.includes("전라남"))
+                return "전남";
+              if (region.includes("경북") || region.includes("경상북"))
+                return "경북";
+              if (region.includes("경남") || region.includes("경상남"))
+                return "경남";
+              if (region.includes("제주")) return "제주";
+              return region;
+            }
+            return this.currentFilters.region || "전국";
+          })
+          .filter(Boolean)
+      ),
+    ];
+    const mainRegion = regions[0] || this.currentFilters.region || "전국";
+
+    // 테마 추출 (기존과 동일)
+    const themes = this.extractThemesFromTours(tours);
+    const mainTheme =
+      themes.length > 1 ? themes.join("+") : themes[0] || "종합";
+
+    // 투어 제목 생성 (개선된 형태)
+    //const title = `${mainRegion} ${mainTheme} 투어`;
+    // 🎯 백엔드에서 받은 제목 사용 (있으면)
+    let title = "투어 상품";
+    if (searchResult?.tourTitle) {
+      title = searchResult.tourTitle;
+    } else {
+      // 기존 로직으로 fallback
+      const regions = this.extractRegionsFromTours(tours);
+      const themes = this.extractRealSelectedThemes(); // 실제 선택한 장소 기반
       const mainRegion = regions[0] || this.currentFilters.region || "전국";
+      const mainTheme =
+        themes.length > 1 ? themes.join("+") : themes[0] || "종합";
+      title = `${mainRegion} ${mainTheme} 투어`;
+    }
 
-      // 테마 추출 (기존과 동일)
-      const themes = this.extractThemesFromTours(tours);
-      const mainTheme = themes.length > 1 ? themes.join("+") : themes[0] || "종합";
+    // 투어 ID 생성 (contentid들을 연결)
+    const tourId = this.generateTourId(tours, actualCount); // 🚨 실제 개수 사용
 
-      // 투어 제목 생성 (개선된 형태)
-      //const title = `${mainRegion} ${mainTheme} 투어`;
-      // 🎯 백엔드에서 받은 제목 사용 (있으면)
-      let title = "투어 상품";
-      if (searchResult?.tourTitle) {
-          title = searchResult.tourTitle;
-      } else {
-          // 기존 로직으로 fallback
-          const regions = this.extractRegionsFromTours(tours);
-          const themes = this.extractRealSelectedThemes(); // 실제 선택한 장소 기반
-          const mainRegion = regions[0] || this.currentFilters.region || "전국";
-          const mainTheme = themes.length > 1 ? themes.join("+") : themes[0] || "종합";
-          title = `${mainRegion} ${mainTheme} 투어`;
-      }
+    // 대표 이미지 선택 (첫 번째 투어의 이미지)
+    let mainImage =
+      tours[0]?.optimizedImage || tours[0]?.firstimage || tours[0]?.firstimage2;
+    if (!mainImage || mainImage.trim() === "") {
+      mainImage = "/uploads/tour/no-image.png";
+    }
 
-      // 투어 ID 생성 (contentid들을 연결)
-      const tourId = this.generateTourId(tours, actualCount); // 🚨 실제 개수 사용
+    // 편의시설 정보 집계
+    const accessibilityInfo = this.aggregateAccessibilityInfo(tours);
 
-      // 대표 이미지 선택 (첫 번째 투어의 이미지)
-      let mainImage = tours[0]?.optimizedImage || tours[0]?.firstimage || tours[0]?.firstimage2;
-      if (!mainImage || mainImage.trim() === "") {
-          mainImage = "/uploads/tour/no-image.png";
-      }
-
-      // 편의시설 정보 집계
-      const accessibilityInfo = this.aggregateAccessibilityInfo(tours);
-
-      return {
-          id: tourId,
-          title: title,
-          category: tourCategory,
-          region: mainRegion,
-          theme: mainTheme,
-          mainImage: mainImage,
-          tourCount: actualCount, // 🚨 실제 개수 반환
-          requestedCount: requestedCount, // 요청 개수도 따로 보관
-          tours: tours,
-          accessibilityInfo: accessibilityInfo,
-          totalAccessibilityScore: this.calculateTotalAccessibilityScore(tours),
-          countMismatch: actualCount < requestedCount, // 개수 부족 플래그
-      };
+    return {
+      id: tourId,
+      title: title,
+      category: tourCategory,
+      region: mainRegion,
+      theme: mainTheme,
+      mainImage: mainImage,
+      tourCount: actualCount, // 🚨 실제 개수 반환
+      requestedCount: requestedCount, // 요청 개수도 따로 보관
+      tours: tours,
+      accessibilityInfo: accessibilityInfo,
+      totalAccessibilityScore: this.calculateTotalAccessibilityScore(tours),
+      countMismatch: actualCount < requestedCount, // 개수 부족 플래그
+    };
   },
 
   /**
@@ -1230,8 +1277,8 @@ let tourSearchManager = {
   //   return contentIds.join("");
   // },
   generateTourId(tours, tourCount) {
-      const contentIds = tours.slice(0, tourCount).map(tour => tour.contentid);
-      return contentIds.join("-"); // 하이픈으로 연결
+    const contentIds = tours.slice(0, tourCount).map((tour) => tour.contentid);
+    return contentIds.join("-"); // 하이픈으로 연결
   },
   /**
    * 편의시설 정보 집계 (사용자 선택 편의시설 기준) - 문자열 데이터 처리
@@ -1240,70 +1287,81 @@ let tourSearchManager = {
     const selectedNeeds = this.currentFilters.needs;
 
     // 편의시설을 선택하지 않았거나 "필요없음"인 경우 집계 안함
-    if (!selectedNeeds || selectedNeeds === "" || selectedNeeds === "필요없음") {
-        return {
-            features: {},
-            validCount: 0,
-            totalCount: tours.length,
-            selectedNeedsType: null,
-            hasAccessibilityFilter: false,
-        };
+    if (
+      !selectedNeeds ||
+      selectedNeeds === "" ||
+      selectedNeeds === "필요없음"
+    ) {
+      return {
+        features: {},
+        validCount: 0,
+        totalCount: tours.length,
+        selectedNeedsType: null,
+        hasAccessibilityFilter: false,
+      };
     }
 
     // 사용자가 선택한 편의시설 타입에 따라 집계할 항목 결정
     let targetFeatures = {};
 
     if (selectedNeeds === "접근 편의") {
-        targetFeatures = {
-            exit: 0,
-            route: 0,
-        };
+      targetFeatures = {
+        exit: 0,
+        route: 0,
+      };
     } else if (selectedNeeds === "시설 편의") {
-        targetFeatures = {
-            restroom: 0,
-            elevator: 0,
-        };
+      targetFeatures = {
+        restroom: 0,
+        elevator: 0,
+      };
     } else if (selectedNeeds === "주차 편의") {
-        targetFeatures = {
-            parking: 0,
-            publictransport: 0,  // 대중교통 추가!
-        };
+      targetFeatures = {
+        parking: 0,
+        publictransport: 0, // 대중교통 추가!
+      };
     }
 
     let validCount = 0;
 
     tours.forEach((tour) => {
-        if (tour.hasBarrierFreeInfo) {
-            try {
-                const barrierFreeInfo = JSON.parse(tour.barrierFreeInfo || "{}");
-                Object.keys(targetFeatures).forEach((key) => {
-                    // 🔥 핵심 수정: 문자열 존재 여부로 확인 (숫자 비교가 아닌!)
-                    if (barrierFreeInfo[key] && 
-                        barrierFreeInfo[key] !== "" && 
-                        barrierFreeInfo[key].trim() !== "" &&
-                        barrierFreeInfo[key] !== "0" &&
-                        barrierFreeInfo[key] !== "없음") {
-                        targetFeatures[key]++;
-                    }
-                });
-                validCount++;
-            } catch (e) {
-                // JSON 파싱 오류 무시
-                console.warn("JSON 파싱 실패:", tour.contentid, e);
+      if (tour.hasBarrierFreeInfo) {
+        try {
+          const barrierFreeInfo = JSON.parse(tour.barrierFreeInfo || "{}");
+          Object.keys(targetFeatures).forEach((key) => {
+            // 🔥 핵심 수정: 문자열 존재 여부로 확인 (숫자 비교가 아닌!)
+            if (
+              barrierFreeInfo[key] &&
+              barrierFreeInfo[key] !== "" &&
+              barrierFreeInfo[key].trim() !== "" &&
+              barrierFreeInfo[key] !== "0" &&
+              barrierFreeInfo[key] !== "없음"
+            ) {
+              targetFeatures[key]++;
             }
+          });
+          validCount++;
+        } catch (e) {
+          // JSON 파싱 오류 무시
+          console.warn("JSON 파싱 실패:", tour.contentid, e);
         }
+      }
     });
 
-    console.log("편의시설 집계 결과:", targetFeatures, "validCount:", validCount);
+    console.log(
+      "편의시설 집계 결과:",
+      targetFeatures,
+      "validCount:",
+      validCount
+    );
 
     return {
-        features: targetFeatures,
-        validCount: validCount,
-        totalCount: tours.length,
-        selectedNeedsType: selectedNeeds,
-        hasAccessibilityFilter: true,
+      features: targetFeatures,
+      validCount: validCount,
+      totalCount: tours.length,
+      selectedNeedsType: selectedNeeds,
+      hasAccessibilityFilter: true,
     };
-},
+  },
 
   /**
    * 전체 접근성 점수 계산
@@ -1324,13 +1382,17 @@ let tourSearchManager = {
   // 11. 결과 표시 (v3.0 투어 상품화 - 개선된 버전)
   // ========================================
 
-  updateRecommendedSection(tours, source = "맞춤 투어 검색 결과", searchResult = null) {
+  updateRecommendedSection(
+    tours,
+    source = "맞춤 투어 검색 결과",
+    searchResult = null
+  ) {
     const recommendedContainer = document.getElementById("recommendedTours");
     if (!recommendedContainer) return;
 
     if (!tours || tours.length === 0) {
-        this.showNoResults("검색 조건에 맞는 투어가 없습니다.");
-        return;
+      this.showNoResults("검색 조건에 맞는 투어가 없습니다.");
+      return;
     }
 
     const tourCount = parseInt(this.currentFilters.numOfRows) || 6;
@@ -1338,10 +1400,10 @@ let tourSearchManager = {
     const displayTours = tours.slice(0, tourCount);
 
     console.log("🔍 개수 체크:", {
-        "요청개수": tourCount,
-        "받은개수": actualCount, 
-        "표시개수": displayTours.length,
-        "부족여부": actualCount < tourCount
+      요청개수: tourCount,
+      받은개수: actualCount,
+      표시개수: displayTours.length,
+      부족여부: actualCount < tourCount,
     });
 
     // 투어 상품 생성
@@ -1351,49 +1413,60 @@ let tourSearchManager = {
 
     // ✅ 섹션 헤더 - 로그인 상태 정확히 체크
     const sectionHeader = document
-        .querySelector("#recommendedTours")
-        .parentElement.querySelector(".section-header");
-    
+      .querySelector("#recommendedTours")
+      .parentElement.querySelector(".section-header");
+
     if (sectionHeader) {
-        const titleElement = sectionHeader.querySelector(".section-title");
-        if (titleElement) {
-            let titleHtml;
-            
-            console.log("🔍 사용자 정보 체크:", this.currentUser);
-            
-            // ✅ 수정: null 체크 강화
-            if (this.currentUser && 
-                this.currentUser !== null && 
-                typeof this.currentUser === 'object' &&
-                (this.currentUser.nickname || this.currentUser.name)) {
-                const userDisplayName = this.currentUser.nickname || this.currentUser.name;
-                titleHtml = `🎯 ${userDisplayName}님을 위한 맞춤 투어 상품`;
-            } else {
-                titleHtml = `🎯 검색하신 조건의 투어 상품`;
-            }
+      const titleElement = sectionHeader.querySelector(".section-title");
+      if (titleElement) {
+        let titleHtml;
 
-            // 편의시설 정보 추가
-            if (searchResult?.barrierFreeCount > 0) {
-                titleHtml += ` <span class="accessibility-badge">♿ 편의시설 ${searchResult.barrierFreeCount}개</span>`;
-            }
+        console.log("🔍 사용자 정보 체크:", this.currentUser);
 
-            titleElement.innerHTML = titleHtml;
+        // ✅ 수정: null 체크 강화
+        if (
+          this.currentUser &&
+          this.currentUser !== null &&
+          typeof this.currentUser === "object" &&
+          (this.currentUser.nickname || this.currentUser.name)
+        ) {
+          const userDisplayName =
+            this.currentUser.nickname || this.currentUser.name;
+          titleHtml = `🎯 ${userDisplayName}님을 위한 맞춤 투어 상품`;
+        } else {
+          titleHtml = `🎯 검색하신 조건의 투어 상품`;
         }
+
+        // 편의시설 정보 추가
+        if (searchResult?.barrierFreeCount > 0) {
+          titleHtml += ` <span class="accessibility-badge">♿ 편의시설 ${searchResult.barrierFreeCount}개</span>`;
+        }
+
+        titleElement.innerHTML = titleHtml;
+      }
     }
     recommendedContainer.innerHTML = "";
     // ✅ 부족 상황 안내
     if (actualCount < tourCount) {
-        console.log("⚠️ 부족 상황 감지 - createShortageNotice 호출");
-        const shortageInfo = this.createShortageNotice(tourCount, actualCount, searchResult);
-        recommendedContainer.appendChild(shortageInfo);
+      console.log("⚠️ 부족 상황 감지 - createShortageNotice 호출");
+      const shortageInfo = this.createShortageNotice(
+        tourCount,
+        actualCount,
+        searchResult
+      );
+      recommendedContainer.appendChild(shortageInfo);
 
-        // 🎯 여기서 return - 투어 카드는 아예 생성하지 않음
-        return;
+      // 🎯 여기서 return - 투어 카드는 아예 생성하지 않음
+      return;
     }
 
     // 투어 상품 카드 생성
     // ✅ 요청한 개수만큼 받은 경우에만 투어 상품 카드 생성
-    const tourProduct = this.createTourProduct(displayTours, tourCount, searchResult);
+    const tourProduct = this.createTourProduct(
+      displayTours,
+      tourCount,
+      searchResult
+    );
     const tourProductCard = this.createTourProductCard(tourProduct);
     recommendedContainer.appendChild(tourProductCard);
     //const tourProductCard = this.createTourProductCard(tourProduct);
@@ -1403,91 +1476,96 @@ let tourSearchManager = {
   createTourProduct(tours, tourCount, searchResult = null) {
     const actualCount = tours.length;
     const requestedCount = tourCount;
-    
+
     if (actualCount < requestedCount) {
-        console.warn(`🚨 개수 부족: 요청 ${requestedCount}개 → 받음 ${actualCount}개`);
+      console.warn(
+        `🚨 개수 부족: 요청 ${requestedCount}개 → 받음 ${actualCount}개`
+      );
     }
-    
+
     const tourCategories = {
-        3: "간단한 투어",
-        6: "적당한 투어", 
-        9: "풍성한 투어",
-        12: "완전한 투어",
-        15: "최대 투어",
+      3: "간단한 투어",
+      6: "적당한 투어",
+      9: "풍성한 투어",
+      12: "완전한 투어",
+      15: "최대 투어",
     };
 
     const tourCategory = tourCategories[actualCount] || `${actualCount}곳 투어`;
 
     // ✅ 제목: 백엔드에서 보낸 것 우선, 없으면 기본값
-    let title = searchResult?.tourTitle || `${this.currentFilters.region} 투어 상품`;
+    let title =
+      searchResult?.tourTitle || `${this.currentFilters.region} 투어 상품`;
 
     // 투어 ID 생성
     const tourId = this.generateTourId(tours, actualCount);
 
     // 대표 이미지 선택
-    let mainImage = tours[0]?.optimizedImage || tours[0]?.firstimage || tours[0]?.firstimage2;
+    let mainImage =
+      tours[0]?.optimizedImage || tours[0]?.firstimage || tours[0]?.firstimage2;
     if (!mainImage || mainImage.trim() === "") {
-        mainImage = "/uploads/tour/no-image.png";
+      mainImage = "/uploads/tour/no-image.png";
     }
 
     // 편의시설 정보 집계
     const accessibilityInfo = this.aggregateAccessibilityInfo(tours);
 
     return {
-        id: tourId,
-        title: title,
-        category: tourCategory,
-        region: this.currentFilters.region,  // ✅ 사용자가 선택한 지역
-        theme: "종합",                       // ✅ 간단히 고정값 (백엔드 title에 이미 포함됨)
-        mainImage: mainImage,
-        tourCount: actualCount,
-        requestedCount: requestedCount,
-        tours: tours,
-        accessibilityInfo: accessibilityInfo,
-        totalAccessibilityScore: this.calculateTotalAccessibilityScore(tours),
-        countMismatch: actualCount < requestedCount,
+      id: tourId,
+      title: title,
+      category: tourCategory,
+      region: this.currentFilters.region, // ✅ 사용자가 선택한 지역
+      theme: "종합", // ✅ 간단히 고정값 (백엔드 title에 이미 포함됨)
+      mainImage: mainImage,
+      tourCount: actualCount,
+      requestedCount: requestedCount,
+      tours: tours,
+      accessibilityInfo: accessibilityInfo,
+      totalAccessibilityScore: this.calculateTotalAccessibilityScore(tours),
+      countMismatch: actualCount < requestedCount,
     };
-    
   },
   // 3️⃣ createShortageNotice 메서드 개선 (신규/수정)
   createShortageNotice(requested, actual, searchResult) {
-      const shortage = requested - actual;
-      const notice = document.createElement("div");
-      notice.className = "shortage-notice";
-      
-      const filterSummary = this.getFilterSummary();
-      let suggestions = [];
-      
-      // 구체적인 제안사항 생성 (액션 버튼 없는 안내만)
-      if (this.currentFilters.places?.length > 2) {
-          suggestions.push({
-              icon: "📍", 
-              text: `선택 장소가 많습니다 (현재 ${this.currentFilters.places.length}개). 다른 장소로 변경해보세요.`
-          });
-      }
-      
-      if (this.currentFilters.needs && this.currentFilters.needs !== "필요없음") {
-          suggestions.push({
-              icon: "🔧",
-              text: "편의시설 조건을 완화하면 더 많은 결과를 얻을 수 있습니다."
-              //action: () => this.relaxAccessibilityFilter()
-          });
-      }
-      
-      let suggestionsHtml = "";
-      if (suggestions.length > 0) {
-          suggestionsHtml = suggestions.map(s => {
-              if (s.action) {
-                  return `<button class="suggestion-btn" onclick="tourSearchManager.relaxAccessibilityFilter()">
+    const shortage = requested - actual;
+    const notice = document.createElement("div");
+    notice.className = "shortage-notice";
+
+    const filterSummary = this.getFilterSummary();
+    let suggestions = [];
+
+    // 구체적인 제안사항 생성 (액션 버튼 없는 안내만)
+    if (this.currentFilters.places?.length > 2) {
+      suggestions.push({
+        icon: "📍",
+        text: `선택 장소가 많습니다 (현재 ${this.currentFilters.places.length}개). 다른 장소로 변경해보세요.`,
+      });
+    }
+
+    if (this.currentFilters.needs && this.currentFilters.needs !== "필요없음") {
+      suggestions.push({
+        icon: "🔧",
+        text: "편의시설 조건을 완화하면 더 많은 결과를 얻을 수 있습니다.",
+        //action: () => this.relaxAccessibilityFilter()
+      });
+    }
+
+    let suggestionsHtml = "";
+    if (suggestions.length > 0) {
+      suggestionsHtml = suggestions
+        .map((s) => {
+          if (s.action) {
+            return `<button class="suggestion-btn" onclick="tourSearchManager.relaxAccessibilityFilter()">
                       ${s.icon} ${s.text}
                   </button>`;
-              } else {
-                  return `<div class="suggestion-text">${s.icon} ${s.text}</div>`;
-              }
-          }).join("");
-      }
-      
-      notice.innerHTML = `
+          } else {
+            return `<div class="suggestion-text">${s.icon} ${s.text}</div>`;
+          }
+        })
+        .join("");
+    }
+
+    notice.innerHTML = `
           <div class="shortage-alert">
               <div class="shortage-header">
                   <span class="shortage-icon">⚠️</span>
@@ -1496,20 +1574,23 @@ let tourSearchManager = {
                       <p>${filterSummary} 조건에서 관광지가 부족합니다.</p>
                   </div>
               </div>
-              ${suggestionsHtml ? `
+              ${
+                suggestionsHtml
+                  ? `
                   <div class="shortage-suggestions">
                       <h4>💡 해결 방법:</h4>
                       <div class="suggestion-content">
                           ${suggestionsHtml}
                       </div>
                   </div>
-              ` : ''}
+              `
+                  : ""
+              }
           </div>
       `;
-      
-      return notice;
-  },
 
+    return notice;
+  },
 
   /**
    * 투어 상품 카드 생성 (가로 레이아웃으로 수정)
@@ -1517,7 +1598,7 @@ let tourSearchManager = {
   createTourProductCard(tourProduct) {
     const card = document.createElement("div");
     card.className = "tour-product-card horizontal-layout";
-    
+
     // 세션 스토리지에 투어 데이터 저장
     this.saveTourDataToSession(tourProduct);
     // 방문지 미리보기 생성
@@ -1583,26 +1664,50 @@ let tourSearchManager = {
     `;
 
     // 이벤트 리스너 추가
+    // 투어 상세보기 버튼
     const detailBtn = card.querySelector(".btn-tour-detail-horizontal");
-    detailBtn.addEventListener("click", () =>
-      this.openTourDetail(tourProduct.id)
-    );
+    // detailBtn.addEventListener("click", () =>
+    //   this.openTourDetail(tourProduct.id)
+    // );
+    detailBtn.addEventListener("click", async () => {
+      const isLoggedIn = await this.checkUserLoginStatus();
 
+      if (isLoggedIn) {
+        this.openTourDetail(tourProduct.id);
+      } else {
+        window.tourUtils?.showToast("로그인이 필요한 서비스입니다", "warning");
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 1500);
+      }
+    });
+
+    // 찜하기 버튼
     const favoriteBtn = card.querySelector(".btn-tour-favorite-horizontal");
-    favoriteBtn.addEventListener("click", () =>
-      this.toggleTourFavorite(tourProduct.id)
-    );
+    // favoriteBtn.addEventListener("click", () =>
+    //   this.toggleTourFavorite(tourProduct.id)
+    // );
+    favoriteBtn.addEventListener("click", async () => {
+      const isLoggedIn = await this.checkUserLoginStatus();
+
+      if (isLoggedIn) {
+        this.toggleTourFavorite(tourProduct.id);
+      } else {
+        window.tourUtils?.showToast("로그인 후 이용 가능합니다", "warning");
+      }
+    });
 
     return card;
   },
+
   // ========================================
   // 🆕 새로운 메서드: 세션 스토리지에 데이터 저장
   // ========================================
 
   saveTourDataToSession(tourProduct) {
-      try {
-          // 세션 스토리지에 저장할 데이터 구조
-          const tourSessionData = {
+    try {
+      // 세션 스토리지에 저장할 데이터 구조
+      const tourSessionData = {
         tourId: tourProduct.id,
         title: tourProduct.title,
         region: tourProduct.region,
@@ -1615,62 +1720,71 @@ let tourSearchManager = {
         accessibilityInfo: {
           features: tourProduct.accessibilityInfo?.features || {},
           validCount: tourProduct.accessibilityInfo?.validCount || 0,
-          totalCount: tourProduct.accessibilityInfo?.totalCount || tourProduct.tourCount,
-          selectedNeedsType: tourProduct.accessibilityInfo?.selectedNeedsType || this.currentFilters.needs, // 현재 필터에서 직접 가져오기
-          hasAccessibilityFilter: tourProduct.accessibilityInfo?.hasAccessibilityFilter || (this.currentFilters.needs && this.currentFilters.needs !== "필요없음")
-        },        
+          totalCount:
+            tourProduct.accessibilityInfo?.totalCount || tourProduct.tourCount,
+          selectedNeedsType:
+            tourProduct.accessibilityInfo?.selectedNeedsType ||
+            this.currentFilters.needs, // 현재 필터에서 직접 가져오기
+          hasAccessibilityFilter:
+            tourProduct.accessibilityInfo?.hasAccessibilityFilter ||
+            (this.currentFilters.needs &&
+              this.currentFilters.needs !== "필요없음"),
+        },
         // 🔥 핵심: tours 배열에 이미 모든 정보가 다 들어있음!
         spots: tourProduct.tours.map((tour, index) => ({
-            order: index + 1,
-            contentid: tour.contentid,
-            title: tour.cleanTitle || tour.title,
-            addr1: tour.addr1,
-            addr2: tour.addr2,
-            tel: tour.tel,
-            homepage: tour.homepage,
-            overview: tour.overview,
-            firstimage: tour.firstimage,
-            firstimage2: tour.firstimage2,
-            optimizedImage: tour.optimizedImage,
-            mapx: tour.mapx,
-            mapy: tour.mapy,
-            cat1: tour.cat1,
-            cat2: tour.cat2,
-            cat3: tour.cat3,
-            areacode: tour.areacode,
-            sigungucode: tour.sigungucode,
-            // 접근성 정보도 이미 있음
-            accessibilityScore: tour.accessibilityScore || 0,
-            hasBarrierFreeInfo: tour.hasBarrierFreeInfo || false,
-            barrierFreeInfo: tour.barrierFreeInfo || "{}"
+          order: index + 1,
+          contentid: tour.contentid,
+          title: tour.cleanTitle || tour.title,
+          addr1: tour.addr1,
+          addr2: tour.addr2,
+          tel: tour.tel,
+          homepage: tour.homepage,
+          overview: tour.overview,
+          firstimage: tour.firstimage,
+          firstimage2: tour.firstimage2,
+          optimizedImage: tour.optimizedImage,
+          mapx: tour.mapx,
+          mapy: tour.mapy,
+          cat1: tour.cat1,
+          cat2: tour.cat2,
+          cat3: tour.cat3,
+          areacode: tour.areacode,
+          sigungucode: tour.sigungucode,
+          // 접근성 정보도 이미 있음
+          accessibilityScore: tour.accessibilityScore || 0,
+          hasBarrierFreeInfo: tour.hasBarrierFreeInfo || false,
+          barrierFreeInfo: tour.barrierFreeInfo || "{}",
         })),
-        createdAt: new Date().toISOString()
-    };
-    
-    // 세션에 저장
-    sessionStorage.setItem(`tour_${tourProduct.id}`, JSON.stringify(tourSessionData));
-    console.log("✅ 완전한 투어 데이터 세션 저장:", tourProduct.id);
-      } catch (error) {
-          console.error("❌ 세션 저장 실패:", error);
-      }
+        createdAt: new Date().toISOString(),
+      };
+
+      // 세션에 저장
+      sessionStorage.setItem(
+        `tour_${tourProduct.id}`,
+        JSON.stringify(tourSessionData)
+      );
+      console.log("✅ 완전한 투어 데이터 세션 저장:", tourProduct.id);
+    } catch (error) {
+      console.error("❌ 세션 저장 실패:", error);
+    }
   },
   // ========================================
   // 🆕 새로운 메서드: 세션에서 데이터 로드
   // ========================================
 
   loadTourDataFromSession(tourId) {
-      try {
-          const sessionData = sessionStorage.getItem(`tour_${tourId}`);
-          if (sessionData) {
-              const tourData = JSON.parse(sessionData);
-              console.log("✅ 세션에서 투어 데이터 로드:", tourId);
-              return tourData;
-          }
-          return null;
-      } catch (error) {
-          console.error("❌ 세션 로드 실패:", error);
-          return null;
+    try {
+      const sessionData = sessionStorage.getItem(`tour_${tourId}`);
+      if (sessionData) {
+        const tourData = JSON.parse(sessionData);
+        console.log("✅ 세션에서 투어 데이터 로드:", tourId);
+        return tourData;
       }
+      return null;
+    } catch (error) {
+      console.error("❌ 세션 로드 실패:", error);
+      return null;
+    }
   },
 
   /**
@@ -1685,11 +1799,11 @@ let tourSearchManager = {
    */
   createTourAccessibilityInfo(tourProduct) {
     console.log("편의시설 정보 생성 시작:", tourProduct.accessibilityInfo);
-    
+
     // 편의시설 필터가 없으면 아예 표시 안함
     if (!tourProduct.accessibilityInfo.hasAccessibilityFilter) {
-        console.log("편의시설 필터 없음");
-        return "";
+      console.log("편의시설 필터 없음");
+      return "";
     }
 
     const selectedNeeds = tourProduct.accessibilityInfo.selectedNeedsType;
@@ -1698,63 +1812,96 @@ let tourSearchManager = {
     // 편의시설이 있는 관광지 수 계산 (개별 시설 수가 아닌 관광지 수)
     let facilitySiteCount = 0;
     let displayText = "";
-    
+
     // 전체 관광지에서 해당 편의시설이 있는 곳의 개수를 계산
     const tours = tourProduct.tours;
-    
+
     if (selectedNeeds === "주차 편의") {
-        facilitySiteCount = tours.filter(tour => {
-            if (tour.hasBarrierFreeInfo) {
-                try {
-                    const info = JSON.parse(tour.barrierFreeInfo || "{}");
-                    // 🔥 수정: 문자열 존재 여부로 확인 (> 0이 아닌)
-                    return (info.parking && info.parking !== "" && info.parking !== "0" && info.parking !== "없음") || 
-                          (info.publictransport && info.publictransport !== "" && info.publictransport !== "0" && info.publictransport !== "없음");
-                } catch (e) { return false; }
-            }
+      facilitySiteCount = tours.filter((tour) => {
+        if (tour.hasBarrierFreeInfo) {
+          try {
+            const info = JSON.parse(tour.barrierFreeInfo || "{}");
+            // 🔥 수정: 문자열 존재 여부로 확인 (> 0이 아닌)
+            return (
+              (info.parking &&
+                info.parking !== "" &&
+                info.parking !== "0" &&
+                info.parking !== "없음") ||
+              (info.publictransport &&
+                info.publictransport !== "" &&
+                info.publictransport !== "0" &&
+                info.publictransport !== "없음")
+            );
+          } catch (e) {
             return false;
-        }).length;
-        displayText = `🅿️ 주차편의 ${facilitySiteCount}/${tours.length}곳`;
-        
+          }
+        }
+        return false;
+      }).length;
+      displayText = `🅿️ 주차편의 ${facilitySiteCount}/${tours.length}곳`;
     } else if (selectedNeeds === "접근 편의") {
-        facilitySiteCount = tours.filter(tour => {
-            if (tour.hasBarrierFreeInfo) {
-                try {
-                    const info = JSON.parse(tour.barrierFreeInfo || "{}");
-                    return (info.exit && info.exit !== "" && info.exit !== "0" && info.exit !== "없음") || 
-                          (info.route && info.route !== "" && info.route !== "0" && info.route !== "없음");
-                } catch (e) { return false; }
-            }
+      facilitySiteCount = tours.filter((tour) => {
+        if (tour.hasBarrierFreeInfo) {
+          try {
+            const info = JSON.parse(tour.barrierFreeInfo || "{}");
+            return (
+              (info.exit &&
+                info.exit !== "" &&
+                info.exit !== "0" &&
+                info.exit !== "없음") ||
+              (info.route &&
+                info.route !== "" &&
+                info.route !== "0" &&
+                info.route !== "없음")
+            );
+          } catch (e) {
             return false;
-        }).length;
-        displayText = `🛤️ 접근시설 ${facilitySiteCount}/${tours.length}곳`;
-        
+          }
+        }
+        return false;
+      }).length;
+      displayText = `🛤️ 접근시설 ${facilitySiteCount}/${tours.length}곳`;
     } else if (selectedNeeds === "시설 편의") {
-        facilitySiteCount = tours.filter(tour => {
-            if (tour.hasBarrierFreeInfo) {
-                try {
-                    const info = JSON.parse(tour.barrierFreeInfo || "{}");
-                    return (info.restroom && info.restroom !== "" && info.restroom !== "0" && info.restroom !== "없음") || 
-                          (info.elevator && info.elevator !== "" && info.elevator !== "0" && info.elevator !== "없음");
-                } catch (e) { return false; }
-            }
+      facilitySiteCount = tours.filter((tour) => {
+        if (tour.hasBarrierFreeInfo) {
+          try {
+            const info = JSON.parse(tour.barrierFreeInfo || "{}");
+            return (
+              (info.restroom &&
+                info.restroom !== "" &&
+                info.restroom !== "0" &&
+                info.restroom !== "없음") ||
+              (info.elevator &&
+                info.elevator !== "" &&
+                info.elevator !== "0" &&
+                info.elevator !== "없음")
+            );
+          } catch (e) {
             return false;
-        }).length;
-        displayText = `🚻 편의시설 ${facilitySiteCount}/${tours.length}곳`;
+          }
+        }
+        return false;
+      }).length;
+      displayText = `🚻 편의시설 ${facilitySiteCount}/${tours.length}곳`;
     }
 
-    console.log(`${selectedNeeds} - 시설 보유 관광지:`, facilitySiteCount, '/', tours.length);
+    console.log(
+      `${selectedNeeds} - 시설 보유 관광지:`,
+      facilitySiteCount,
+      "/",
+      tours.length
+    );
 
     if (facilitySiteCount > 0) {
-        const result = `
+      const result = `
             <div class="tour-accessibility-info-horizontal">
                 <small class="accessibility-summary">
                     ${displayText}
                 </small>
             </div>
         `;
-        console.log("편의시설 정보 HTML:", result);
-        return result;
+      console.log("편의시설 정보 HTML:", result);
+      return result;
     }
 
     // 편의시설 필터가 적용되었지만 정보가 없는 경우
@@ -1766,14 +1913,14 @@ let tourSearchManager = {
             </small>
         </div>
     `;
-},
+  },
 
   /**
    * 투어 상세페이지 열기
    */
   openTourDetail(tourId) {
     // window.location.href = `/tour/${tourId}`;
-     window.location.href = `/tour-detail?id=${tourId}`;
+    window.location.href = `/tour-detail?id=${tourId}`;
   },
 
   /**
