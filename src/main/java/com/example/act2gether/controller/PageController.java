@@ -1,12 +1,17 @@
 package com.example.act2gether.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.UserRepository;
@@ -35,25 +40,30 @@ public class PageController {
 
         if (isAuthenticated) {
             try {
-                String userid = authentication.getName(); // userid 반환
+                String userid = authentication.getName();
                 log.info("Authentication에서 가져온 userid: {}", userid);
 
-                // userid로 사용자 정보 조회
                 UserEntity userEntity = userRepository.findById(userid).orElse(null);
 
                 if (userEntity != null) {
-                    // 모델에 사용자 정보 설정
+                    // 모델에 사용자 정보 설정 -> 페이지 최초 렌더링 시점에만 사용 가능
                     model.addAttribute("isAuthenticated", true);
                     model.addAttribute("userid", userEntity.getUserId());
                     model.addAttribute("user_role", userEntity.getUserRole());
                     model.addAttribute("email", userEntity.getEmail());
                     model.addAttribute("username", userEntity.getUsername());
 
-                    // 관리자 권한 확인
+                    // 🎯 세션에도 저장 추가
+                    session.setAttribute("userid", userEntity.getUserId());
+                    session.setAttribute("username", userEntity.getUsername());
+                    session.setAttribute("email", userEntity.getEmail());
+                    session.setAttribute("user_role", userEntity.getUserRole());
+
                     boolean isAdmin = "ADMIN".equals(userEntity.getUserRole());
                     model.addAttribute("isAdmin", isAdmin);
+                    session.setAttribute("isAdmin", isAdmin);
 
-                    log.info("=== 사용자 정보 설정 완료 ===");
+                    log.info("=== 사용자 정보 설정 완료 (세션 포함) ===");
                     log.info("- userid: {}", userEntity.getUserId());
                     log.info("- email: {}", userEntity.getEmail());
                     log.info("- username: {}", userEntity.getUsername());
@@ -73,6 +83,13 @@ public class PageController {
             log.info("비인증 상태");
             model.addAttribute("isAuthenticated", false);
             model.addAttribute("isAdmin", false);
+
+            // 🎯 세션 정리
+            session.removeAttribute("userid");
+            session.removeAttribute("username");
+            session.removeAttribute("email");
+            session.removeAttribute("user_role");
+            session.removeAttribute("isAdmin");
         }
     }
 
@@ -112,16 +129,36 @@ public class PageController {
         return "faq";
     }
 
+    // API 엔드포인트가 없어서 JS가 사용자 정보를 가져올 방법이 없음 -> 새로운 API 엔드포인트 추가
+    @GetMapping("/api/current-user")
+    @ResponseBody
+    public ResponseEntity<?> getCurrentUser(HttpSession session) {
+        String userid = (String) session.getAttribute("userid");
+
+        if (userid == null) {
+            return ResponseEntity.ok(Map.of("isAuthenticated", false));
+        }
+
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("isAuthenticated", true);
+        userInfo.put("userid", userid);
+        userInfo.put("username", session.getAttribute("username"));
+        userInfo.put("email", session.getAttribute("email"));
+        userInfo.put("userRole", session.getAttribute("user_role"));
+        userInfo.put("isAdmin", session.getAttribute("isAdmin"));
+
+        return ResponseEntity.ok(userInfo);
+    }
+
     @GetMapping("/tour-search")
     public String tourSearchPage() {
         return "tour-search";
     }
 
-    @GetMapping("/tour-detail")    
+    @GetMapping("/tour-detail")
     public String tourDetailPage() {
-        return "tour-detail";        
+        return "tour-detail";
     }
-
 
     @GetMapping("/community-search")
     public String communitySearchPage() {
