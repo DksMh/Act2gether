@@ -1,230 +1,430 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>투어 상세보기 - Act2gether</title>
-    <meta name="description" content="액티브 시니어를 위한 맞춤 투어 상품 상세정보">
-    
+    <meta
+      name="description"
+      content="액티브 시니어를 위한 맞춤 투어 상품 상세정보"
+    />
+
     <!-- 외부 CSS -->
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/tour-detail.css">
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/tour-detail.css" />
     <script src="/js/tour-detail.js"></script>
-    
+
     <!-- 카카오맵 API (조건부 로드) -->
     <script>
-        // API 키가 있을 때만 카카오맵 SDK 로드
-        window.kakaoMapLoaded = false;
-        function loadKakaoMapSDK(apiKey) {
-            if (apiKey && apiKey.trim() !== '') {
-                const script = document.createElement('script');
-                script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
-                script.onload = function() {
-                    kakao.maps.load(() => {
-                        window.kakaoMapLoaded = true;
-                        console.log('✅ 카카오맵 SDK 로드 완료');
-                    });
-                };
-                script.onerror = function() {
-                    console.warn('⚠️ 카카오맵 SDK 로드 실패');
-                    window.kakaoMapLoaded = false;
-                };
-                document.head.appendChild(script);
-            } else {
-                console.warn('⚠️ 카카오맵 API 키가 없습니다');
-            }
+      // API 키가 있을 때만 카카오맵 SDK 로드
+      window.kakaoMapLoaded = false;
+      function loadKakaoMapSDK(apiKey) {
+        if (apiKey && apiKey.trim() !== "") {
+          const script = document.createElement("script");
+          script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
+          script.onload = function () {
+            kakao.maps.load(() => {
+              window.kakaoMapLoaded = true;
+              console.log("✅ 카카오맵 SDK 로드 완료");
+            });
+          };
+          script.onerror = function () {
+            console.warn("⚠️ 카카오맵 SDK 로드 실패");
+            window.kakaoMapLoaded = false;
+          };
+          document.head.appendChild(script);
+        } else {
+          console.warn("⚠️ 카카오맵 API 키가 없습니다");
         }
+      }
     </script>
-</head>
+  </head>
 
-<body>
-      <!-- Header -->
+  <body>
+    <!-- Header -->
     <div th:replace="~{header :: header}"></div>
-    
+
     <!-- 로딩 스피너 -->
     <div id="loadingSpinner" class="loading-spinner">
-        <div class="spinner-content">
-            <div class="spinner"></div>
-            <p>투어 상세정보를 불러오고 있습니다...</p>
-        </div>
+      <div class="spinner-content">
+        <div class="spinner"></div>
+        <p>투어 상세정보를 불러오고 있습니다...</p>
+      </div>
     </div>
-    
+
     <button class="back-button" onclick="history.back()">
-            <span class="back-icon">←</span> 검색 결과로 돌아가기
+      <span class="back-icon">←</span> 검색 결과로 돌아가기
     </button>
     <!-- 1️⃣ 투어 헤더 (고정) -->
     <div class="tour-header" id="tourHeader">
-        <div class="tour-title-section">
-            <h1 class="tour-main-title" id="tourMainTitle">투어 상품 로딩 중...</h1>
-            <div class="tour-meta-info" id="tourMetaInfo">
-                <span class="accessibility-badge" id="accessibilityBadge" style="display: none;">
-                    ♿ 편의시설 정보
-                </span>
-                <span class="region-badge" id="regionBadge">📍 지역 정보</span>
-                <span class="spots-count" id="spotsCount">🎯 관광지</span>
-            </div>
+      <div class="tour-title-section">
+        <h1 class="tour-main-title" id="tourMainTitle">투어 상품 로딩 중...</h1>
+        <div class="tour-meta-info" id="tourMetaInfo">
+          <span
+            class="accessibility-badge"
+            id="accessibilityBadge"
+            style="display: none"
+          >
+            ♿ 편의시설 정보
+          </span>
+          <span class="region-badge" id="regionBadge">📍 지역 정보</span>
+          <span class="spots-count" id="spotsCount">🎯 관광지</span>
         </div>
-        
-        <div class="tour-action-buttons">
-            <button class="wishlist-button" id="wishlistButton" data-tour-id="">
-                <i class="heart-icon">❤️</i>
-                <span class="wishlist-text">찜하기</span>
-            </button>
-            <button class="travel-create-button" id="travelCreateButton">
-                <i class="create-icon">✈️</i>
-                <span class="create-text">여행만들기</span>
-            </button>
-            <button class="travel-join-button" id="travelJoinButton" disabled>
-                <i class="join-icon">👥</i>
-                <span class="join-text">여행참여</span>
-            </button>
-        </div>
+      </div>
+
+      <div class="tour-action-buttons">
+        <button class="wishlist-button" id="wishlistButton" data-tour-id="">
+          <i class="heart-icon">❤️</i>
+          <span class="wishlist-text">찜하기</span>
+        </button>
+        <button class="travel-create-button" id="travelCreateButton">
+          <i class="create-icon">✈️</i>
+          <span class="create-text">여행만들기</span>
+        </button>
+        <button class="travel-join-button" id="travelJoinButton" disabled>
+          <i class="join-icon">👥</i>
+          <span class="join-text">여행참여</span>
+        </button>
+      </div>
     </div>
 
     <!-- 메인 컨텐츠 -->
     <div class="tour-detail-container">
-        
-        <!-- 2️⃣ 투어 지도 -->
-        <section class="tour-map-section" id="tourMapSection">
-            <h2 class="section-title">🗺️ 투어 코스 지도</h2>
-            <div class="map-container">
-                <!-- 카카오맵 실제 구현 -->
-                <div id="tour-kakao-map" class="kakao-map"></div>
-                
-                <!-- 플레이스홀더 fallback -->
-                <div id="map-placeholder" class="map-placeholder" style="display: none;">
-                    <div class="placeholder-content">
-                        <div class="placeholder-icon">🗺️</div>
-                        <h3>지도를 불러올 수 없습니다</h3>
-                        <p>관광지 위치 정보는 아래에서 확인하실 수 있습니다</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+      <!-- 2️⃣ 투어 지도 -->
+      <section class="tour-map-section" id="tourMapSection">
+        <h2 class="section-title">🗺️ 투어 코스 지도</h2>
+        <div class="map-container">
+          <!-- 카카오맵 실제 구현 -->
+          <div id="tour-kakao-map" class="kakao-map"></div>
 
-        <!-- 3️⃣ 관광지별 상세 정보 -->
-        <section class="tour-spots-section" id="tourSpotsSection">
-            <h2 class="section-title">📋 관광지별 상세정보</h2>
-            <div id="tourSpotsList" class="tour-spots-list">
-                <!-- 동적으로 생성됨 -->
+          <!-- 플레이스홀더 fallback -->
+          <div
+            id="map-placeholder"
+            class="map-placeholder"
+            style="display: none"
+          >
+            <div class="placeholder-content">
+              <div class="placeholder-icon">🗺️</div>
+              <h3>지도를 불러올 수 없습니다</h3>
+              <p>관광지 위치 정보는 아래에서 확인하실 수 있습니다</p>
             </div>
-        </section>
+          </div>
+        </div>
+      </section>
 
-        <!-- 4️⃣ 투어 이미지 갤러리 -->
-        <section class="tour-gallery-section" id="tourGallerySection">
-            <h2 class="section-title">🖼️ 투어 이미지 갤러리</h2>
-            <div class="gallery-note" role="note" aria-live="polite">
-                <span aria-hidden="true">ℹ️</span>
-                참고: 이미지가 없는 관광지는 갤러리에 표시되지 않습니다.
-            </div>
-            <div class="gallery-container">
-                <div id="tourImageCarousel" class="image-carousel">
-                    <!-- 동적으로 생성됨 -->
-                </div>
-                <div class="carousel-controls">
-                    <button class="carousel-btn prev-btn" id="carouselPrevBtn">‹</button>
-                    <button class="carousel-btn next-btn" id="carouselNextBtn">›</button>
-                </div>
-                <div class="carousel-indicators" id="carouselIndicators">
-                    <!-- 동적으로 생성됨 -->
-                </div>
-            </div>
-        </section>
+      <!-- 3️⃣ 관광지별 상세 정보 -->
+      <section class="tour-spots-section" id="tourSpotsSection">
+        <h2 class="section-title">📋 관광지별 상세정보</h2>
+        <div id="tourSpotsList" class="tour-spots-list">
+          <!-- 동적으로 생성됨 -->
+        </div>
+      </section>
 
-        <!-- 5️⃣ 맛집 정보 -->
-        <section class="tour-restaurants-section" id="tourRestaurantsSection">
-            <h2 class="section-title">🍽️ 투어 지역 맛집 추천</h2>
-            <div id="restaurantsByCategory" class="restaurants-by-category">
-                <!-- 카테고리별로 동적 생성됨 -->
-            </div>
-            <div class="restaurants-notice">
-                <p>💡 투어 관광지와의 거리순으로 정렬되어 있습니다.</p>
-            </div>
-        </section>
+      <!-- 4️⃣ 투어 이미지 갤러리 -->
+      <section class="tour-gallery-section" id="tourGallerySection">
+        <h2 class="section-title">🖼️ 투어 이미지 갤러리</h2>
+        <div class="gallery-note" role="note" aria-live="polite">
+          <span aria-hidden="true">ℹ️</span>
+          참고: 이미지가 없는 관광지는 갤러리에 표시되지 않습니다.
+        </div>
+        <div class="gallery-container">
+          <div id="tourImageCarousel" class="image-carousel">
+            <!-- 동적으로 생성됨 -->
+          </div>
+          <div class="carousel-controls">
+            <button class="carousel-btn prev-btn" id="carouselPrevBtn">
+              ‹
+            </button>
+            <button class="carousel-btn next-btn" id="carouselNextBtn">
+              ›
+            </button>
+          </div>
+          <div class="carousel-indicators" id="carouselIndicators">
+            <!-- 동적으로 생성됨 -->
+          </div>
+        </div>
+      </section>
 
-        <!-- 6️⃣ 다른 회원들 후기 (placeholder) -->
-        <section class="tour-reviews-section" id="tourReviewsSection">
-            <h2 class="section-title">💭 다른 회원들의 후기</h2>
-            <div class="reviews-placeholder">
-                <div class="placeholder-icon">📝</div>
-                <h3>아직 후기가 없습니다</h3>
-                <p>이 투어의 첫 번째 후기를 작성해보세요!</p>
-                <button class="write-review-btn" disabled>후기 작성하기 (준비 중)</button>
-            </div>
-        </section>
+      <!-- 5️⃣ 맛집 정보 -->
+      <section class="tour-restaurants-section" id="tourRestaurantsSection">
+        <h2 class="section-title">🍽️ 투어 지역 맛집 추천</h2>
+        <div id="restaurantsByCategory" class="restaurants-by-category">
+          <!-- 카테고리별로 동적 생성됨 -->
+        </div>
+        <div class="restaurants-notice">
+          <p>💡 투어 관광지와의 거리순으로 정렬되어 있습니다.</p>
+        </div>
+      </section>
 
-        <!-- 7️⃣ 여행 꿀정보 (placeholder) -->
-        <section class="tour-tips-section" id="tourTipsSection">
-            <h2 class="section-title">💡 여행 꿀정보</h2>
-            <div class="tips-placeholder">
-                <div class="placeholder-icon">💡</div>
-                <h3>해당 지역 특별 체험 정보</h3>
-                <p>곧 다양한 여행 꿀팁과 지역 특색 체험 정보를 제공할 예정입니다.</p>
-                <div class="tips-preview">
-                    <div class="tip-item">
-                        <span class="tip-icon">🎨</span>
-                        <span class="tip-text">지역 전통 공예 체험</span>
-                    </div>
-                    <div class="tip-item">
-                        <span class="tip-icon">🎭</span>
-                        <span class="tip-text">문화 축제 일정</span>
-                    </div>
-                    <div class="tip-item">
-                        <span class="tip-icon">📸</span>
-                        <span class="tip-text">인스타 핫플레이스</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+      <!-- 6️⃣ 다른 회원들 후기 (placeholder) -->
+      <section class="tour-reviews-section" id="tourReviewsSection">
+        <h2 class="section-title">💭 다른 회원들의 후기</h2>
+        <div class="reviews-placeholder">
+          <div class="placeholder-icon">📝</div>
+          <h3>아직 후기가 없습니다</h3>
+          <p>이 투어의 첫 번째 후기를 작성해보세요!</p>
+          <button class="write-review-btn" disabled>
+            후기 작성하기 (준비 중)
+          </button>
+        </div>
+      </section>
 
-        <!-- 8️⃣ 관련 투어 추천 (placeholder) -->
-        <section class="related-tours-section" id="relatedToursSection">
-            <h2 class="section-title">🎯 이런 투어는 어떠세요?</h2>
-            <div class="related-tours-placeholder">
-                <div class="placeholder-icon">🔍</div>
-                <h3>관련 투어 추천</h3>
-                <p>비슷한 테마와 지역의 다른 투어 상품을 곧 추천해드릴 예정입니다.</p>
-                <div class="recommendation-preview">
-                    <div class="preview-item">
-                        <span class="preview-icon">🏛️</span>
-                        <span class="preview-text">같은 지역 문화 투어</span>
-                    </div>
-                    <div class="preview-item">
-                        <span class="preview-icon">🌿</span>
-                        <span class="preview-text">비슷한 테마 자연 투어</span>
-                    </div>
-                    <div class="preview-item">
-                        <span class="preview-icon">♿</span>
-                        <span class="preview-text">편의시설 완비 투어</span>
-                    </div>
-                </div>
+      <!-- 7️⃣ 여행 꿀정보 (placeholder) -->
+      <section class="tour-tips-section" id="tourTipsSection">
+        <h2 class="section-title">💡 여행 꿀정보</h2>
+        <div class="tips-placeholder">
+          <div class="placeholder-icon">💡</div>
+          <h3>해당 지역 특별 체험 정보</h3>
+          <p>곧 다양한 여행 꿀팁과 지역 특색 체험 정보를 제공할 예정입니다.</p>
+          <div class="tips-preview">
+            <div class="tip-item">
+              <span class="tip-icon">🎨</span>
+              <span class="tip-text">지역 전통 공예 체험</span>
             </div>
-        </section>
+            <div class="tip-item">
+              <span class="tip-icon">🎭</span>
+              <span class="tip-text">문화 축제 일정</span>
+            </div>
+            <div class="tip-item">
+              <span class="tip-icon">📸</span>
+              <span class="tip-text">인스타 핫플레이스</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8️⃣ 관련 투어 추천 (placeholder) -->
+      <section class="related-tours-section" id="relatedToursSection">
+        <h2 class="section-title">🎯 이런 투어는 어떠세요?</h2>
+        <div class="related-tours-placeholder">
+          <div class="placeholder-icon">🔍</div>
+          <h3>관련 투어 추천</h3>
+          <p>비슷한 테마와 지역의 다른 투어 상품을 곧 추천해드릴 예정입니다.</p>
+          <div class="recommendation-preview">
+            <div class="preview-item">
+              <span class="preview-icon">🏛️</span>
+              <span class="preview-text">같은 지역 문화 투어</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-icon">🌿</span>
+              <span class="preview-text">비슷한 테마 자연 투어</span>
+            </div>
+            <div class="preview-item">
+              <span class="preview-icon">♿</span>
+              <span class="preview-text">편의시설 완비 투어</span>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <!-- 이미지 전체화면 모달 -->
     <div id="imageFullscreenModal" class="image-fullscreen-modal">
-        <div class="fullscreen-content">
-            <button class="fullscreen-close" onclick="tourDetail.closeFullImage()" title="닫기">×</button>
-            <img id="fullscreenImage" class="fullscreen-image" src="" alt="">
-            <h3 id="fullscreenTitle" class="fullscreen-title"></h3>
+      <div class="fullscreen-content">
+        <button
+          class="fullscreen-close"
+          onclick="tourDetail.closeFullImage()"
+          title="닫기"
+        >
+          ×
+        </button>
+        <img id="fullscreenImage" class="fullscreen-image" src="" alt="" />
+        <h3 id="fullscreenTitle" class="fullscreen-title"></h3>
+      </div>
+    </div>
+
+    <!-- 여행 생성 모달 -->
+    <div id="travelCreateModal" class="travel-modal" style="display: none">
+      <div class="travel-modal-content">
+        <!-- 모달 헤더 -->
+        <div class="travel-modal-header">
+          <h2 id="travelGroupTitle">[투어 제목] 여행 모임 만들기</h2>
+          <button class="modal-close" onclick="tourDetail.closeTravelModal()">
+            ×
+          </button>
         </div>
+
+        <!-- 모달 바디 -->
+        <div class="travel-modal-body">
+          <p class="modal-subtitle">
+            생성할 모임에 대한 정보를 입력하여 주세요. (*표시는 필수)
+          </p>
+
+          <!-- 모임 이름 -->
+          <div class="form-group">
+            <label>모임 이름 <span class="required">*</span></label>
+            <input
+              type="text"
+              id="groupName"
+              placeholder="우리 모임 제목"
+              maxlength="50"
+            />
+            <span class="error-msg" id="groupNameError"
+              >모임 이름은 10자 이상이어야 합니다.</span
+            >
+          </div>
+
+          <!-- 여행 날짜 -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>출발일 선택 <span class="required">*</span></label>
+              <input type="date" id="startDate" />
+              <span class="error-msg" id="dateError"
+                >여행 기간을 선택해주세요.</span
+              >
+            </div>
+            <div class="form-group">
+              <label>종료일 선택 <span class="required">*</span></label>
+              <input type="date" id="endDate" />
+            </div>
+            <div class="form-group checkbox-group">
+              <label>
+                <input type="checkbox" id="flexible" />
+                <span>날짜 조율 가능</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 모집 마감일 & 여행 후 숨김 -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>모집 마감일</label>
+              <input type="date" id="recruitDeadline" />
+            </div>
+            <div class="form-group checkbox-group">
+              <label>
+                <input type="checkbox" id="hiddenAfterTrip" />
+                <span>여행 종료 후 숨김</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 인원 제한 -->
+          <div class="form-group">
+            <label>인원 제한 <span class="required">*</span></label>
+            <select id="maxMembers">
+              <option value="">최대 인원 수 선택</option>
+              <option value="2">2명</option>
+              <option value="3">3명</option>
+              <option value="4">4명</option>
+              <option value="5">5명</option>
+              <option value="6">6명</option>
+              <option value="7">7명</option>
+              <option value="8">8명</option>
+              <option value="9">9명</option>
+              <option value="10">10명</option>
+            </select>
+            <span class="error-msg" id="maxMembersError"
+              >최대 인원 수를 선택해주세요.</span
+            >
+          </div>
+
+          <!-- 출발 지역 -->
+          <div class="form-group">
+            <label>출발 지역 <span class="required">*</span></label>
+            <select id="departureRegion">
+              <option value="">출발 지역 선택</option>
+              <option value="서울">서울</option>
+              <option value="경기">경기</option>
+              <option value="인천">인천</option>
+              <option value="부산">부산</option>
+              <option value="대구">대구</option>
+              <option value="광주">광주</option>
+              <option value="대전">대전</option>
+              <option value="울산">울산</option>
+              <option value="강원">강원</option>
+              <option value="충북">충북</option>
+              <option value="충남">충남</option>
+              <option value="전북">전북</option>
+              <option value="전남">전남</option>
+              <option value="경북">경북</option>
+              <option value="경남">경남</option>
+              <option value="제주">제주</option>
+            </select>
+            <span class="error-msg" id="departureError"
+              >출발 지역을 선택해주세요.</span
+            >
+          </div>
+
+          <!-- 모집 연령대 (출생연도) -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>모집 연령대</label>
+              <select id="birthYearStart">
+                <option value="">출생연도 선택 (부터)</option>
+                <!-- JavaScript로 동적 생성 -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>~</label>
+              <select id="birthYearEnd">
+                <option value="">출생연도 선택 (까지)</option>
+                <!-- JavaScript로 동적 생성 -->
+              </select>
+            </div>
+            <div class="form-group checkbox-group">
+              <label>
+                <input type="checkbox" id="noAgeLimit" />
+                <span>연령 제한 없음</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 모집 성별 -->
+          <div class="form-group">
+            <label>모집 성별</label>
+            <select id="genderLimit">
+              <option value="all">성별 무관</option>
+              <option value="female">여성</option>
+              <option value="male">남성</option>
+            </select>
+          </div>
+
+          <!-- 모임 설명 -->
+          <div class="form-group">
+            <label>모임 설명</label>
+            <textarea
+              id="groupDescription"
+              placeholder="가입 조건 등 모임에 대한 설명을 작성해주세요."
+              rows="5"
+              maxlength="500"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 모달 푸터 -->
+        <div class="travel-modal-footer">
+          <button class="btn-cancel" onclick="tourDetail.closeTravelModal()">
+            취소
+          </button>
+          <button class="btn-primary" onclick="tourDetail.createTravelGroup()">
+            투어 생성
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 하단 고정 액션바 (모바일용) -->
     <div class="mobile-action-bar">
-        <button class="mobile-wishlist-btn" onclick="tourDetail.toggleWishlist()">
-            <i class="heart-icon">❤️</i>
-            <span>찜하기</span>
-        </button>
-        <button class="mobile-create-btn" onclick="tourDetail.handleTravelCreate()">
-            <i class="create-icon">✈️</i>
-            <span>여행만들기</span>
-        </button>
-        <button class="mobile-join-btn" onclick="tourDetail.handleTravelJoin()" disabled>
-            <i class="join-icon">👥</i>
-            <span>여행참여</span>
-        </button>
+      <button class="mobile-wishlist-btn" onclick="tourDetail.toggleWishlist()">
+        <i class="heart-icon">❤️</i>
+        <span>찜하기</span>
+      </button>
+      <button
+        class="mobile-create-btn"
+        onclick="tourDetail.handleTravelCreate()"
+      >
+        <i class="create-icon">✈️</i>
+        <span>여행만들기</span>
+      </button>
+      <button
+        class="mobile-join-btn"
+        onclick="tourDetail.handleTravelJoin()"
+        disabled
+      >
+        <i class="join-icon">👥</i>
+        <span>여행참여</span>
+      </button>
     </div>
     <!-- Footer -->
     <div th:replace="~{footer :: footer}"></div>
@@ -232,23 +432,29 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- JavaScript -->
-   <script>
-    //  카카오맵 SDK 내부에서 발생하는 경고 - Passive event listener 경고 억제 
-    (function() {
+    <script>
+      //  카카오맵 SDK 내부에서 발생하는 경고 - Passive event listener 경고 억제
+      (function () {
         const originalAddEventListener = EventTarget.prototype.addEventListener;
-        EventTarget.prototype.addEventListener = function(type, listener, options) {
-            if (typeof options === 'boolean') {
-                options = { capture: options };
-            }
-            if (!options) {
-                options = {};
-            }
-            if (['touchstart', 'touchmove', 'wheel', 'mousewheel'].includes(type)) {
-                options.passive = options.passive !== false;
-            }
-            return originalAddEventListener.call(this, type, listener, options);
+        EventTarget.prototype.addEventListener = function (
+          type,
+          listener,
+          options
+        ) {
+          if (typeof options === "boolean") {
+            options = { capture: options };
+          }
+          if (!options) {
+            options = {};
+          }
+          if (
+            ["touchstart", "touchmove", "wheel", "mousewheel"].includes(type)
+          ) {
+            options.passive = options.passive !== false;
+          }
+          return originalAddEventListener.call(this, type, listener, options);
         };
-    })();
+      })();
     </script>
-</body>
+  </body>
 </html>

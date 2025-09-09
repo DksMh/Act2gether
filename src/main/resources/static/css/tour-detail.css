@@ -13,27 +13,27 @@
    =========================================== */
 :root {
   /* 액티브 시니어 친화적 컬러 팔레트 */
-  --primary-color: #4CAF50;        /* 메인 그린 */
-  --secondary-color: #2196F3;      /* 보조 블루 */
-  --accent-orange: #FF9800;        /* 여행만들기 주황 */
-  --accent-red: #F44336;           /* 찜하기 빨강 */
-  --disabled-gray: #9E9E9E;        /* 비활성 회색 */
-  --background-light: #F8F9FA;     /* 연한 배경 */
-  --text-primary: #212529;         /* 주요 텍스트 */
-  --text-secondary: #6C757D;       /* 보조 텍스트 */
-  --border-color: #DEE2E6;         /* 테두리 */
-  --white: #FFFFFF;
-  --shadow: 0 2px 8px rgba(0,0,0,0.1);
-  --shadow-hover: 0 4px 16px rgba(0,0,0,0.15);
-  
+  --primary-color: #4caf50; /* 메인 그린 */
+  --secondary-color: #2196f3; /* 보조 블루 */
+  --accent-orange: #ff9800; /* 여행만들기 주황 */
+  --accent-red: #f44336; /* 찜하기 빨강 */
+  --disabled-gray: #9e9e9e; /* 비활성 회색 */
+  --background-light: #f8f9fa; /* 연한 배경 */
+  --text-primary: #212529; /* 주요 텍스트 */
+  --text-secondary: #6c757d; /* 보조 텍스트 */
+  --border-color: #dee2e6; /* 테두리 */
+  --white: #ffffff;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.15);
+
   /* 액티브 시니어용 폰트 크기 */
-  --font-size-xl: 24px;           /* 메인 제목 */
-  --font-size-large: 20px;        /* 섹션 제목 */
-  --font-size-medium: 16px;       /* 본문 */
-  --font-size-small: 14px;        /* 보조 텍스트 */
-  
+  --font-size-xl: 24px; /* 메인 제목 */
+  --font-size-large: 20px; /* 섹션 제목 */
+  --font-size-medium: 16px; /* 본문 */
+  --font-size-small: 14px; /* 보조 텍스트 */
+
   /* 버튼 크기 */
-  --button-height: 48px;          /* 터치하기 쉬운 높이 */
+  --button-height: 48px; /* 터치하기 쉬운 높이 */
   --button-padding: 16px 24px;
   --border-radius: 8px;
 }
@@ -46,7 +46,7 @@
 }
 
 body {
-  font-family: 'Malgun Gothic', '맑은 고딕', Arial, sans-serif;
+  font-family: "Malgun Gothic", "맑은 고딕", Arial, sans-serif;
   font-size: var(--font-size-medium);
   line-height: 1.6;
   color: var(--text-primary);
@@ -88,8 +88,12 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .spinner-content p {
@@ -114,35 +118,35 @@ body {
   flex-wrap: wrap;
 }
 
- /* 뒤로가기 버튼 개선 */
-        .back-to-search {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background: white;
-            border: 2px solid #2196F3;
-            color: #2196F3;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: all 0.3s;
-            z-index: 100;
-        }
+/* 뒤로가기 버튼 개선 */
+.back-to-search {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  background: white;
+  border: 2px solid #2196f3;
+  color: #2196f3;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s;
+  z-index: 100;
+}
 
-        .back-to-search:hover {
-            background: #2196F3;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-        }
+.back-to-search:hover {
+  background: #2196f3;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
 
-        .back-to-search::before {
-            content: "← ";
-            font-size: 18px;
-        }
+.back-to-search::before {
+  content: "← ";
+  font-size: 18px;
+}
 
 .back-icon {
   font-size: 18px;
@@ -180,19 +184,19 @@ body {
 }
 
 .accessibility-badge {
-  background: #E8F5E8;
+  background: #e8f5e8;
   color: var(--primary-color);
   border-color: var(--primary-color);
 }
 
 .region-badge {
-  background: #E3F2FD;
+  background: #e3f2fd;
   color: var(--secondary-color);
   border-color: var(--secondary-color);
 }
 
 .spots-count {
-  background: #FFF3E0;
+  background: #fff3e0;
   color: var(--accent-orange);
   border-color: var(--accent-orange);
 }
@@ -229,14 +233,14 @@ body {
 }
 
 .wishlist-button:hover {
-  background: #D32F2F;
-  border-color: #D32F2F;
+  background: #d32f2f;
+  border-color: #d32f2f;
   transform: translateY(-1px);
 }
 
 .wishlist-button.active {
-  background: #C62828;
-  border-color: #C62828;
+  background: #c62828;
+  border-color: #c62828;
 }
 
 /* 여행만들기 버튼 (주황색) */
@@ -247,9 +251,212 @@ body {
 }
 
 .travel-create-button:hover {
-  background: #F57C00;
-  border-color: #F57C00;
+  background: #f57c00;
+  border-color: #f57c00;
   transform: translateY(-1px);
+}
+/* ========== 여행 생성 모달 스타일 ========== */
+
+/* 모달 배경 */
+.travel-modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  overflow: auto;
+}
+
+/* 모달 컨텐츠 */
+.travel-modal-content {
+  background-color: #fefefe;
+  margin: 2% auto;
+  padding: 0;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* 모달 헤더 */
+.travel-modal-header {
+  padding: 20px 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.travel-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+/* 닫기 버튼 */
+.modal-close {
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.modal-close:hover {
+  opacity: 0.8;
+}
+
+/* 모달 바디 */
+.travel-modal-body {
+  padding: 30px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-subtitle {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+/* 폼 그룹 */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+/* 라벨 - 시니어 친화적 크기 */
+.form-group label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* 입력 필드 - 크고 명확한 스타일 */
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px; /* 시니어 친화적 크기 */
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* 셀렉트박스 스타일 */
+.form-group select {
+  cursor: pointer;
+  min-height: 48px; /* 터치 친화적 높이 */
+}
+
+.form-group select:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* 체크박스 그룹 */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 15px;
+  margin-bottom: 0;
+}
+
+/* 에러 메시지 */
+.error-msg {
+  display: none;
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.required {
+  color: #dc3545;
+}
+
+/* 출생연도 선택 - 넓은 너비 */
+#birthYearStart,
+#birthYearEnd {
+  min-width: 180px;
+}
+
+/* 모달 푸터 */
+.travel-modal-footer {
+  padding: 20px 30px;
+  background-color: #f8f9fa;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* 버튼 스타일 - 크고 명확한 버튼 */
+.btn-primary,
+.btn-cancel {
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
 }
 
 /* 여행참여 버튼 (회색/비활성) */
@@ -349,58 +556,58 @@ section {
   font-size: var(--font-size-medium);
 }
 
-  /* 카카오맵 InfoWindow 스타일 */
-  .kakao-infowindow {
-      padding: 0.5rem;
-      min-width: 12.5rem;
-      position: relative;
-      font-family: inherit;
-  }
+/* 카카오맵 InfoWindow 스타일 */
+.kakao-infowindow {
+  padding: 0.5rem;
+  min-width: 12.5rem;
+  position: relative;
+  font-family: inherit;
+}
 
-  .kakao-infowindow-close {
-      position: absolute;
-      top: 0.25rem;
-      right: 0.25rem;
-      background: #ff4444;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 1.25rem;
-      height: 1.25rem;
-      font-size: 0.75rem;
-      cursor: pointer;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.2s ease;
-  }
+.kakao-infowindow-close {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
 
-  .kakao-infowindow-close:hover {
-      background: #cc3333;
-  }
+.kakao-infowindow-close:hover {
+  background: #cc3333;
+}
 
-  .kakao-infowindow-title {
-      margin: 0 0 0.25rem 0;
-      color: #333;
-      font-size: 0.875rem;
-      padding-right: 1.5rem;
-      font-weight: 600;
-      line-height: 1.2;
-  }
+.kakao-infowindow-title {
+  margin: 0 0 0.25rem 0;
+  color: #333;
+  font-size: 0.875rem;
+  padding-right: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
 
-  .kakao-infowindow-address {
-      margin: 0 0 0.25rem 0;
-      color: #666;
-      font-size: 0.75rem;
-      line-height: 1.2;
-  }
+.kakao-infowindow-address {
+  margin: 0 0 0.25rem 0;
+  color: #666;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
 
-  .kakao-infowindow-accessibility {
-      color: #4CAF50;
-      font-size: 0.6875rem;
-      margin-top: 0.25rem;
-  }
+.kakao-infowindow-accessibility {
+  color: #4caf50;
+  font-size: 0.6875rem;
+  margin-top: 0.25rem;
+}
 
 /* ===========================================
    3️⃣ 관광지별 상세 정보
@@ -490,400 +697,396 @@ section {
 
 /* 편의시설 정보 계층적 표시 스타일 */
 .spot-accessibility-info {
-    margin-top: 12px;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
 }
 
 /* 주요 편의시설 (선택한 타입) */
 .primary-facilities {
-    padding: 12px;
-    background: #e3f2fd;
-    border: 2px solid #2196F3;
-    border-radius: 8px;
-    margin-bottom: 8px;
+  padding: 12px;
+  background: #e3f2fd;
+  border: 2px solid #2196f3;
+  border-radius: 8px;
+  margin-bottom: 8px;
 }
 
 .primary-facilities-label {
-    display: inline-block;
-    background: #2196F3;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 8px;
+  display: inline-block;
+  background: #2196f3;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 
 .primary-facilities-items {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1565C0;
-    line-height: 1.6;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1565c0;
+  line-height: 1.6;
 }
 
 .facility-item {
-    display: inline-block;
-    margin-right: 20px;
-    margin-bottom: 4px;
-    white-space: nowrap;
+  display: inline-block;
+  margin-right: 20px;
+  margin-bottom: 4px;
+  white-space: nowrap;
 }
 
 .facility-icon {
-    margin-right: 6px;
-    font-size: 20px;
-    vertical-align: middle;
+  margin-right: 6px;
+  font-size: 20px;
+  vertical-align: middle;
 }
 
 /* 기타 편의시설 */
 .secondary-facilities {
-    padding: 8px 12px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
 }
 
 .secondary-facilities-label {
-    font-size: 13px;
-    color: #888;
-    font-weight: 500;
-    margin-right: 8px;
+  font-size: 13px;
+  color: #888;
+  font-weight: 500;
+  margin-right: 8px;
 }
 
 .secondary-facilities-items {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.5;
-    display: inline;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  display: inline;
 }
 
 /* 편의시설 없음 표시 */
 .no-primary-facilities {
-    padding: 12px;
-    background: #fff3cd;
-    border: 1px solid #ffc107;
-    border-radius: 8px;
-    color: #856404;
-    font-size: 16px;
-    font-weight: 500;
+  padding: 12px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+  color: #856404;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .no-primary-facilities .warning-icon {
-    margin-right: 8px;
-    font-size: 18px;
+  margin-right: 8px;
+  font-size: 18px;
 }
-
 
 /* tour-detail.css에 추가할 아코디언 스타일 */
 
 /* 🎯 아코디언 컨테이너 */
 .spot-accordions {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
 }
 
 /* 📦 개별 아코디언 */
 .spot-accordion {
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    overflow: hidden;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .spot-accordion:hover {
-    border-color: #4CAF50;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #4caf50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .spot-accordion.active {
-    border-color: #4CAF50;
-    background: #f8fff8;
+  border-color: #4caf50;
+  background: #f8fff8;
 }
 
 /* 📋 아코디언 헤더 */
 .accordion-header {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    cursor: pointer;
-    background: inherit;
-    transition: background-color 0.2s ease;
-    min-height: 80px; /* 액티브 시니어를 위한 충분한 터치 영역 */
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  cursor: pointer;
+  background: inherit;
+  transition: background-color 0.2s ease;
+  min-height: 80px; /* 액티브 시니어를 위한 충분한 터치 영역 */
 }
 
 .accordion-header:hover {
-    background-color: rgba(76, 175, 80, 0.05);
+  background-color: rgba(76, 175, 80, 0.05);
 }
 
 .spot-accordion.active .accordion-header {
-    background-color: rgba(76, 175, 80, 0.1);
-    border-bottom: 1px solid #e0e0e0;
+  background-color: rgba(76, 175, 80, 0.1);
+  border-bottom: 1px solid #e0e0e0;
 }
 
 /* 🔢 관광지 순서 번호 */
 .spot-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: #4CAF50;
-    color: white;
-    border-radius: 50%;
-    font-weight: bold;
-    font-size: 18px;
-    margin-right: 16px;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #4caf50;
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 18px;
+  margin-right: 16px;
+  flex-shrink: 0;
 }
 
 .spot-accordion.active .spot-number {
-    background: #2E7D32;
+  background: #2e7d32;
 }
 
 /* 📄 헤더 콘텐츠 영역 */
 .spot-header-content {
-    display: flex;
-    align-items: center;
-    flex: 1;
-    gap: 16px;
-    min-width: 0; /* flex 오버플로우 방지 */
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 16px;
+  min-width: 0; /* flex 오버플로우 방지 */
 }
 
 /* 🖼️ 썸네일 이미지 */
 .spot-thumb {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  flex-shrink: 0;
 }
 
 /* 📝 헤더 정보 */
 .spot-header-info {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .spot-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 4px 0;
-    word-break: break-word;
-    line-height: 1.4;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 4px 0;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .spot-address {
-    font-size: 14px;
-    color: #666;
-    margin: 0 0 8px 0;
-    word-break: break-word;
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 8px 0;
+  word-break: break-word;
 }
 
 .spot-accessibility {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .accessibility-score {
-    background: #4CAF50;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
+  background: #4caf50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .barrier-free-info {
-    font-size: 12px;
-    color: #4CAF50;
-    font-weight: 500;
+  font-size: 12px;
+  color: #4caf50;
+  font-weight: 500;
 }
-
-
-
 
 /* 🔄 토글 버튼 */
 .accordion-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #4CAF50;
-    font-weight: 600;
-    margin-left: 16px;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4caf50;
+  font-weight: 600;
+  margin-left: 16px;
+  flex-shrink: 0;
 }
 
 .toggle-icon {
-    font-size: 16px;
-    transition: transform 0.3s ease;
-    width: 20px;
-    text-align: center;
+  font-size: 16px;
+  transition: transform 0.3s ease;
+  width: 20px;
+  text-align: center;
 }
 
 .toggle-text {
-    font-size: 14px;
-    white-space: nowrap;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 /* 📖 아코디언 콘텐츠 */
 .accordion-content {
-    transition: all 0.3s ease;
-    overflow: hidden;
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .accordion-body {
-    padding: 0 20px 20px 20px;
+  padding: 0 20px 20px 20px;
 }
 
 /* 📊 상세정보 그리드 */
 .spot-detail-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
 }
 
 .detail-section {
-    background: #ffffff;
-    border: 1px solid #e8f5e8;
-    border-radius: 8px;
-    padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e8f5e8;
+  border-radius: 8px;
+  padding: 16px;
 }
 
 .detail-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #2E7D32;
-    margin: 0 0 12px 0;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #e8f5e8;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2e7d32;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e8f5e8;
 }
 
 .detail-content p {
-    margin: 0 0 8px 0;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #555;
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
 }
 
 .detail-content p:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .detail-content strong {
-    color: #333;
-    font-weight: 600;
-    display: inline-block;
-    min-width: 80px;
+  color: #333;
+  font-weight: 600;
+  display: inline-block;
+  min-width: 80px;
 }
 
 .detail-content a {
-    color: #4CAF50;
-    text-decoration: none;
-    font-weight: 500;
+  color: #4caf50;
+  text-decoration: none;
+  font-weight: 500;
 }
 
 .detail-content a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* 📖 상세설명 섹션 */
 .overview-section {
-    grid-column: 1 / -1; /* 전체 너비 사용 */
-    background: #fafffe;
+  grid-column: 1 / -1; /* 전체 너비 사용 */
+  background: #fafffe;
 }
 
 .overview-text {
-    color: #444;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
+  color: #444;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* ⏳ 로딩 상태 */
 .loading-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 40px 20px;
-    color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 40px 20px;
+  color: #666;
 }
 
 .loading-spinner-small {
-    width: 24px;
-    height: 24px;
-    border: 3px solid #e0e0e0;
-    border-top: 3px solid #4CAF50;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 12px;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e0e0e0;
+  border-top: 3px solid #4caf50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
 }
 
 /* ❌ 에러 상태 */
 .error-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    padding: 40px 20px;
-    color: #666;
-    text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 40px 20px;
+  color: #666;
+  text-align: center;
 }
 
 .error-icon {
-    font-size: 32px;
-    margin-bottom: 12px;
+  font-size: 32px;
+  margin-bottom: 12px;
 }
 
 .error-message {
-    font-size: 12px;
-    color: #999;
-    margin-bottom: 16px;
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 16px;
 }
 
 .retry-button {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s ease;
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
 }
 
 .retry-button:hover {
-    background: #45A049;
+  background: #45a049;
 }
-
 
 /* ===========================================
    4️⃣ 투어 이미지 갤러리
    =========================================== */
-.gallery-container { position: relative; }
+.gallery-container {
+  position: relative;
+}
 
-.gallery-note{
-  margin: 0.5rem 0 0.75rem;        /* 8px 0 12px */
-  padding: 0.625rem 0.75rem;       /* 10px 12px */
-  font-size: 1rem;                 /* 16px */
+.gallery-note {
+  margin: 0.5rem 0 0.75rem; /* 8px 0 12px */
+  padding: 0.625rem 0.75rem; /* 10px 12px */
+  font-size: 1rem; /* 16px */
   line-height: 1.6;
   color: #333;
   background: #f5f7fa;
   border: 0.0625rem solid #e2e6ef; /* 1px */
-  border-radius: 0.5rem;           /* 8px */
+  border-radius: 0.5rem; /* 8px */
   text-align: left;
 }
-
 
 /* 컨테이너: 가로 100% + 16:9 비율(모바일에서 4:3로 변경) */
 #tourImageCarousel {
@@ -897,7 +1100,7 @@ section {
   position: absolute;
   inset: 0;
   width: 100%;
-  transition: transform .35s ease;
+  transition: transform 0.35s ease;
 }
 
 /* 이미지는 컨테이너 꽉 채움 + 비율 유지(필요한 만큼 크롭) */
@@ -908,7 +1111,7 @@ section {
   object-fit: cover;
 }
 
-/*화살표*/   
+/*화살표*/
 .carousel-controls {
   position: absolute;
   top: 50%;
@@ -920,7 +1123,7 @@ section {
 }
 
 .carousel-btn {
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: var(--white);
   border: none;
   width: 40px;
@@ -933,7 +1136,7 @@ section {
 }
 
 .carousel-btn:hover {
-  background: rgba(0,0,0,0.8);
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .carousel-indicators {
@@ -942,7 +1145,7 @@ section {
   gap: 8px;
   margin-top: 16px;
 }
-/*아래 슬라이드 위치*/   
+/*아래 슬라이드 위치*/
 .indicator {
   width: 12px;
   height: 12px;
@@ -957,71 +1160,71 @@ section {
 }
 /* 이미지 전체화면 모달 */
 .image-fullscreen-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(0.125rem);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(0.125rem);
 }
 
 .image-fullscreen-modal.active {
-    display: flex;
+  display: flex;
 }
 
 .fullscreen-content {
-    position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .fullscreen-image {
-    max-width: 100%;
-    max-height: 80vh;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 0.5rem;
-    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.5);
+  max-width: 100%;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.5);
 }
 
 .fullscreen-close {
-    position: absolute;
-    top: -2.5rem;
-    right: 0;
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
-    border: none;
-    border-radius: 50%;
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: 1.25rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border: none;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .fullscreen-close:hover {
-    background: #fff;
-    transform: scale(1.1);
+  background: #fff;
+  transform: scale(1.1);
 }
 
 .fullscreen-title {
-    color: white;
-    margin-top: 1rem;
-    text-align: center;
-    font-size: 1rem;
-    font-weight: 500;
+  color: white;
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 /* ===========================================
@@ -1121,49 +1324,48 @@ section {
 }
 /* 관광지별 맛집 섹션 */
 .spot-restaurants-section {
-    margin-bottom: 40px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    border: 1px solid #e0e0e0;
+  margin-bottom: 40px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
 }
 
 .spot-restaurant-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #4CAF50;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #4caf50;
 }
 
 .spot-number-badge {
-    width: 40px;
-    height: 40px;
-    background: #4CAF50;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: bold;
-    flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: #4caf50;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  flex-shrink: 0;
 }
 
 .spot-restaurant-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
 }
 /* 카테고리 그리드 - 3x2 레이아웃 */
 .restaurant-categories-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
 }
-
 
 /* ===========================================
    6️⃣-8️⃣ Placeholder 섹션들
@@ -1251,8 +1453,8 @@ section {
   right: 0;
   background: var(--white);
   padding: 12px 20px;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-  border-top: 1px solid var(--border-color);  
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--border-color);
   z-index: 1000;
 }
 
@@ -1358,20 +1560,34 @@ section {
     align-items: stretch;
     gap: 16px;
   }
-  
+
   .tour-action-buttons {
     justify-content: center;
   }
-  
+  /*여행 생성 모달*/
+  .travel-modal-content {
+    width: 95%;
+    margin: 5% auto;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  #birthYearStart,
+  #birthYearEnd {
+    min-width: 100%;
+  }
+
   .tour-spot-item {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .spot-image {
     align-self: center;
   }
-  
+
   .tips-preview,
   .recommendation-preview {
     flex-direction: column;
@@ -1380,121 +1596,123 @@ section {
   .kakao-infowindow {
     min-width: 10rem;
     padding: 0.375rem;
-   }
-    
-    .kakao-infowindow-close {
-        width: 1.125rem;
-        height: 1.125rem;
-        font-size: 0.6875rem;
-    }
-    
-    .kakao-infowindow-title {
-        font-size: 0.8125rem;
-        padding-right: 1.25rem;
-    }
-    
-    .kakao-infowindow-address {
-        font-size: 0.6875rem;
-    }
-    
-    .kakao-infowindow-accessibility {
-        font-size: 0.625rem;
-    }
+  }
 
-  #tourImageCarousel { aspect-ratio: 4 / 3; }
+  .kakao-infowindow-close {
+    width: 1.125rem;
+    height: 1.125rem;
+    font-size: 0.6875rem;
+  }
+
+  .kakao-infowindow-title {
+    font-size: 0.8125rem;
+    padding-right: 1.25rem;
+  }
+
+  .kakao-infowindow-address {
+    font-size: 0.6875rem;
+  }
+
+  .kakao-infowindow-accessibility {
+    font-size: 0.625rem;
+  }
+
+  #tourImageCarousel {
+    aspect-ratio: 4 / 3;
+  }
 
   .fullscreen-content {
-        max-width: 95vw;
-        max-height: 95vh;
-    }
-    
-    .fullscreen-image {
-        max-height: 75vh;
-    }
-    
-    .fullscreen-close {
-        top: -2rem;
-        width: 2rem;
-        height: 2rem;
-        font-size: 1rem;
-    }
-    
-    .fullscreen-title {
-        font-size: 0.875rem;
-    }
+    max-width: 95vw;
+    max-height: 95vh;
+  }
 
-    /*아코디언*/
-    .spot-accordions {
-        gap: 12px;
-    }
-    
-    .accordion-header {
-        padding: 16px;
-        min-height: 70px;
-    }
-    
-    .spot-number {
-        width: 36px;
-        height: 36px;
-        font-size: 16px;
-        margin-right: 12px;
-    }
-    
-    .spot-header-content {
-        gap: 12px;
-    }
-    
-    .spot-thumb {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .spot-title {
-        font-size: 16px;
-    }
-    
-    .accordion-body {
-        padding: 0 16px 16px 16px;
-    }
-    
-    .spot-detail-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-        margin-top: 12px;
-    }
-    
-    .detail-section {
-        padding: 12px;
-    }
-    
-    .detail-content strong {
-        min-width: 70px;
-    }
-    
-    .accordion-toggle {
-        margin-left: 8px;
-    }
-    
-    .toggle-text {
-        display: none; /* 모바일에서는 아이콘만 표시 */
-    }
-    /*관광지 상세*/
-    .facility-item {
-        display: block;
-        margin-bottom: 8px;
-    }
-    
-    .primary-facilities-items {
-        font-size: 16px;
-    }
-    
-    .facility-icon {
-        font-size: 18px;
-    }
-    /*음식점*/
-    .restaurant-categories-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .fullscreen-image {
+    max-height: 75vh;
+  }
+
+  .fullscreen-close {
+    top: -2rem;
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
+  .fullscreen-title {
+    font-size: 0.875rem;
+  }
+
+  /*아코디언*/
+  .spot-accordions {
+    gap: 12px;
+  }
+
+  .accordion-header {
+    padding: 16px;
+    min-height: 70px;
+  }
+
+  .spot-number {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    margin-right: 12px;
+  }
+
+  .spot-header-content {
+    gap: 12px;
+  }
+
+  .spot-thumb {
+    width: 50px;
+    height: 50px;
+  }
+
+  .spot-title {
+    font-size: 16px;
+  }
+
+  .accordion-body {
+    padding: 0 16px 16px 16px;
+  }
+
+  .spot-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .detail-section {
+    padding: 12px;
+  }
+
+  .detail-content strong {
+    min-width: 70px;
+  }
+
+  .accordion-toggle {
+    margin-left: 8px;
+  }
+
+  .toggle-text {
+    display: none; /* 모바일에서는 아이콘만 표시 */
+  }
+  /*관광지 상세*/
+  .facility-item {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .primary-facilities-items {
+    font-size: 16px;
+  }
+
+  .facility-icon {
+    font-size: 18px;
+  }
+  /*음식점*/
+  .restaurant-categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* 모바일 */
@@ -1507,96 +1725,96 @@ section {
     --button-height: 44px;
     --button-padding: 12px 16px;
   }
-  
+
   .tour-detail-container {
     padding: 0 16px 80px;
   }
-  
+
   section {
     margin-bottom: 16px;
     padding: 16px;
   }
-  
+
   .tour-header {
     padding: 16px;
     position: relative; /* 모바일에서 고정 해제 */
   }
-  
+
   .back-button {
     width: 100%;
     justify-content: center;
   }
-  
+
   .tour-action-buttons {
     display: none; /* 모바일에서 헤더 버튼 숨김 */
   }
-  
+
   .mobile-action-bar {
     display: flex; /* 모바일에서 하단바 표시 */
   }
-  
+
   .map-container {
     height: 250px;
   }
-  
+
   .spot-image {
     width: 100%;
     height: 200px;
   }
-  
+
   .carousel-image {
     height: 200px;
   }
-  
+
   .restaurant-item {
     flex-direction: column;
     align-items: flex-start;
     text-align: left;
   }
-  
+
   .toast-container {
     top: 10px;
     right: 10px;
     left: 10px;
   }
-  
+
   .toast {
     max-width: none;
   }
 
   /*아코디언*/
   .spot-header-content {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    
-    .spot-thumb {
-        width: 100%;
-        height: 120px;
-        max-width: 200px;
-    }
-    
-    .accordion-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-        min-height: auto;
-    }
-    
-    .spot-number {
-        align-self: flex-start;
-    }
-    
-    .accordion-toggle {
-        align-self: flex-end;
-        margin: 0;
-    }
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 
-    /*음식점*/
-    .restaurant-categories-grid {
-        grid-template-columns: 1fr;
-    }
+  .spot-thumb {
+    width: 100%;
+    height: 120px;
+    max-width: 200px;
+  }
+
+  .accordion-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: auto;
+  }
+
+  .spot-number {
+    align-self: flex-start;
+  }
+
+  .accordion-toggle {
+    align-self: flex-end;
+    margin: 0;
+  }
+
+  /*음식점*/
+  .restaurant-categories-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* 접근성 개선 */
@@ -1612,48 +1830,48 @@ section {
 /* 고대비 모드 */
 @media (prefers-contrast: high) {
   :root {
-    --shadow: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     --border-color: #000000;
     --text-secondary: #000000;
   }
-  
+
   .tour-spot-item,
   .restaurant-item {
     border-width: 2px;
   }
   .primary-facilities {
-        border-width: 3px;
-        background: #cfe8fc;
-    }
-    
-    .primary-facilities-items {
-        color: #003d82;
-        font-weight: 700;
-    }
-    
-    .no-primary-facilities {
-        border-width: 2px;
-        font-weight: 600;
-    }
+    border-width: 3px;
+    background: #cfe8fc;
+  }
+
+  .primary-facilities-items {
+    color: #003d82;
+    font-weight: 700;
+  }
+
+  .no-primary-facilities {
+    border-width: 2px;
+    font-weight: 600;
+  }
 }
 
 /* 다크 모드 지원 */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background-light: #1E1E1E;
-    --white: #2D2D2D;
-    --text-primary: #FFFFFF;
-    --text-secondary: #CCCCCC;
+    --background-light: #1e1e1e;
+    --white: #2d2d2d;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
     --border-color: #444444;
-    --shadow: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
-  
+
   .loading-spinner {
     background: rgba(30, 30, 30, 0.9);
   }
-  
+
   .map-placeholder {
-    background: #1E1E1E;
+    background: #1e1e1e;
   }
 }
 
@@ -1663,13 +1881,20 @@ section {
 
 /* 찜하기 버튼 활성화 상태 */
 .wishlist-button.active .heart-icon {
-  color: #FFEB3B;
+  color: #ffeb3b;
   animation: heartBeat 0.5s ease-in-out;
 }
 
 @keyframes heartBeat {
-  0%, 50%, 100% { transform: scale(1); }
-  25%, 75% { transform: scale(1.1); }
+  0%,
+  50%,
+  100% {
+    transform: scale(1);
+  }
+  25%,
+  75% {
+    transform: scale(1.1);
+  }
 }
 
 /* 로딩 중 버튼 상태 */
@@ -1680,7 +1905,7 @@ section {
 }
 
 .button-loading::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1696,12 +1921,12 @@ section {
 /* 성공/에러 상태 표시 */
 .success-state {
   border-color: var(--primary-color) !important;
-  background-color: #E8F5E8 !important;
+  background-color: #e8f5e8 !important;
 }
 
 .error-state {
   border-color: var(--accent-red) !important;
-  background-color: #FFEBEE !important;
+  background-color: #ffebee !important;
 }
 
 /* 스크롤 진행 표시 (옵션) */
@@ -1711,7 +1936,11 @@ section {
   left: 0;
   width: 0%;
   height: 3px;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
   z-index: 9999;
   transition: width 0.1s ease;
 }
@@ -1731,14 +1960,14 @@ button:focus-visible,
   .toast-container {
     display: none;
   }
-  
+
   section {
     box-shadow: none;
     border: 1px solid #000;
     margin-bottom: 20px;
     page-break-inside: avoid;
   }
-  
+
   .tour-detail-container {
     padding: 0;
   }
@@ -1769,7 +1998,9 @@ button:focus-visible,
 }
 
 @keyframes fadeIn {
-  to { opacity: 1; }
+  to {
+    opacity: 1;
+  }
 }
 
 .slide-up {
