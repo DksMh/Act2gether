@@ -109,11 +109,6 @@ public class PageController {
         return "forgot-loginfo";
     }
 
-    @GetMapping(value = { "/" })
-    public String main() {
-        return "main";
-    }
-
     @GetMapping("/onboarding")
     public String onboarding() {
         return "interestonboarding";
@@ -174,4 +169,11 @@ public class PageController {
     public String myPage() {
         return "mypage";
     }
+
+    // 메인 페이지 수정사항
+    // @GetMapping(value = { "/" })
+    // public String main() {
+    // return "main";
+    // }
+
 }
