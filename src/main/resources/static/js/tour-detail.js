@@ -1820,8 +1820,273 @@ window.tourDetail = {
   },
 
   /**
-   * ✈️ 여행만들기
+   * ✈️ 여행만들기 - 여행 그룹 생성 관련 메서드
    */
+  /**
+   * 출생연도 옵션 초기화 (액티브 시니어 대상: 1925-1975년생)
+   */
+  initializeBirthYearOptions() {
+    const currentYear = new Date().getFullYear();
+    const birthYearStart = document.getElementById("birthYearStart");
+    const birthYearEnd = document.getElementById("birthYearEnd");
+
+    // 출생연도 목록 생성 (5년 단위)
+    const birthYears = [];
+    for (let year = 1975; year >= 1925; year -= 5) {
+      const age = currentYear - year;
+      birthYears.push({
+        year: year,
+        age: age,
+        label: `${year}년생 (만 ${age}세)`,
+      });
+    }
+
+    // 시작 연도 셀렉트박스 채우기
+    birthYearStart.innerHTML = '<option value="">출생연도 선택 (부터)</option>';
+    birthYears.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item.year;
+      option.textContent = item.label;
+      birthYearStart.appendChild(option);
+    });
+
+    // 종료 연도 셀렉트박스 채우기
+    birthYearEnd.innerHTML = '<option value="">출생연도 선택 (까지)</option>';
+    birthYears.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item.year;
+      option.textContent = item.label;
+      birthYearEnd.appendChild(option);
+    });
+  },
+
+  /**
+   * 여행만들기 모달 열기
+   */
+  openTravelModal() {
+    const modal = document.getElementById("travelCreateModal");
+    const titleElement = document.getElementById("travelGroupTitle");
+
+    // 현재 투어 제목 설정
+    if (this.currentTour && this.currentTour.title) {
+      titleElement.textContent = `[${this.currentTour.title}] 여행 모임 만들기`;
+    }
+
+    // 출생연도 옵션 초기화
+    this.initializeBirthYearOptions();
+
+    // 오늘 날짜를 최소값으로 설정 (과거 날짜 선택 방지)
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("startDate").min = today;
+    document.getElementById("endDate").min = today;
+    document.getElementById("recruitDeadline").min = today;
+
+    // 연령 제한 체크박스 이벤트 핸들러
+    const noAgeLimitCheckbox = document.getElementById("noAgeLimit");
+    noAgeLimitCheckbox.removeEventListener("change", this.handleNoAgeLimit); // 중복 방지
+    noAgeLimitCheckbox.addEventListener("change", this.handleNoAgeLimit);
+
+    // 모달 표시
+    modal.style.display = "block";
+
+    // 에러 메시지 초기화
+    document.querySelectorAll(".error-msg").forEach((msg) => {
+      msg.style.display = "none";
+    });
+  },
+
+  /**
+   * 연령 제한 체크박스 핸들러
+   */
+  handleNoAgeLimit(e) {
+    const birthYearStart = document.getElementById("birthYearStart");
+    const birthYearEnd = document.getElementById("birthYearEnd");
+
+    if (e.target.checked) {
+      // 연령 제한 없음 체크시
+      birthYearStart.disabled = true;
+      birthYearEnd.disabled = true;
+      birthYearStart.value = "";
+      birthYearEnd.value = "";
+    } else {
+      // 연령 제한 해제시
+      birthYearStart.disabled = false;
+      birthYearEnd.disabled = false;
+    }
+  },
+
+  /**
+   * 모달 닫기
+   */
+  closeTravelModal() {
+    const modal = document.getElementById("travelCreateModal");
+    modal.style.display = "none";
+    this.resetTravelForm();
+  },
+
+  /**
+   * 폼 초기화
+   */
+  resetTravelForm() {
+    // 모든 입력 필드 초기화
+    document.getElementById("groupName").value = "";
+    document.getElementById("startDate").value = "";
+    document.getElementById("endDate").value = "";
+    document.getElementById("recruitDeadline").value = "";
+    document.getElementById("maxMembers").value = "";
+    document.getElementById("departureRegion").value = "";
+    document.getElementById("birthYearStart").value = "";
+    document.getElementById("birthYearEnd").value = "";
+    document.getElementById("genderLimit").value = "all";
+    document.getElementById("groupDescription").value = "";
+    document.getElementById("flexible").checked = false;
+    document.getElementById("hiddenAfterTrip").checked = false;
+    document.getElementById("noAgeLimit").checked = false;
+
+    // 셀렉트박스 활성화
+    document.getElementById("birthYearStart").disabled = false;
+    document.getElementById("birthYearEnd").disabled = false;
+  },
+
+  /**
+   * 폼 유효성 검사
+   */
+  validateTravelForm() {
+    let isValid = true;
+
+    // 모임 이름 검사 (10자 이상)
+    const groupName = document.getElementById("groupName").value;
+    if (groupName.length < 10) {
+      document.getElementById("groupNameError").style.display = "block";
+      isValid = false;
+    } else {
+      document.getElementById("groupNameError").style.display = "none";
+    }
+
+    // 날짜 검사
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    if (!startDate || !endDate) {
+      document.getElementById("dateError").textContent =
+        "여행 기간을 선택해주세요.";
+      document.getElementById("dateError").style.display = "block";
+      isValid = false;
+    } else if (new Date(startDate) > new Date(endDate)) {
+      document.getElementById("dateError").textContent =
+        "종료일은 출발일 이후여야 합니다.";
+      document.getElementById("dateError").style.display = "block";
+      isValid = false;
+    } else {
+      document.getElementById("dateError").style.display = "none";
+    }
+
+    // 인원 검사
+    const maxMembers = document.getElementById("maxMembers").value;
+    if (!maxMembers) {
+      document.getElementById("maxMembersError").style.display = "block";
+      isValid = false;
+    } else {
+      document.getElementById("maxMembersError").style.display = "none";
+    }
+
+    // 출발 지역 검사
+    const departureRegion = document.getElementById("departureRegion").value;
+    if (!departureRegion) {
+      document.getElementById("departureError").style.display = "block";
+      isValid = false;
+    } else {
+      document.getElementById("departureError").style.display = "none";
+    }
+
+    return isValid;
+  },
+
+  /**
+   * 출생연도 범위 유효성 검사
+   */
+  validateBirthYearRange() {
+    const startYear = document.getElementById("birthYearStart").value;
+    const endYear = document.getElementById("birthYearEnd").value;
+    const noLimit = document.getElementById("noAgeLimit").checked;
+
+    // 연령 제한이 있고 범위가 잘못된 경우
+    if (!noLimit && startYear && endYear) {
+      if (parseInt(startYear) > parseInt(endYear)) {
+        this.showToast("출생연도 범위가 올바르지 않습니다.", "warning");
+        return false;
+      }
+    }
+    return true;
+  },
+
+  /**
+   * 여행 그룹 생성 (API 호출)
+   */
+  async createTravelGroup() {
+    console.log("createTravelGroup 누름!");
+    // 유효성 검사
+    if (!this.validateTravelForm()) {
+      return;
+    }
+
+    if (!this.validateBirthYearRange()) {
+      return;
+    }
+
+    // 폼 데이터 수집
+    const noAgeLimit = document.getElementById("noAgeLimit").checked;
+    const groupData = {
+      tourId: this.currentTour.tourId,
+      groupName: document.getElementById("groupName").value,
+      startDate: document.getElementById("startDate").value,
+      endDate: document.getElementById("endDate").value,
+      recruitDeadline:
+        document.getElementById("recruitDeadline").value ||
+        document.getElementById("startDate").value, // 미입력시 출발일
+      maxMembers: parseInt(document.getElementById("maxMembers").value),
+      departureRegion: document.getElementById("departureRegion").value,
+      birthYearStart: noAgeLimit
+        ? null
+        : parseInt(document.getElementById("birthYearStart").value) || null,
+      birthYearEnd: noAgeLimit
+        ? null
+        : parseInt(document.getElementById("birthYearEnd").value) || null,
+      genderLimit: document.getElementById("genderLimit").value,
+      description: document.getElementById("groupDescription").value,
+      flexible: document.getElementById("flexible").checked,
+      hiddenAfterTrip: document.getElementById("hiddenAfterTrip").checked,
+    };
+
+    try {
+      // API 호출
+      const response = await fetch("/api/travel-groups/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(groupData),
+        credentials: "include", // 세션 쿠키 포함
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        this.showToast("여행 그룹이 성공적으로 생성되었습니다!", "success");
+        this.closeTravelModal();
+
+        // 커뮤니티 페이지로 이동
+        setTimeout(() => {
+          window.location.href = `/community?groupId=${result.groupId}`;
+        }, 1500);
+      } else {
+        this.showToast(result.message || "그룹 생성에 실패했습니다.", "error");
+      }
+    } catch (error) {
+      console.error("여행 그룹 생성 오류:", error);
+      this.showToast("그룹 생성 중 오류가 발생했습니다.", "error");
+    }
+  },
+
   handleTravelCreate() {
     // 로그인 체크
     console.log("여행만들기 버튼 클릭 - 현재 사용자:", this.currentUser);
@@ -1840,10 +2105,8 @@ window.tourDetail = {
       return;
     }
 
-    // TODO: 여행 만들기 페이지로 이동 (나중에 구현)
-    // window.location.href = `/travel/create?tourId=${this.currentTour.tourId}`;
-
-    this.showToast("여행만들기 기능은 준비 중입니다", "info");
+    // 모달 열기
+    this.openTravelModal();
   },
   /**
    * 👥 여행참여
