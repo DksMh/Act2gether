@@ -3,14 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>여행 추천 플랫폼</title>
+    <title>여행 추천 플랫폼 - 여기부터</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/main.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet" />
   </head>
   <body>
     <!-- Header -->
@@ -19,43 +16,75 @@
     <!-- main Section -->
     <section class="main-section">
       <div class="slider">
-        <!-- 좌우 버튼, 메인 배너 -->
+        <div class="slider-container">
+          <div class="slide active">
+            <div class="slide-content">
+              <h2>특별한 여행의 시작</h2>
+              <p>당신만을 위한 맞춤 여행 코스</p>
+            </div>
+          </div>
+        </div>
       </div>
+    </section>
+
+    <!-- 추천 섹션 0 - 투어 검색페이지로 넘어가기 -->
+    <section class="travel-type-section">
       <div class="travel-type-filter">
         <h3>어떤 여행을 떠나볼까요?</h3>
         <ul>
-          <li>문화</li>
-          <li>힐링</li>
-          <li>자연</li>
-          <li>축제</li>
-          <li>체험</li>
-          <li>맛집</li>
+          <li data-type="culture">문화</li>
+          <li data-type="healing">힐링</li>
+          <li data-type="nature">자연</li>
+          <li data-type="festival">축제</li>
+          <li data-type="experience">체험</li>
+          <li data-type="food">맛집</li>
         </ul>
       </div>
     </section>
 
-    <!-- 추천 섹션 1 -->
+    <!-- 추천 섹션 1 - 개인화된 추천 -->
     <section class="recommend-section usernickname-section">
       <div class="recommend-title">
-        <h2>
-          <span class="nickname">OOO</span>님을 위한<br />
-          <span class="interest-keyword">이동 거리가 짧은</span> 여행이<br />
+        <h2 th:if="${isAuthenticated}">
+          <span class="nickname" th:text="${username}">OOO</span>님을 위한<br />
+          <span class="interest-keyword" th:text="${userInterest}">맞춤</span> 여행이<br />
+          준비되어 있어요
+        </h2>
+        <h2 th:unless="${isAuthenticated}">
+          당신을 위한<br />
+          <span class="interest-keyword">인기</span> 여행이<br />
           준비되어 있어요
         </h2>
       </div>    
       <div class="tour-slider">
         <div class="tour-cards-wrapper">        
           <div class="tour-cards">
-            <!-- 반복 요소 예시 -->
-            <div class="tour-card">
-              <div class="thumbnail"></div>
-              <div class="tags">
-                <span>힐링</span>
+            <!-- API 데이터 렌더링 -->
+            <div class="tour-card" th:each="tour : ${recommendedTours}"
+                 th:data-id="${tour.contentId}">
+              <div class="thumbnail">
+                <img th:src="${tour.displayImage}" 
+                     th:alt="${tour.title}" 
+                     onerror="this.src='/uploads/tour/no-image.png'" />
               </div>
-              <h4>[경북 안동] 유유자적 역사 산책</h4>
-              <p>유교문화권의 심장, 병산서원~하회마을 산책 루트</p>
+              <div class="tags">
+                <span th:text="${tour.categoryName != null ? tour.categoryName : '관광'}">카테고리</span>
+              </div>
+              <h4 th:text="${tour.title}">관광지명</h4>
+              <p th:text="${tour.fullAddress}">주소</p>
             </div>
-            <!-- ... 추가 카드들 ... -->
+            
+            <!-- 데이터가 없을 경우 기본 표시 -->
+            <div class="tour-card" th:if="${recommendedTours == null or recommendedTours.empty}">
+              <div class="thumbnail">
+                <img src="/uploads/tour/no-image.png" alt="기본 이미지" />
+              </div>
+              <div class="tags">
+                <span>문화</span>
+              </div>
+              <h4>[서울] 경복궁 야경 투어</h4>
+              <p>서울특별시 종로구 사직로 161</p>
+            </div>
          </div>
       </div>
         <!-- 모바일용 슬라이드 인디케이터 -->
@@ -70,11 +99,11 @@
       </div>
     </section>    
 
-    <!-- 추천 섹션 2 -->
+    <!-- 추천 섹션 2 - 계절별 추천 -->
     <section class="recommend-section season-section">
       <div class="recommend-title">
         <h2>
-          <span class="season">여름 테마</span> 여행이<br />
+          <span class="season" th:text="${currentSeason + ' 테마'}">겨울 테마</span> 여행이<br />
           준비되어 있어요
         </h2>
       </div>
@@ -82,16 +111,32 @@
       <div class="tour-slider">
         <div class="tour-cards-wrapper">        
           <div class="tour-cards">
-            <!-- 반복 요소 예시 -->
-            <div class="tour-card">
-              <div class="thumbnail"></div>
-              <div class="tags">
-                <span>힐링</span>
+            <!-- 계절별 추천 데이터 -->
+            <div class="tour-card" th:each="tour : ${seasonTours}"
+                 th:data-id="${tour.contentId}">
+              <div class="thumbnail">
+                <img th:src="${tour.displayImage}" 
+                     th:alt="${tour.title}" 
+                     onerror="this.src='/uploads/tour/no-image.png'" />
               </div>
-              <h4>[경북 안동] 유유자적 역사 산책</h4>
-              <p>유교문화권의 심장, 병산서원~하회마을 산책 루트</p>
+              <div class="tags">
+                <span th:text="${tour.categoryName != null ? tour.categoryName : currentSeason}">계절</span>
+              </div>
+              <h4 th:text="${tour.title}">관광지명</h4>
+              <p th:text="${tour.fullAddress}">주소</p>
             </div>
-            <!-- ... 추가 카드들 ... -->
+            
+            <!-- 기본 표시 -->
+            <div class="tour-card" th:if="${seasonTours == null or seasonTours.empty}">
+              <div class="thumbnail">
+                <img src="/uploads/tour/no-image.png" alt="기본 이미지" />
+              </div>
+              <div class="tags">
+                <span>겨울</span>
+              </div>
+              <h4>[서울] 북한산 겨울 등산</h4>
+              <p>서울특별시 은평구 북한산로</p>
+            </div>
          </div>
       </div>
         <!-- 모바일용 슬라이드 인디케이터 -->
@@ -106,7 +151,7 @@
       </div>
     </section>
 
-    <!-- 추천 섹션 3 -->
+    <!-- 추천 섹션 3 - 지역별 체험 -->
     <section class="recommend-section experience-section">
       <div class="recommend-title">
         <h2>
@@ -115,37 +160,37 @@
         </h2>
       </div> 
       <div class="region-filter">
-        <button class="region active">서울</button>
-        <button class="region">경기</button>
-        <button class="region">강원</button>
-        <button class="region">대전</button>
-        <button class="region">부산</button>
-        <button class="region">제주</button>
-        <button class="region">경북</button>
+        <button class="region active" data-region="seoul">서울</button>
+        <button class="region" data-region="gyeonggi">경기</button>
+        <button class="region" data-region="gangwon">강원</button>
+        <button class="region" data-region="daejeon">대전</button>
+        <button class="region" data-region="busan">부산</button>
+        <button class="region" data-region="jeju">제주</button>
+        <button class="region" data-region="gyeongbuk">경북</button>
       </div> 
       <div class="tour-slider">
-        <div class="tour-cards-wrapper">     
-          <div class="product-card">
+        <div class="tour-cards-wrapper">
+          <!-- 지역별 체험 데이터 -->
+          <div class="product-card" th:each="exp : ${regionalExperiences}">
             <div class="card-header">
-              <h3>안동 택시 투어</h3>
+              <h3 th:text="${exp.title}">체험명</h3>
               <span class="arrow">→</span>
             </div>
-            <p class="desc">
-              주요 명소를 빠짐없이 돌아보고 싶다면?<br />
-              베테랑 기사님의 설명과 함께 알차게 돌아보세요! 🧑‍✈️
-            </p>
-            <p class="meta">지자체 인증 해설사 동행 & 이번 달만 무료 해설 진행</p>
+            <p class="desc" th:text="${exp.description}">설명</p>
+            <p class="meta" th:text="${exp.meta}">메타정보</p>
           </div>
-          <div class="product-card">
+          
+          <!-- 기본 표시 -->
+          <div class="product-card" th:if="${regionalExperiences == null or regionalExperiences.empty}">
             <div class="card-header">
-              <h3>안동 막걸리 만들기 체험</h3>
+              <h3>서울 시티투어 버스</h3>
               <span class="arrow">→</span>
             </div>
             <p class="desc">
-              전통 방식으로 직접 만들어보는 안동 막걸리!<br />
-              술 빚기의 즐거움과 함께 안동 문화도 배워보세요
+              서울의 주요 명소를 편하게 둘러보는 투어버스<br />
+              다국어 오디오 가이드 제공!
             </p>
-            <p class="meta">매주 토요일 오후 진행 & 현장 시음 포함</p>
+            <p class="meta">매일 운행 / 1일권 이용 가능</p>
           </div>
          </div>
       </div>
@@ -163,32 +208,21 @@
       <h2>동행에 참여해<br />즐거운 인연을 만들어 보세요</h2>
     
       <div class="product-grid">
-        <div class="product-card">
+        <!-- 동행 모임 데이터 -->
+        <div class="product-card" th:each="companion : ${companionGroups}">
           <div class="card-header">
-            <h3>중년 여성끼리 소박하게 국내 여행 가요~</h3>
+            <h3 th:text="${companion.title}">모임명</h3>
           </div>
-          <p class="desc">테마 / 연령대 / 커뮤니티에 대한 정보</p>
+          <p class="desc" th:text="${companion.description}">설명</p>
           <button class="btn-primary">둘러보기</button>
         </div>
-    
-        <div class="product-card">
+        
+        <!-- 기본 표시 -->
+        <div class="product-card" th:if="${companionGroups == null or companionGroups.empty}">
           <div class="card-header">
-            <h3>중년 여성끼리 소박하게 국내 여행 가요~</h3>
+            <h3>시니어 힐링 여행 모임</h3>
           </div>
-          <button class="btn-primary">둘러보기</button>
-        </div>
-    
-        <div class="product-card">
-          <div class="card-header">
-            <h3>중년 여성끼리 소박하게 국내 여행 가요~</h3>
-          </div>
-          <button class="btn-primary">둘러보기</button>
-        </div>
-    
-        <div class="product-card">
-          <div class="card-header">
-            <h3>중년 여성끼리 소박하게 국내 여행 가요~</h3>
-          </div>
+          <p class="desc">50대 이상 / 편안한 여행 / 누구나 환영</p>
           <button class="btn-primary">둘러보기</button>
         </div>
       </div>
@@ -222,6 +256,9 @@
     </section>
 
     <!-- Footer -->
-     <div th:replace="footer :: footer"></div>
+    <div th:replace="footer :: footer"></div>
+
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
   </body>
 </html>
