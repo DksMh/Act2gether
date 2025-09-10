@@ -7,32 +7,55 @@
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/main.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <!-- Header -->
     <div th:replace="header :: header"></div>
 
-    <!-- main Section -->
+    <!-- Main Section - 이미지 슬라이더 영역 -->
     <section class="main-section">
-      <div class="slider">
+      <div class="main-slider">
         <div class="slider-container">
           <div class="slide active">
+            <img src="/uploads/main-slide-1.jpg" alt="특별한 여행의 시작" />
             <div class="slide-content">
               <h2>특별한 여행의 시작</h2>
               <p>당신만을 위한 맞춤 여행 코스</p>
             </div>
           </div>
+          <div class="slide">
+            <img src="/uploads/main-slide-2.jpg" alt="함께하는 즐거움" />
+            <div class="slide-content">
+              <h2>함께하는 즐거움</h2>
+              <p>새로운 친구들과 떠나는 여행</p>
+            </div>
+          </div>
+          <div class="slide">
+            <img src="/uploads/main-slide-3.jpg" alt="안전한 여행" />
+            <div class="slide-content">
+              <h2>안전하고 편안한 여행</h2>
+              <p>모두가 즐거운 무장애 관광</p>
+            </div>
+          </div>
+        </div>
+        <div class="slider-indicators">
+          <span class="indicator active" data-slide="0"></span>
+          <span class="indicator" data-slide="1"></span>
+          <span class="indicator" data-slide="2"></span>
         </div>
       </div>
     </section>
 
-    <!-- 추천 섹션 0 - 투어 검색페이지로 넘어가기 -->
+    <!-- Travel Type Section - 여행 타입 선택 -->
     <section class="travel-type-section">
-      <div class="travel-type-filter">
+      <div class="container">
         <h3>어떤 여행을 떠나볼까요?</h3>
-        <ul>
-          <li data-type="culture">문화</li>
+        <ul class="travel-type-filter">
+          <li class="active" data-type="culture">문화</li>
           <li data-type="healing">힐링</li>
           <li data-type="nature">자연</li>
           <li data-type="festival">축제</li>
@@ -42,123 +65,141 @@
       </div>
     </section>
 
-    <!-- 추천 섹션 1 - 개인화된 추천 -->
-    <section class="recommend-section usernickname-section">
+    <!-- Tour Products Section - 투어 상품 표시 -->
+    <section class="recommend-section tour-products-section">
       <div class="recommend-title">
-        <h2 th:if="${isAuthenticated}">
-          <span class="nickname" th:text="${username}">OOO</span>님을 위한<br />
-          <span class="interest-keyword" th:text="${userInterest}">맞춤</span> 여행이<br />
-          준비되어 있어요
-        </h2>
-        <h2 th:unless="${isAuthenticated}">
+        <h2>
           당신을 위한<br />
-          <span class="interest-keyword">인기</span> 여행이<br />
+          <span
+            class="travel-theme"
+            th:text="${userInterest != null ? userInterest : '문화'}"
+            >문화</span
+          >
+          여행이<br />
           준비되어 있어요
         </h2>
-      </div>    
+      </div>
+
       <div class="tour-slider">
-        <div class="tour-cards-wrapper">        
-          <div class="tour-cards">
-            <!-- API 데이터 렌더링 -->
-            <div class="tour-card" th:each="tour : ${recommendedTours}"
-                 th:data-id="${tour.contentId}">
+        <div class="tour-cards-wrapper">
+          <div class="tour-cards" id="tourProductCards">
+            <!-- 투어 상품 카드들이 여기에 동적으로 로드됩니다 -->
+            <div
+              class="tour-card tour-product"
+              th:each="tour : ${recommendedTours}"
+              th:data-id="${tour.contentId}"
+              th:data-type="product"
+            >
+              <div class="product-badge">투어 상품</div>
               <div class="thumbnail">
-                <img th:src="${tour.displayImage}" 
-                     th:alt="${tour.title}" 
-                     onerror="this.src='/uploads/tour/no-image.png'" />
+                <img
+                  th:src="${tour.displayImage}"
+                  th:alt="${tour.title}"
+                  onerror="this.src='/uploads/tour/no-image.png'"
+                />
               </div>
               <div class="tags">
-                <span th:text="${tour.categoryName != null ? tour.categoryName : '관광'}">카테고리</span>
+                <span
+                  th:text="${tour.categoryName != null ? tour.categoryName : '관광'}"
+                  >카테고리</span
+                >
               </div>
-              <h4 th:text="${tour.title}">관광지명</h4>
+              <h4 th:text="${tour.title}">투어 상품명</h4>
               <p th:text="${tour.fullAddress}">주소</p>
+              <div class="product-info">
+                <span class="price">상품 가격 정보</span>
+                <span class="duration">소요 시간</span>
+              </div>
             </div>
-            
-            <!-- 데이터가 없을 경우 기본 표시 -->
-            <div class="tour-card" th:if="${recommendedTours == null or recommendedTours.empty}">
+
+            <!-- 기본 표시 (데이터 없을 때) -->
+            <div
+              class="tour-card tour-product"
+              th:if="${recommendedTours == null or recommendedTours.empty}"
+            >
+              <div class="product-badge">투어 상품</div>
               <div class="thumbnail">
                 <img src="/uploads/tour/no-image.png" alt="기본 이미지" />
               </div>
               <div class="tags">
                 <span>문화</span>
               </div>
-              <h4>[서울] 경복궁 야경 투어</h4>
-              <p>서울특별시 종로구 사직로 161</p>
+              <h4>투어 상품을 준비 중입니다</h4>
+              <p>곧 만나보실 수 있어요!</p>
             </div>
-         </div>
-      </div>
-        <!-- 모바일용 슬라이드 인디케이터 -->
+          </div>
+        </div>
+
         <div class="slider-dots">
           <span class="dot active"></span>
           <span class="dot"></span>
           <span class="dot"></span>
         </div>
-        
-        <button class="slider-arrow left">←</button>
-        <button class="slider-arrow right">→</button>
-      </div>
-    </section>    
 
-    <!-- 추천 섹션 2 - 계절별 추천 -->
-    <section class="recommend-section season-section">
-      <div class="recommend-title">
-        <h2>
-          <span class="season" th:text="${currentSeason + ' 테마'}">겨울 테마</span> 여행이<br />
-          준비되어 있어요
-        </h2>
-      </div>
-
-      <div class="tour-slider">
-        <div class="tour-cards-wrapper">        
-          <div class="tour-cards">
-            <!-- 계절별 추천 데이터 -->
-            <div class="tour-card" th:each="tour : ${seasonTours}"
-                 th:data-id="${tour.contentId}">
-              <div class="thumbnail">
-                <img th:src="${tour.displayImage}" 
-                     th:alt="${tour.title}" 
-                     onerror="this.src='/uploads/tour/no-image.png'" />
-              </div>
-              <div class="tags">
-                <span th:text="${tour.categoryName != null ? tour.categoryName : currentSeason}">계절</span>
-              </div>
-              <h4 th:text="${tour.title}">관광지명</h4>
-              <p th:text="${tour.fullAddress}">주소</p>
-            </div>
-            
-            <!-- 기본 표시 -->
-            <div class="tour-card" th:if="${seasonTours == null or seasonTours.empty}">
-              <div class="thumbnail">
-                <img src="/uploads/tour/no-image.png" alt="기본 이미지" />
-              </div>
-              <div class="tags">
-                <span>겨울</span>
-              </div>
-              <h4>[서울] 북한산 겨울 등산</h4>
-              <p>서울특별시 은평구 북한산로</p>
-            </div>
-         </div>
-      </div>
-        <!-- 모바일용 슬라이드 인디케이터 -->
-        <div class="slider-dots">
-          <span class="dot active"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </div>
-        
         <button class="slider-arrow left">←</button>
         <button class="slider-arrow right">→</button>
       </div>
     </section>
 
-    <!-- 추천 섹션 3 - 지역별 체험 -->
+    <!-- Season Section - 계절별 추천 -->
+    <section class="recommend-section season-section">
+      <div class="recommend-title">
+        <h2>
+          <span class="season" th:text="${currentSeason + ' 테마'}"
+            >겨울 테마</span
+          >
+          여행이<br />
+          준비되어 있어요
+        </h2>
+      </div>
+
+      <div class="tour-slider">
+        <div class="tour-cards-wrapper">
+          <div class="tour-cards">
+            <!-- 계절별 추천 데이터 -->
+            <div
+              class="tour-card"
+              th:each="tour : ${seasonTours}"
+              th:data-id="${tour.contentId}"
+            >
+              <div class="thumbnail">
+                <img
+                  th:src="${tour.displayImage}"
+                  th:alt="${tour.title}"
+                  onerror="this.src='/uploads/tour/no-image.png'"
+                />
+              </div>
+              <div class="tags">
+                <span
+                  th:text="${tour.categoryName != null ? tour.categoryName : currentSeason}"
+                  >계절</span
+                >
+              </div>
+              <h4 th:text="${tour.title}">관광지명</h4>
+              <p th:text="${tour.fullAddress}">주소</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="slider-dots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+        </div>
+
+        <button class="slider-arrow left">←</button>
+        <button class="slider-arrow right">→</button>
+      </div>
+    </section>
+
+    <!-- Experience Section - 지역별 체험 -->
     <section class="recommend-section experience-section">
       <div class="recommend-title">
         <h2>
-          <span class="">전국 방방곡곡</span> 지역 특색을 느껴보는<br />
-           여행이 준비되어 있어요
+          <span>전국 방방곡곡</span> 지역 특색을 느껴보는<br />
+          여행이 준비되어 있어요
         </h2>
-      </div> 
+      </div>
+
       <div class="region-filter">
         <button class="region active" data-region="seoul">서울</button>
         <button class="region" data-region="gyeonggi">경기</button>
@@ -167,7 +208,8 @@
         <button class="region" data-region="busan">부산</button>
         <button class="region" data-region="jeju">제주</button>
         <button class="region" data-region="gyeongbuk">경북</button>
-      </div> 
+      </div>
+
       <div class="tour-slider">
         <div class="tour-cards-wrapper">
           <!-- 지역별 체험 데이터 -->
@@ -179,58 +221,32 @@
             <p class="desc" th:text="${exp.description}">설명</p>
             <p class="meta" th:text="${exp.meta}">메타정보</p>
           </div>
-          
-          <!-- 기본 표시 -->
-          <div class="product-card" th:if="${regionalExperiences == null or regionalExperiences.empty}">
-            <div class="card-header">
-              <h3>서울 시티투어 버스</h3>
-              <span class="arrow">→</span>
-            </div>
-            <p class="desc">
-              서울의 주요 명소를 편하게 둘러보는 투어버스<br />
-              다국어 오디오 가이드 제공!
-            </p>
-            <p class="meta">매일 운행 / 1일권 이용 가능</p>
-          </div>
-         </div>
-      </div>
-        <!-- 모바일용 슬라이드 인디케이터 -->
-        <div class="slider-dots">
-          <span class="dot active"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
         </div>
       </div>
     </section>
 
-    <!-- 동행 참여 -->
+    <!-- Companion Section - 동행 모임 -->
     <section class="companion-recommend-section">
       <h2>동행에 참여해<br />즐거운 인연을 만들어 보세요</h2>
-    
+
       <div class="product-grid">
-        <!-- 동행 모임 데이터 -->
-        <div class="product-card" th:each="companion : ${companionGroups}">
+        <div
+          class="product-card"
+          th:each="group : ${companionGroups}"
+          th:data-group-id="${group.id}"
+        >
           <div class="card-header">
-            <h3 th:text="${companion.title}">모임명</h3>
+            <h3 th:text="${group.title}">모임명</h3>
           </div>
-          <p class="desc" th:text="${companion.description}">설명</p>
-          <button class="btn-primary">둘러보기</button>
-        </div>
-        
-        <!-- 기본 표시 -->
-        <div class="product-card" th:if="${companionGroups == null or companionGroups.empty}">
-          <div class="card-header">
-            <h3>시니어 힐링 여행 모임</h3>
-          </div>
-          <p class="desc">50대 이상 / 편안한 여행 / 누구나 환영</p>
+          <p class="desc" th:text="${group.description}">설명</p>
           <button class="btn-primary">둘러보기</button>
         </div>
       </div>
-    
+
       <button class="more-button gray">다른 모임도 구경하기</button>
     </section>
 
-    <!-- 서비스 추천 -->
+    <!-- Extra Services Section -->
     <section class="extra-services">
       <h2>이런 서비스도 이용해보세요</h2>
       <div class="product-grid">
