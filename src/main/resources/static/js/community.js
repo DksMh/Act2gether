@@ -34,7 +34,7 @@ function initSeniorFriendlyFeatures() {
   improveKeyboardNavigation();
 
   // 로딩 상태 표시
-  addLoadingStates();
+  // addLoadingStates();
 }
 
 // 시니어 UI 설정
@@ -212,7 +212,7 @@ function addLoadingStates() {
 
       // 2초 후 원래 상태로 복구 (실제로는 서버 응답에 따라)
       setTimeout(() => {
-        $btn.removeClass("loading").prop("disabled", false).text(originalText);
+        $btn.removeClass("loading").prop("disabled", false);
       }, 2000);
     }
   });
@@ -447,6 +447,7 @@ function initPostInteractions() {
   // 좋아요
   $(document).on('click.post', '.like-btn', function (e) {
     e.preventDefault();
+    
     toggleLike($(this));
   });
 
@@ -478,6 +479,7 @@ function initPostInteractions() {
 // 좋아요 토글 (dataset 일관 사용)
 function toggleLike($btn) {
   const btn = $btn.get(0);
+  const $post = $btn.closest('.post-card');
   if (!btn) return;
 
   // action-text가 버튼 안에 없을 수도 있으니 카드 범위로 재검색 백업
@@ -513,6 +515,48 @@ function toggleLike($btn) {
   showToast(nextLiked ? '좋아요를 눌렀습니다! ❤️' : '좋아요를 취소했습니다.', nextLiked ? 'success' : 'info');
 
   if (nextLiked) addHeartAnimation($btn);
+
+  const postId =
+  $post.data('postId') ||                 // jQuery data-api
+  $post.attr('data-post-id') ||           // HTML data attribute
+  ($post.data('post') && $post.data('post').id);  // 전체 객체에 있으면
+  console.log("postId : " + $post.attr('data-post-id'));
+  const data = {
+    postId: postId,
+    likesCount: nextCount
+  };
+
+  // 좋아요 카운트 관리
+   $.ajax({
+      url: "/community/post/count",
+      type: "POST",
+      data: JSON.stringify(data),
+      contentType: 'application/json',
+      success: function () {
+        console.log("좋아요 저장 완료");
+        const post = {
+                username: window.currentUser.username, //user_id
+                postId: postId,
+              };
+         $.ajax({
+            url: "/community/post/like",
+            type: "POST",
+            data: JSON.stringify(post),
+            contentType: 'application/json',
+            success: function () {
+              console.log("좋아요 사용자 저장 완료");
+              
+            },
+            error: function (req, status, err) {
+              console.error("좋아요 사용자 오류:", err);
+            }
+          });
+      },
+      error: function (req, status, err) {
+        console.error("좋아요 저장 오류:", err);
+        showToast("업로드 중 오류가 발생했습니다.", "danger");
+      }
+    });
 }
 
 // 하트 애니메이션 추가
@@ -671,88 +715,305 @@ function showPostMenu(e, $post) {
     $(document).one("click", () => $menu.remove());
   }, 0);
 }
+//이미지 아이디 뽑기
+function extractImageId(src) {
+  if (!src) return null;
+  const m = String(src).match(/\/attachments\/([^/?#]+)/);
+  return m ? m[1] : null;
+}
 
-// 게시글 수정
+// 게시글 수정 (글 + 이미지 삭제/추가)
 function editPost($post) {
-  const $content = $post.find(".post-text");
-  const originalText = $content.text();
+  const $textEl = $post.find('.post-text').eq(0);
+  if (!$textEl.length) { showToast('편집할 본문을 찾지 못했어요.', 'danger'); return; }
 
-  const editHtml = `
-        <div class="edit-container">
-            <textarea class="edit-textarea" style="
-                width: 100%;
-                min-height: 100px;
-                padding: 12px;
-                border: 2px solid var(--primary-color);
-                border-radius: var(--border-radius);
-                font-family: inherit;
-                font-size: 1rem;
-                line-height: 1.6;
-                resize: vertical;
-                outline: none;
-            ">${originalText}</textarea>
-            <div class="edit-actions" style="
-                display: flex;
-                gap: 8px;
-                margin-top: 12px;
-                justify-content: flex-end;
-            ">
-                <button class="btn-cancel" style="
-                    padding: 8px 16px;
-                    border: 1px solid var(--border-color);
-                    background: white;
-                    color: var(--text-secondary);
-                    border-radius: var(--border-radius);
-                    cursor: pointer;
-                    font-size: 14px;
-                ">취소</button>
-                <button class="btn-save" style="
-                    padding: 8px 16px;
-                    border: none;
-                    background: var(--primary-color);
-                    color: white;
-                    border-radius: var(--border-radius);
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: 600;
-                ">저장</button>
-            </div>
-        </div>
-    `;
+  // 1) 원문 확보 + 원문 노드는 숨김(삭제 아님)
+  const originalText = $textEl.text();
+  $textEl.hide();
 
-  $content.html(editHtml);
-
-  const $textarea = $content.find(".edit-textarea");
-  const $saveBtn = $content.find(".btn-save");
-  const $cancelBtn = $content.find(".btn-cancel");
-
-  // 텍스트 영역 자동 높이 조절
-  $textarea
-    .on("input", function () {
-      this.style.height = "auto";
-      this.style.height = this.scrollHeight + "px";
-    })
-    .trigger("input");
-
-  $textarea.focus();
-
-  $saveBtn.on("click", function () {
-    const newText = $textarea.val().trim();
-    if (newText && newText !== originalText) {
-      $content.html(`<p class="post-text">${escapeHtml(newText)}</p>`);
-      showToast("게시글이 수정되었습니다.", "success");
-    } else if (!newText) {
-      showToast("내용을 입력해주세요.", "warning");
-      return;
-    } else {
-      $content.html(`<p class="post-text">${escapeHtml(originalText)}</p>`);
+  // 2) 이미지 영역 확보(없으면 생성)
+  let $imagesWrap = $post.find('.post-images').eq(0);
+  if (!$imagesWrap.length) {
+    $imagesWrap = $('<div class="post-images" hidden><div class="image-grid"></div></div>');
+    $textEl.after($imagesWrap);
+  }
+  const $grid = $imagesWrap.find('.image-grid').eq(0);
+  const originalUrls = (() => {
+    const wrap = $imagesWrap.get(0);
+    if (wrap && wrap.dataset && wrap.dataset.urls) {
+      try { return JSON.parse(wrap.dataset.urls) || []; } catch(_) {}
     }
+    return $imagesWrap.find('img.post-img').map((_,img)=>img.src).get();
+  })();
+  if (originalUrls.length) $imagesWrap.prop('hidden', false);
+
+  // 3) 에디터 박스를 텍스트 노드 '뒤에' 추가
+  const $editorBox = $(`
+    <div class="post-text-editbox">
+      <textarea class="edit-textarea" style="width:100%;min-height:100px;padding:12px;border:2px solid var(--primary-color);border-radius:var(--border-radius);font-family:inherit;font-size:1rem;line-height:1.6;resize:vertical;outline:none;"></textarea>
+      <div class="edit-actions" style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
+        <button type="button" class="btn-cancel" style="padding:8px 16px;border:1px solid var(--border-color);background:#fff;color:var(--text-secondary);border-radius:var(--border-radius);cursor:pointer;font-size:14px;">취소</button>
+        <button type="button" class="btn-save" style="padding:8px 16px;border:none;background:var(--primary-color);color:#fff;border-radius:var(--border-radius);cursor:pointer;font-size:14px;font-weight:600;">저장</button>
+      </div>
+    </div>
+  `);
+  $textEl.after($editorBox);
+  const $textarea = $editorBox.find('.edit-textarea').val(originalText).on('input', function(){
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+  }).trigger('input').focus();
+
+  // 4) 이미지 삭제/추가 컨트롤
+  const toDeleteIds = new Set();
+  const newFiles = [];
+  const newPreviews = [];
+
+  function mountDeleteOverlays(){
+    $imagesWrap.addClass('editing-images');
+    $grid.find('.image-item').each(function(){
+      const $item = $(this).css('position','relative');
+      if ($item.find('.img-remove').length) return;
+      const $img = $item.find('img.post-img').eq(0);
+      const imageId = extractImageId($img.attr('src'));
+      const $rm = $('<button type="button" class="img-remove" aria-label="삭제">×</button>').css({
+        position:'absolute', top:'6px', right:'6px',
+        width:'24px', height:'24px', border:'none', borderRadius:'9999px',
+        background:'rgba(0,0,0,.55)', color:'#fff', cursor:'pointer', lineHeight:'24px'
+      });
+      $rm.on('click', function(e){
+        e.stopPropagation();
+        const removing = !$item.hasClass('to-remove');
+        $item.toggleClass('to-remove', removing).css('opacity', removing ? .4 : 1);
+        if (imageId) { if (removing) toDeleteIds.add(imageId); else toDeleteIds.delete(imageId); }
+      });
+      $item.append($rm);
+    });
+  }
+
+  // “사진 추가” 바 + input
+  let $addBar = $imagesWrap.next('.edit-images-actions');
+  if (!$addBar.length) {
+    $addBar = $(`
+      <div class="edit-images-actions" style="display:flex;gap:8px;margin-top:10px;">
+        <button type="button" class="btn-add-image"
+                style="padding:6px 12px;border:1px dashed var(--border-color);background:#fff;border-radius:10px;cursor:pointer;">+ 사진 추가</button>
+        <input type="file" class="edit-add-input" accept="image/*" multiple hidden>
+      </div>
+    `);
+    $imagesWrap.after($addBar);
+  }
+  const $fileInput = $addBar.find('.edit-add-input');
+  const $addBtn    = $addBar.find('.btn-add-image');
+
+  // ✅ 표시/비표시 + 활성/비활성 토글 헬퍼
+  function showAddBar() {
+    $addBar.show();
+    $addBtn.prop('disabled', false).attr('aria-disabled', 'false');
+    // 이벤트(중복 방지)
+    $addBtn.off('click.editAdd').on('click.editAdd', ()=> $fileInput.click());
+    $fileInput.off('change.editAdd').on('change.editAdd', onFilesSelected);
+  }
+  function hideAddBar() {
+    $addBar.hide();
+    $addBtn.prop('disabled', true).attr('aria-disabled', 'true');
+    // 이벤트 해제 + 입력 초기화
+    $addBtn.off('click.editAdd');
+    $fileInput.off('change.editAdd').val('');
+  }
+
+  // 파일 선택 핸들러 분리(재바인딩 용이)
+  function onFilesSelected(e){
+    const files = Array.from(e.target.files||[]);
+    files.forEach(file=>{
+      newFiles.push(file);
+      const url = URL.createObjectURL(file);
+      newPreviews.push(url);
+      const $item = $('<div class="image-item" style="position:relative;"></div>');
+      const $img = $(`<img class="post-img" src="${url}" alt="새 사진" loading="lazy">`);
+      const $rm = $('<button type="button" class="img-remove" aria-label="삭제">×</button>').css({
+        position:'absolute', top:'6px', right:'6px',
+        width:'24px', height:'24px', border:'none', borderRadius:'9999px',
+        background:'rgba(0,0,0,.55)', color:'#fff', cursor:'pointer', lineHeight:'24px'
+      });
+      $rm.on('click', function(ev){
+        ev.stopPropagation();
+        const idx = newPreviews.indexOf(url);
+        if (idx >= 0) { URL.revokeObjectURL(newPreviews[idx]); newPreviews.splice(idx,1); newFiles.splice(idx,1); }
+        $(this).parent().remove();
+        $imagesWrap.prop('hidden', !$grid.find('.image-item').length);
+      });
+      $item.append($img, $rm);
+      $grid.append($item);
+    });
+    this.value = '';
+    $imagesWrap.prop('hidden', !$grid.find('.image-item').length);
+  }
+
+  // ✅ 수정 진입 시: 사진추가 바 활성화/표시
+  showAddBar();
+
+  mountDeleteOverlays();
+
+  // 5) 저장/취소
+  const $saveBtn = $editorBox.find('.btn-save');
+  const $cancelBtn = $editorBox.find('.btn-cancel');
+  const postId = ($post.data('postId') || $post[0]?.dataset?.postId || '').toString();
+
+  function cleanup(){
+    newPreviews.forEach(u=>URL.revokeObjectURL(u));
+    newPreviews.length=0; newFiles.length=0; toDeleteIds.clear();
+
+    $imagesWrap.removeClass('editing-images');
+    $post.find('.img-remove').remove();
+    $imagesWrap.prop('hidden', !$grid.find('.image-item').length);
+
+    // ✅ 수정 종료 시: 사진추가 바 숨김 + 비활성화
+    hideAddBar();
+
+    $editorBox.remove();
+    $textEl.show();
+  }
+
+  $saveBtn.off('click.editSave').on('click.editSave', function(){
+    const newText = String($textarea.val()||'').trim();
+    if (!newText) { showToast('내용을 입력해주세요.', 'warning'); return; }
+
+    const fd = new FormData();
+    fd.append('postId', postId);
+    fd.append('content', newText);
+    toDeleteIds.forEach(id=>fd.append('removeImageIds', id));
+    newFiles.forEach(f=>fd.append('images', f));
+
+    if ($saveBtn.data('busy')) return;
+    $saveBtn.data('busy', true).prop('disabled', true).text('저장 중...');
+
+    $.ajax({
+      url: '/community/posts/update',
+      type: 'POST',
+      data: fd,
+      processData: false,
+      contentType: false
+    }).done(function(resp){
+      // 텍스트 원복 및 반영
+      $textEl.text(resp?.content || newText);
+
+      // 이미지 갤러리 최신 반영
+      const pictures = Array.isArray(resp?.pictures) ? resp.pictures : originalUrls.filter(u=>{
+        const id = extractImageId(u); return !(id && toDeleteIds.has(id));
+      });
+      // post-card 내부에 .post-images가 반드시 있도록 보장 후 렌더
+      if (!$post.find('.post-images').length) {
+        $textEl.after('<div class="post-images"><div class="image-grid"></div></div>');
+        $imagesWrap = $post.find('.post-images').eq(0);
+      }
+      renderImages($post.get(0), pictures); // 이 함수가 dataset.urls도 갱신하도록 돼 있어야 해요
+
+      cleanup();
+      showToast('게시글이 수정되었습니다.', 'success');
+    }).fail(function(err){
+      console.error('게시글 수정 실패:', err);
+      showToast('수정 중 오류가 발생했습니다.', 'danger');
+      // 실패해도 원래 화면으로 복원
+      $textEl.text(originalText);
+      renderImages($post.get(0), originalUrls);
+      cleanup();
+    }).always(function(){
+      $saveBtn.data('busy', false).prop('disabled', false).text('저장');
+    });
   });
 
-  $cancelBtn.on("click", function () {
-    $content.html(`<p class="post-text">${escapeHtml(originalText)}</p>`);
+  $cancelBtn.off('click.editCancel').on('click.editCancel', function(){
+    // 화면 그대로 원복
+    $textEl.text(originalText);
+    renderImages($post.get(0), originalUrls);
+    cleanup();
   });
 }
+
+
+
+// 게시글 수정
+// function editPost($post) {
+//   const $content = $post.find(".post-text");
+
+//   const originalText = $content.text();
+
+//   const editHtml = `
+//         <div class="edit-container">
+//             <textarea class="edit-textarea" style="
+//                 width: 100%;
+//                 min-height: 100px;
+//                 padding: 12px;
+//                 border: 2px solid var(--primary-color);
+//                 border-radius: var(--border-radius);
+//                 font-family: inherit;
+//                 font-size: 1rem;
+//                 line-height: 1.6;
+//                 resize: vertical;
+//                 outline: none;
+//             ">${originalText}</textarea>
+//             <div class="edit-actions" style="
+//                 display: flex;
+//                 gap: 8px;
+//                 margin-top: 12px;
+//                 justify-content: flex-end;
+//             ">
+//                 <button class="btn-cancel" style="
+//                     padding: 8px 16px;
+//                     border: 1px solid var(--border-color);
+//                     background: white;
+//                     color: var(--text-secondary);
+//                     border-radius: var(--border-radius);
+//                     cursor: pointer;
+//                     font-size: 14px;
+//                 ">취소</button>
+//                 <button class="btn-save" style="
+//                     padding: 8px 16px;
+//                     border: none;
+//                     background: var(--primary-color);
+//                     color: white;
+//                     border-radius: var(--border-radius);
+//                     cursor: pointer;
+//                     font-size: 14px;
+//                     font-weight: 600;
+//                 ">저장</button>
+//             </div>
+//         </div>
+//     `;
+
+//   $content.html(editHtml);
+
+//   const $textarea = $content.find(".edit-textarea");
+//   const $saveBtn = $content.find(".btn-save");
+//   const $cancelBtn = $content.find(".btn-cancel");
+
+//   // 텍스트 영역 자동 높이 조절
+//   $textarea
+//     .on("input", function () {
+//       this.style.height = "auto";
+//       this.style.height = this.scrollHeight + "px";
+//     })
+//     .trigger("input");
+
+//   $textarea.focus();
+
+//   $saveBtn.on("click", function () {
+//     const newText = $textarea.val().trim();
+//     if (newText && newText !== originalText) {
+//       $content.html(`<p class="post-text">${escapeHtml(newText)}</p>`);
+//       showToast("게시글이 수정되었습니다.", "success");
+//     } else if (!newText) {
+//       showToast("내용을 입력해주세요.", "warning");
+//       return;
+//     } else {
+//       $content.html(`<p class="post-text">${escapeHtml(originalText)}</p>`);
+//     }
+//   });
+
+//   $cancelBtn.on("click", function () {
+//     $content.html(`<p class="post-text">${escapeHtml(originalText)}</p>`);
+//   });
+// }
 
 // 게시글 삭제
 function deletePost($post) {

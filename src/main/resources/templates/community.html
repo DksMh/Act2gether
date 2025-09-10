@@ -441,7 +441,7 @@ function renderPostCard(post) {
   const node = tpl.content.firstElementChild.cloneNode(true);
 
   // header
-  node.querySelector('.author-name').textContent = post.username || '익명';
+  node.querySelector('.author-name').textContent = post.authorName || '익명';
   node.querySelector('.post-time').textContent = timeAgo(post.createdAt);
   node.querySelector('.author-avatar img').src = post.avatarUrl || '/images/default-avatar.png';
 
@@ -463,14 +463,6 @@ likeBtn.dataset.liked = String(!!post.liked);
   likeText.textContent = `좋아요 ${post.likeCount ?? 0}`;
   commentText.textContent = `댓글 ${post.commentCount ?? 0}`;
 
-  // 프론트에서만 토글(서버 호출 없음)
-  // likeBtn.addEventListener('click', () => {
-  //   const was = likeBtn.dataset.liked === 'true';
-  //   likeBtn.dataset.liked = String(!was);
-  //   const cur = parseInt(likeText.textContent.replace(/\D/g,''), 10) || 0;
-  //   likeText.textContent = `좋아요 ${was ? Math.max(0, cur-1) : cur+1}`;
-  // });
-
   // createdAt 문자열 -> ms로
 const createdIso = (post.createdAt && typeof post.createdAt === 'string' && post.createdAt[10] === ' ')
   ? post.createdAt.replace(' ', 'T') : post.createdAt;
@@ -479,7 +471,55 @@ const createdMs = toMillis(createdIso);
 node.querySelector('.post-time').textContent = timeAgo(createdIso);
 node.dataset.created = String(createdMs);   // ✅ 정렬용 키 저장
 
+// ✅ 서버에서 사용자별 좋아요 상태/최신 카운트 조회해 덮어쓰기
+  hydrateLikeState(node, post.id);
+
   return node;
+}
+
+function applyLikeDesign(cardEl) {
+  const btn  = cardEl.querySelector('.like-btn');
+  if (!btn) return;
+
+  const text = btn.querySelector('.action-text');
+
+  // UI
+  btn.classList.toggleClass('liked', nextLiked)
+      .attr('aria-pressed', String(nextLiked));
+
+  if (text) text.textContent = `좋아요 ${count}`;
+  btn.classList.toggle('liked', !!liked);
+  btn.setAttribute('aria-pressed', String(!!liked));
+}
+
+function hydrateLikeState(cardEl, postId) {
+  const payload = {
+    username: window.currentUser.username,
+    postId: postId
+  };
+
+  $.ajax({
+    url: "/community/post/likeInfo",     // ← 네 엔드포인트
+    type: "POST",
+    data: JSON.stringify(payload),
+    contentType: "application/json",
+    success: function (resp) {
+      if(resp){
+        console.log("resp >>> " + resp);
+         const btn  = cardEl.querySelector('.like-btn');
+         const $btn = $(btn);
+          // UI
+          $btn.toggleClass('liked', resp)
+        .attr('aria-pressed', String(resp));
+        btn.dataset.liked = String(resp);
+          // addHeartAnimation($btn);
+      }
+    },
+    error: function (req, status, err) {
+      console.error("좋아요 상태 조회 실패:", err);
+      // 실패 시엔 초기값(게시글 목록의 값) 유지
+    }
+  });
 }
 
 function renderPosts(rows) {

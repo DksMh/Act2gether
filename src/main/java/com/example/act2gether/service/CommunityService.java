@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -15,11 +17,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.act2gether.dto.PostDTO;
 import com.example.act2gether.dto.TravelGroupMembersDTO;
 import com.example.act2gether.entity.PostImageEntity;
+import com.example.act2gether.entity.PostLikesEntity;
 import com.example.act2gether.entity.PostsEntity;
 import com.example.act2gether.entity.TravelGroupMembersEntity;
 import com.example.act2gether.entity.TravelGroupsEntity;
 import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.PostImageRepository;
+import com.example.act2gether.repository.PostLikesRepository;
 import com.example.act2gether.repository.PostsRepository;
 import com.example.act2gether.repository.TravelGroupMembersRepository;
 import com.example.act2gether.repository.TravelGroupsRepository;
@@ -38,6 +42,7 @@ public class CommunityService {
     private final TravelGroupsRepository travelGroupsRepository;
     private final PostsRepository postsRepository;
     private final PostImageRepository postImageRepository;
+    private final PostLikesRepository postLikesRepository;
 
     public List<TravelGroupMembersDTO> getMembers(String id){
         List<TravelGroupMembersEntity> travelGroupMembersEntity = travelGroupMembersRepository.findByGroupId(id);
@@ -56,22 +61,6 @@ public class CommunityService {
         List<TravelGroupsEntity> travelGroupMembersEntities = travelGroupsRepository.findAll();
         return travelGroupMembersEntities;
     }
-
-    // public boolean savePosts(PostDTO postDTO, List<MultipartFile> images) {
-    //     UserEntity userEntity = userRepository.findByUsername(postDTO.getUsername()).orElse(null);
-    //     if(userEntity == null){
-    //         return false;
-    //     }
-
-    //     String userId = userEntity.getUserId();
-    //     TravelGroupMembersEntity travelGroupMembersEntity = travelGroupMembersRepository.findByUserId(userId).orElse(null);
-    //     if(travelGroupMembersEntity == null){
-    //         return false;
-    //     }
-
-    //     postsRepository.save(PostsEntity.of(postDTO, travelGroupMembersEntity.getMemberId()));
-    //     return true;
-    // }
 
     @Transactional
     public boolean savePosts(PostDTO postDTO, List<MultipartFile> images) {
@@ -147,6 +136,151 @@ public class CommunityService {
         // 2) 게시글 삭제
         postsRepository.deleteById(postId);
         return true;
+    }
+
+    @Transactional
+    public boolean saveCount(PostDTO postDTO) {
+        PostsEntity postOpt = postsRepository.findById(postDTO.getPostId()).orElse(null);
+        if (postOpt == null) {
+            return false;
+        }
+
+        postOpt.saveLikesCount(postDTO.getLikesCount());
+        
+        return true;
+    }
+
+     @Transactional
+    public boolean savePostLike(PostDTO postDTO) {
+        // 1) 사용자/멤버 확인
+        UserEntity user = userRepository.findByUsername(postDTO.getUsername()).orElse(null);
+        if (user == null) return false;
+
+        List<PostLikesEntity> entity = postLikesRepository.findByUserIdAndPostId(user.getUserId(), postDTO.getPostId());
+        
+        if(entity.size() == 0){
+            log.info("좋아요 사용자 정보 저장했습니다.");
+            postLikesRepository.save(PostLikesEntity.of(postDTO, user.getUserId()));
+            return true;
+        }else {
+            log.info("좋아요 사용자 정보 삭제했습니다.");
+            postLikesRepository.deleteById(entity.get(0).getLikeId()); //likeId
+            return true;
+        }
+
+    }
+
+     public boolean isPostLikeByUser(PostDTO postDTO) {
+        // 1) 사용자/멤버 확인
+        UserEntity user = userRepository.findByUsername(postDTO.getUsername()).orElse(null);
+        if (user == null) return false;
+
+        List<PostLikesEntity> entity = postLikesRepository.findByUserIdAndPostId(user.getUserId(), postDTO.getPostId());
+        
+        if(entity.size() == 0){
+            log.info("좋아요 사용자 정보 없습니다");
+            return false;
+        }else {
+            log.info("좋아요 사용자 정보 있습니다");
+            return true;
+        }
+     }
+
+     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    @Transactional
+    public UpdateResult updatePost(String postId,
+                                   String newContent,
+                                   List<String> removeImageIds,
+                                   List<MultipartFile> images) {
+
+        var postOpt = postsRepository.findById(postId);
+        if (postOpt.isEmpty()) {
+            return UpdateResult.fail("게시글을 찾을 수 없습니다.");
+        }
+        var post = postOpt.get();
+
+        // 1) 본문 수정
+        if (newContent != null) {
+            post.setContent(newContent);
+        }
+
+        // 2) 이미지 삭제 (removeImageIds가 JSON 문자열 1개로 올 수도 있어 방어)
+        List<String> toRemove = normalizeIdList(removeImageIds);
+        if (!toRemove.isEmpty()) {
+            // JPA 기본 메서드: 한 번에 삭제(성능 좋음)
+            postImageRepository.deleteAllByIdInBatch(toRemove);
+        }
+
+        // 3) 이미지 추가 저장
+        if (images != null) {
+            for (MultipartFile img : images) {
+                if (img == null || img.isEmpty()) continue;
+
+                PostImageEntity pi = new PostImageEntity();
+                pi.setImageId(UUID.randomUUID().toString());
+                pi.setPostId(post.getPostId()); // String
+                pi.setFilename(
+                        Optional.ofNullable(img.getOriginalFilename()).orElse("image"));
+                pi.setContentType(
+                        Optional.ofNullable(img.getContentType()).orElse("application/octet-stream"));
+                pi.setSize(img.getSize());
+                try {
+                    pi.setData(img.getBytes()); // LONGBLOB
+                } catch (IOException e) {
+                    throw new RuntimeException("이미지 읽기 실패", e);
+                }
+                postImageRepository.save(pi);
+            }
+        }
+
+        // 4) 최종 pictures 재계산 (DB 기준으로 남은/추가된 모든 이미지 조회)
+        List<String> finalUrls = postImageRepository.findByPostId(postId).stream()
+                .map(ent -> "/attachments/" + ent.getImageId())
+                .toList();
+
+        post.setPictures(finalUrls); // JSON 컬럼/컨버터로 저장
+        post.setUpdatedAt(LocalDateTime.now().format(TS));
+        postsRepository.save(post);
+
+        return UpdateResult.ok(post.getContent(), finalUrls);
+    }
+
+    // removeImageIds가 ["id1","id2"] 형태로 반복 파라미터 또는
+    // ["[\"id1\",\"id2\"]"] 같은 JSON 문자열 한 개로 올 때를 모두 수용
+    private List<String> normalizeIdList(List<String> removeImageIds) {
+        if (removeImageIds == null || removeImageIds.isEmpty()) return List.of();
+        if (removeImageIds.size() == 1) {
+            String single = removeImageIds.get(0);
+            if (single != null) {
+                String s = single.trim();
+                if (s.startsWith("[") && s.endsWith("]")) {
+                    try {
+                        // 간단 파서 (Jackson 사용 가능하면 ObjectMapper 사용)
+                        s = s.substring(1, s.length() - 1); // [] 제거
+                        if (s.isBlank()) return List.of();
+                        return Arrays.stream(s.split(","))
+                                .map(x -> x.replaceAll("^\\s*\"|\"\\s*$", "")) // 앞뒤 따옴표 제거
+                                .filter(str -> !str.isBlank())
+                                .toList();
+                    } catch (Exception ignore) {}
+                } else if (s.contains(",")) {
+                    return Arrays.stream(s.split(","))
+                            .map(String::trim).filter(str -> !str.isBlank()).toList();
+                }
+            }
+        }
+        return removeImageIds.stream().filter(Objects::nonNull).map(String::trim).filter(s->!s.isEmpty()).toList();
+    }
+
+    /* === 응답 DTO === */
+    public record UpdateResult(boolean success, String message, String content, List<String> pictures) {
+        static UpdateResult ok(String content, List<String> pictures) {
+            return new UpdateResult(true, null, content, pictures);
+        }
+        static UpdateResult fail(String msg) {
+            return new UpdateResult(false, msg, null, List.of());
+        }
     }
 
 }

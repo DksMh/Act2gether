@@ -1,6 +1,7 @@
 package com.example.act2gether.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -68,6 +69,58 @@ public class CommunityController {
             return ResponseEntity.badRequest().body("게시물 저장에 실패했습니다.");
         }
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(
+        path = "/posts/update",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> updatePost(
+            @RequestParam String postId,
+            @RequestParam String content,
+            @RequestParam(value = "removeImageIds", required = false) List<String> removeImageIds,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images
+    ) {
+        var res = communityService.updatePost(postId, content, removeImageIds, images);
+        if (!res.success()) {
+            return ResponseEntity.badRequest().body(res.message());
+        }
+        return ResponseEntity.ok(Map.of(
+                "postId", postId,
+                "content", res.content(),
+                "pictures", res.pictures()          // 최종 이미지 URL 목록
+        ));
+    }
+
+    //posts의 postlikes 컬럼만 저장
+     @PostMapping("/post/count")
+    public ResponseEntity<?> postCount(@RequestBody PostDTO postDTO) {
+        boolean isSave = communityService.saveCount(postDTO);
+        if(!isSave){
+            return ResponseEntity.badRequest().body("좋아요 저장 실패했습니다.");
+        }
+
+        return ResponseEntity.ok("좋아요 저장 성공했습니다.");
+    }
+
+    //post-like테이블 저장
+     @PostMapping("/post/like")
+    public ResponseEntity<?> postLike(@RequestBody PostDTO postDTO) {
+        boolean isSave = communityService.savePostLike(postDTO);
+        if(!isSave){
+            return ResponseEntity.badRequest().body("좋아요 정보 저장 실패했습니다.");
+        }
+
+        return ResponseEntity.ok("좋아요 정보 저장 성공했습니다.");
+    }
+
+     //post-like테이블 로그인 한 사람이 좋아요 눌렀는 지 안눌렀는지 응답 전송
+     @PostMapping("/post/likeInfo")
+    public ResponseEntity<?> isPostLikeByUser(@RequestBody PostDTO postDTO) {
+        boolean isPostLikeByUser = communityService.isPostLikeByUser(postDTO);
+
+        return ResponseEntity.ok(isPostLikeByUser);
     }
 
     @PostMapping("/post/delete")

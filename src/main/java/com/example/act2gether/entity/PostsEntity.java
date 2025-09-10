@@ -17,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "posts")
@@ -35,6 +36,7 @@ public class PostsEntity {
     @Column(name = "group_id")
     private String groupId; 
 
+    @Setter
     private String content;
 
     private String type;
@@ -81,5 +83,8 @@ public class PostsEntity {
         // .files(null)
         // .locations(null)
         .build();
+    }
+    public void saveLikesCount(int likesCount) {
+        this.likesCount = likesCount;
     }
 }
