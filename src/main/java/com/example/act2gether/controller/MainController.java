@@ -33,26 +33,70 @@ public class MainController {
 
   @GetMapping("/")
   public String mainPage(Model model, HttpSession session, Authentication authentication) {
-    log.info("📍 메인 페이지 접속");
+    log.info("🔍 메인 페이지 접속");
 
-    // 인증 정보 처리
-    boolean isAuthenticated = false;
-    String username = null;
+    // PageController와 동일한 방식으로 인증 정보 처리
+    boolean isAuthenticated = authentication != null &&
+            authentication.isAuthenticated() &&
+            !"anonymousUser".equals(authentication.getPrincipal());
+
+    log.info("Spring Security 인증: {}", isAuthenticated);
+
     UserEntity user = null;
-
-    if (authentication != null && authentication.isAuthenticated()
-        && !"anonymousUser".equals(authentication.getPrincipal())) {
-      isAuthenticated = true;
-      username = authentication.getName();
-      user = userRepository.findById(username).orElse(null);
-    } else if (session.getAttribute("username") != null) {
-      isAuthenticated = true;
-      username = (String) session.getAttribute("username");
-      user = userRepository.findById(username).orElse(null);
+    
+    if (isAuthenticated) {
+      try {
+        String userid = authentication.getName(); // UUID
+        log.info("Authentication에서 가져온 userid: {}", userid);
+        
+        user = userRepository.findById(userid).orElse(null);
+        
+        if (user != null) {
+          // 모델에 사용자 정보 설정 - PageController와 동일하게
+          model.addAttribute("isAuthenticated", true);
+          model.addAttribute("userid", user.getUserId());           // UUID
+          model.addAttribute("username", user.getUsername());        // 닉네임 
+          model.addAttribute("email", user.getEmail());
+          model.addAttribute("user_role", user.getUserRole());
+          
+          boolean isAdmin = "ADMIN".equals(user.getUserRole());
+          model.addAttribute("isAdmin", isAdmin);
+          
+          // 세션에도 저장
+          session.setAttribute("userid", user.getUserId());
+          session.setAttribute("username", user.getUsername());
+          session.setAttribute("email", user.getEmail());
+          session.setAttribute("user_role", user.getUserRole());
+          session.setAttribute("isAdmin", isAdmin);
+          
+          log.info("=== 사용자 정보 설정 완료 ===");
+          log.info("- userid: {}", user.getUserId());
+          log.info("- username: {}", user.getUsername());
+          log.info("- email: {}", user.getEmail());
+          log.info("- user_role: {}", user.getUserRole());
+          log.info("- isAdmin: {}", isAdmin);
+        } else {
+          log.warn("사용자 정보를 찾을 수 없음: {}", userid);
+          model.addAttribute("isAuthenticated", false);
+          model.addAttribute("isAdmin", false);
+        }
+      } catch (Exception e) {
+        log.error("사용자 정보 조회 중 오류: {}", e.getMessage(), e);
+        model.addAttribute("isAuthenticated", false);
+        model.addAttribute("isAdmin", false);
+      }
+    } else {
+      log.info("비인증 상태");
+      model.addAttribute("isAuthenticated", false);
+      model.addAttribute("isAdmin", false);
+      
+      // 세션 정리
+      session.removeAttribute("userid");
+      session.removeAttribute("username");
+      session.removeAttribute("email");
+      session.removeAttribute("user_role");
+      session.removeAttribute("isAdmin");
     }
-
-    model.addAttribute("isAuthenticated", isAuthenticated);
-    model.addAttribute("username", username);
 
     // 사용자 맞춤 추천
     if (isAuthenticated && user != null) {
@@ -72,7 +116,7 @@ public class MainController {
 
     return "main";
   }
-
+  
   private void loadPersonalizedRecommendations(Model model, UserEntity user) {
     try {
       String interests = user.getInterests();
@@ -175,7 +219,7 @@ public class MainController {
     } catch (Exception e) {
       log.error("계절별 추천 로드 실패: {}", e.getMessage());
       model.addAttribute("seasonTours", new ArrayList<>());
-      model.addAttribute("currentSeason", "겨울");
+      model.addAttribute("currentSeason", "가을");
     }
   }
 
