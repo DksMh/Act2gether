@@ -117,6 +117,160 @@ public class MainController {
     return "main";
   }
   
+  @GetMapping("/api/tours/generate")
+  @ResponseBody
+  public ResponseEntity<Map<String, Object>> generateTour(
+      @RequestParam String travelType,
+      @RequestParam(defaultValue = "6") int numOfRows,
+      Authentication authentication) {
+      
+      log.info("투어 생성 요청: type={}", travelType);
+      
+      try {
+          // 타입별 장소 매핑
+          Map<String, List<String>> typeToPlaces = new HashMap<>();
+          typeToPlaces.put("culture", Arrays.asList("박물관", "미술관", "고궁/문", "사찰"));
+          typeToPlaces.put("healing", Arrays.asList("온천", "테마파크", "찜질방", "관광단지"));
+          typeToPlaces.put("nature", Arrays.asList("해변", "산/공원", "계곡/폭포", "수목원"));
+          typeToPlaces.put("experience", Arrays.asList("체험"));
+          typeToPlaces.put("sports", Arrays.asList("트래킹", "골프장", "스키장", "캠핑장"));
+          
+          List<String> places = typeToPlaces.getOrDefault(travelType, Arrays.asList("관광단지"));
+          
+          // 3개 투어 생성을 위한 결과 리스트
+          List<Map<String, Object>> allTours = new ArrayList<>();
+          
+          // 사용자 관심 지역 또는 랜덤 지역 선택
+          String areaCode = "";
+          if (authentication != null && authentication.isAuthenticated() 
+              && !"anonymousUser".equals(authentication.getPrincipal())) {
+              
+              String userId = authentication.getName();
+              UserEntity user = userRepository.findById(userId).orElse(null);
+              
+              if (user != null && user.getInterests() != null) {
+                  JsonNode interests = objectMapper.readTree(user.getInterests());
+                  JsonNode regions = interests.path("preferredRegions");
+                  
+                  if (regions.isArray() && regions.size() > 0) {
+                      String region = regions.get(0).asText();
+                      areaCode = tourFilterService.getAreaCodeByName(region);
+                  }
+              }
+          }
+          
+          if (areaCode.isEmpty()) {
+              String[] areaCodes = {"1", "31", "32", "33", "34", "35", "36", "37", "38", "39"};
+              areaCode = areaCodes[(int)(Math.random() * areaCodes.length)];
+          }
+          
+          // 해당 지역의 시군구 목록 가져오기
+          Map<String, Object> sigunguResult = tourFilterService.getSigunguCodes(areaCode);
+          List<String> sigunguCodes = new ArrayList<>();
+          
+          if (sigunguResult != null && (Boolean) sigunguResult.get("success")) {
+              JsonNode sigunguData = (JsonNode) sigunguResult.get("data");
+              if (sigunguData.isArray()) {
+                  for (JsonNode sigungu : sigunguData) {
+                      String code = sigungu.path("code").asText();
+                      if (code.isEmpty()) {
+                          code = sigungu.path("sigungucode").asText();
+                      }
+                      if (!code.isEmpty()) {
+                          sigunguCodes.add(code);
+                      }
+                  }
+              }
+          }
+          
+          // 시군구가 없으면 광역시이므로 전체 검색
+          if (sigunguCodes.isEmpty()) {
+              sigunguCodes.add(null);
+          }
+          
+          // 최대 3개 투어 생성 (각기 다른 시군구에서)
+          Collections.shuffle(sigunguCodes); // 랜덤 순서
+          int tourCount = 0;
+          
+          for (String sigunguCode : sigunguCodes) {
+              if (tourCount >= 3) break;
+              
+              Map<String, String> searchParams = new HashMap<>();
+              searchParams.put("places", objectMapper.writeValueAsString(places));
+              searchParams.put("numOfRows", "20"); // 충분한 수 요청
+              searchParams.put("areaCode", areaCode);
+              
+              if (sigunguCode != null) {
+                  searchParams.put("sigunguCode", sigunguCode);
+              }
+              
+              Map<String, Object> result = tourFilterService.searchTours(searchParams);
+              
+              if (result != null && (Boolean) result.get("success")) {
+                  JsonNode tours = (JsonNode) result.get("data");
+                  
+                  if (tours.isArray() && tours.size() >= 6) {
+                      // 6개 관광지 선택
+                      List<JsonNode> selectedTours = new ArrayList<>();
+                      for (int i = 0; i < Math.min(6, tours.size()); i++) {
+                          selectedTours.add(tours.get(i));
+                      }
+                      
+                      // 투어 ID 생성
+                      List<String> tourIds = new ArrayList<>();
+                      String cityName = "";
+                      
+                      for (JsonNode tour : selectedTours) {
+                          tourIds.add(tour.path("contentid").asText());
+                          
+                          // 첫 번째 관광지의 도시명 추출
+                          if (cityName.isEmpty()) {
+                              String addr = tour.path("addr1").asText();
+                              if (!addr.isEmpty()) {
+                                  String[] parts = addr.split(" ");
+                                  if (parts.length >= 2) {
+                                      cityName = parts[0] + " " + parts[1]; // 예: "충청북도 청주시"
+                                  }
+                              }
+                          }
+                      }
+                      
+                      Map<String, Object> tourInfo = new HashMap<>();
+                      tourInfo.put("tourId", String.join("-", tourIds));
+                      tourInfo.put("tourType", travelType);
+                      tourInfo.put("cityName", cityName);
+                      tourInfo.put("tours", selectedTours);
+                      
+                      allTours.add(tourInfo);
+                      tourCount++;
+                  }
+              }
+          }
+          
+          if (!allTours.isEmpty()) {
+              return ResponseEntity.ok(Map.of(
+                  "success", true,
+                  "data", Map.of(
+                      "tourType", travelType,
+                      "tourList", allTours
+                  )
+              ));
+          }
+          
+          return ResponseEntity.ok(Map.of(
+              "success", false,
+              "message", "투어 생성에 실패했습니다"
+          ));
+          
+      } catch (Exception e) {
+          log.error("투어 생성 실패: {}", e.getMessage(), e);
+          return ResponseEntity.ok(Map.of(
+              "success", false,
+              "message", "투어 생성 중 오류가 발생했습니다"
+          ));
+      }
+  }
+
   private void loadPersonalizedRecommendations(Model model, UserEntity user) {
     try {
       String interests = user.getInterests();

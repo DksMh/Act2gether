@@ -39,7 +39,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/signup", "/forgot-loginfo", "/users/**", "/onboarding", "/qna", "/faq", "/tour-search", "/community-search", "/tour-community").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                 .requestMatchers("/qna/api/inquiry-types", "/qna/api/statuses").permitAll()
-                .requestMatchers("/api/tours/**").permitAll()
+                .requestMatchers("/api/current-user", "/api/tours/**").permitAll()
                 .requestMatchers("/tour-detail","/tour-detail/**").permitAll()
                 .anyRequest().authenticated()
             )
