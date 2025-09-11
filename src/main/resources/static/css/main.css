@@ -150,6 +150,14 @@
   padding: 2rem 0;
 }
 
+/* 투어 상품 그리드 */
+.tour-product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
 .tour-product-card {
   background: white;
   border-radius: 0.75rem;
@@ -582,6 +590,12 @@
 
 /* ===== 반응형 ===== */
 @media (max-width: 64rem) { /* 1024px */
+
+  .tour-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
   .tour-card {
     flex: 0 0 calc(50% - 0.75rem);
   }
@@ -606,6 +620,14 @@
   
   .main-slider .slide-content p {
     font-size: 1rem;
+  }
+  .tour-product-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .tour-product-card {
+    max-width: 100%;
   }
   
   .travel-type-section {

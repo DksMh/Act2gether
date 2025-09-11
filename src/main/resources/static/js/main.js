@@ -4,22 +4,17 @@ $(document).ready(function () {
   // 전역 변수
   let isLoading = false;
   let currentUser = null;
-  let currentTravelType = 'culture'; // 기본값
+  let currentTravelType = 'culture';
 
   // 초기화
   init();
 
   function init() {
-    // 사용자 세션 체크 (먼저 실행)
     checkUserSession();
-    // 이벤트 바인딩
     bindEvents();
-    // 메인 슬라이더 시작
     startMainSlider();
-    // 슬라이더 초기화
     initAllSliders();
-    // 초기 투어 상품 로드
-    loadTourProducts('culture');
+    generateTour('culture'); // 초기 로드 시 문화 투어 생성
   }
 
   // 사용자 세션 체크
@@ -27,7 +22,7 @@ $(document).ready(function () {
     $.ajax({
       url: "/api/current-user",
       method: "GET",
-      async: false, // 동기 처리로 사용자 정보 먼저 확인
+      async: false,
       success: function (data) {
         console.log("세션 정보:", data);
         if (data.isAuthenticated) {
@@ -37,7 +32,7 @@ $(document).ready(function () {
       },
       error: function () {
         console.error("세션 체크 실패");
-      },
+      }
     });
   }
 
@@ -49,7 +44,6 @@ $(document).ready(function () {
     
     if (slides.length === 0) return;
     
-    // 3초마다 자동 전환
     setInterval(function() {
       slides.removeClass('active');
       indicators.removeClass('active');
@@ -60,7 +54,6 @@ $(document).ready(function () {
       indicators.eq(currentSlide).addClass('active');
     }, 3000);
     
-    // 인디케이터 클릭 이벤트
     indicators.on('click', function() {
       const index = $(this).data('slide');
       slides.removeClass('active');
@@ -85,8 +78,7 @@ $(document).ready(function () {
       currentTravelType = type;
       console.log('선택된 타입:', type);
       
-      // 투어 상품 로드
-      loadTourProducts(type);
+      generateTour(type);
     });
 
     // 지역 필터 클릭
@@ -100,23 +92,8 @@ $(document).ready(function () {
       loadRegionExperiences(region);
     });
 
-    // 투어 상품 카드 클릭 - 로그인 체크 후 처리
-    $(document).on('click', '.tour-card.tour-product', function (e) {
-      e.preventDefault();
-      const tourId = $(this).data('id');
-      
-      if (!currentUser || !currentUser.isAuthenticated) {
-        // 비로그인 시 로그인 페이지로
-        alert('투어 상품을 이용하시려면 로그인이 필요합니다.');
-        window.location.href = `/login?redirect=/tour-detail?contentId=${tourId}`;
-      } else {
-        // 로그인 시 상세 페이지로
-        window.location.href = `/tour-detail?contentId=${tourId}`;
-      }
-    });
-
     // 일반 투어 카드 클릭 (계절별, 지역별 등)
-    $(document).on('click', '.tour-card:not(.tour-product)', function (e) {
+    $(document).on('click', '.tour-card', function (e) {
       e.preventDefault();
       const tourId = $(this).data('id');
       if (tourId) {
@@ -136,67 +113,31 @@ $(document).ready(function () {
     });
   }
 
-  // 투어 상품 로드
-  function loadTourProducts(type) {
+  // 투어 생성 함수
+  function generateTour(type) {
     isLoading = true;
-    
-    // 타입별 매핑
-    const typeNameMap = {
-      culture: '문화',
-      healing: '힐링',
-      nature: '자연',
-      festival: '축제',
-      experience: '체험',
-      food: '맛집'
-    };
+    showLoadingMessage();
 
-    const placeMapping = {
-      culture: ['박물관', '미술관', '고궁/문', '사찰'],
-      healing: ['온천', '테마파크', '찜질방', '관광단지'],
-      nature: ['해변', '산/공원', '계곡/폭포', '수목원'],
-      festival: ['축제', '행사'],
-      experience: ['체험'],
-      food: ['맛집', '전통시장']
-    };
-
-    // 제목 업데이트
-    $('.tour-products-section .travel-theme').text(typeNameMap[type]);
-    
-    // 지역 설정 (로그인 여부에 따라)
-    let areaCode = '';
-    if (currentUser && currentUser.isAuthenticated) {
-      // 로그인 시 - 사용자 관심 지역 (서버에서 처리되므로 별도 설정 불필요)
-      console.log('로그인 사용자 - 관심 지역 기반 검색');
-    } else {
-      // 비로그인 시 - 랜덤 지역
-      const areaCodes = ['1', '31', '32', '33', '34', '35', '36', '37', '38', '39'];
-      areaCode = areaCodes[Math.floor(Math.random() * areaCodes.length)];
-      console.log('비로그인 - 랜덤 지역:', areaCode);
-    }
-
-    const places = placeMapping[type] || [];
-
-    // API 호출
     $.ajax({
-      url: '/api/tour-products/search', // 투어 상품 전용 엔드포인트
+      url: '/api/tours/generate',
       method: 'GET',
       data: {
-        places: JSON.stringify(places),
-        areaCode: areaCode,
-        numOfRows: 6,
-        travelType: type
+        travelType: type,
+        numOfRows: 6
       },
       success: function (response) {
+        console.log('투어 생성 응답:', response);
+        
         if (response.success && response.data) {
-          updateTourProductCards(response.data);
+          displayTourCards(response.data);
+          updateTravelThemeTitle(type);
         } else {
-          // 데이터가 없으면 일반 관광지 API 호출
-          loadAlternativeTours(places, areaCode);
+          showNoToursMessage();
         }
       },
-      error: function () {
-        console.error('투어 상품 로드 실패');
-        loadAlternativeTours(places, areaCode);
+      error: function (xhr, status, error) {
+        console.error('투어 생성 실패:', error);
+        showNoToursMessage();
       },
       complete: function () {
         isLoading = false;
@@ -204,75 +145,209 @@ $(document).ready(function () {
     });
   }
 
-  // 대체 투어 데이터 로드 (투어 상품이 없을 때)
-  function loadAlternativeTours(places, areaCode) {
-    $.ajax({
-      url: '/api/tours/search',
-      method: 'GET',
-      data: {
-        places: JSON.stringify(places),
-        areaCode: areaCode,
-        numOfRows: 6
-      },
-      success: function (response) {
-        if (response.success && response.data) {
-          updateTourProductCards(response.data, true); // isAlternative = true
-        }
-      },
-      error: function () {
-        console.error('대체 투어 로드 실패');
-        showNoProductsMessage();
+
+  // 여러 투어 카드 표시 함수
+  function displayTourCards(data) {
+    const $container = $('#tourProductContainer');
+    $container.empty();
+    
+    const tourList = data.tourList;
+    const tourType = data.tourType;
+    
+    if (!tourList || tourList.length === 0) {
+      showNoToursMessage();
+      return;
+    }
+    
+    const typeNameMap = {
+      culture: '문화',
+      healing: '휴양',
+      nature: '자연',
+      experience: '체험',
+      sports: '레포츠'
+    };
+    
+    const typeName = typeNameMap[tourType] || '종합';
+    
+    // 투어 카드 컨테이너
+    const tourCardsHtml = `
+      <div class="tour-product-grid">
+        ${tourList.map((tourData, index) => {
+          const tours = tourData.tours;
+          const tourId = tourData.tourId;
+          const cityName = tourData.cityName || '지역';
+          
+          // 첫 번째 유효한 이미지 찾기
+          let mainImage = '';
+          for (let i = 0; i < tours.length; i++) {
+            if (tours[i].firstimage || tours[i].optimizedImage) {
+              mainImage = tours[i].optimizedImage || tours[i].firstimage;
+              break;
+            }
+          }
+          if (!mainImage) {
+            mainImage = '/uploads/tour/no-image.png';
+          }
+          
+          return `
+            <div class="tour-product-card" data-tour-id="${tourId}" data-tour-type="${tourType}">
+              <div class="tour-header">
+                <h3>${cityName} ${typeName} 투어</h3>
+                <span class="tour-count">${tours.length}개 명소</span>
+              </div>
+              <div class="tour-main-image">
+                <img src="${mainImage}" alt="${cityName} ${typeName} 투어" onerror="this.src='/uploads/tour/no-image.png'">
+              </div>
+              <div class="tour-places">
+                <h4>포함된 관광지</h4>
+                <div class="place-list">
+                  ${tours.slice(0, 6).map((tour, idx) => `
+                    <div class="place-item">
+                      <div class="place-number">${idx + 1}</div>
+                      <div class="place-info">
+                        <h5>${tour.title || tour.cleanTitle}</h5>
+                        <p>${tour.addr1 ? tour.addr1.split(' ').slice(0, 2).join(' ') : ''}</p>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="tour-action">
+                <button class="btn-view-detail">투어 상세보기</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    
+    $container.html(tourCardsHtml);
+    
+    // 상세보기 버튼 이벤트
+    $('.btn-view-detail').off('click').on('click', function() {
+      const tourId = $(this).closest('.tour-product-card').data('tour-id');
+      
+      if (!currentUser || !currentUser.isAuthenticated) {
+        alert('투어 상세 정보를 보시려면 로그인이 필요합니다.');
+        window.location.href = `/login?redirect=/tour-detail?tourId=${tourId}`;
+      } else {
+        window.location.href = `/tour-detail?tourId=${tourId}`;
       }
     });
   }
 
-  // 투어 카드 업데이트
-  function updateTourProductCards(tours) {
-    const $container = $('#tourProductCards');
+  // 제목 업데이트
+  function updateTravelThemeTitle(type) {
+    const typeNameMap = {
+      culture: '문화',
+      healing: '휴양',
+      nature: '자연',
+      experience: '체험',
+      sports: '레포츠'
+    };
+    
+    $('.tour-products-section .travel-theme').text(typeNameMap[type] || '종합');
+  }
+
+  // 로딩 메시지 표시
+  function showLoadingMessage() {
+    const $container = $('#tourProductContainer');
+    $container.html('<div class="loading-message">투어를 생성하고 있습니다...</div>');
+  }
+
+  // 투어 없음 메시지
+  function showNoToursMessage() {
+    const $container = $('#tourProductContainer');
+    $container.html(`
+      <div class="no-tour-message">
+        <p>현재 해당 지역의 투어를 준비 중입니다.</p>
+        <p>다른 여행 타입을 선택해보세요!</p>
+      </div>
+    `);
+  }
+
+  // 지역별 체험 로드
+  function loadRegionExperiences(region) {
+    isLoading = true;
+    $('.experience-section .tour-cards-wrapper').addClass('loading');
+
+    const regionCodeMap = {
+      seoul: '1',
+      gyeonggi: '31',
+      gangwon: '32',
+      daejeon: '3',
+      busan: '6',
+      jeju: '39',
+      gyeongbuk: '35'
+    };
+
+    const areaCode = regionCodeMap[region] || '1';
+
+    $.ajax({
+      url: '/api/tours/search',
+      method: 'GET',
+      data: {
+        areaCode: areaCode,
+        places: JSON.stringify(['체험']),
+        numOfRows: 4
+      },
+      success: function (response) {
+        if (response.success && response.data) {
+          displayExperienceCards(response.data);
+        } else {
+          displayDefaultExperiences();
+        }
+      },
+      error: function () {
+        console.error('체험 데이터 로드 실패');
+        displayDefaultExperiences();
+      },
+      complete: function () {
+        isLoading = false;
+        $('.experience-section .tour-cards-wrapper').removeClass('loading');
+      }
+    });
+  }
+
+  // 체험 카드 표시
+  function displayExperienceCards(experiences) {
+    const $container = $('.experience-section .tour-cards-wrapper');
     $container.empty();
 
-    if (!tours || tours.length === 0) {
-      showNoProductsMessage();
+    if (!experiences || experiences.length === 0) {
+      displayDefaultExperiences();
       return;
     }
 
-    tours.forEach(function (tour) {
-      const imageUrl = tour.firstimage || tour.firstimage2 || '/uploads/tour/no-image.png';
-      
+    const displayCount = Math.min(experiences.length, 2);
+
+    for (let i = 0; i < displayCount; i++) {
+      const exp = experiences[i];
       const card = `
-        <div class="tour-card" data-id="${tour.contentid}">
-          <div class="thumbnail">
-            <img src="${imageUrl}" alt="${tour.title}" onerror="this.src='/uploads/tour/no-image.png'" />
+        <div class="product-card" data-id="${exp.contentid}">
+          <div class="card-header">
+            <h3>${exp.title}</h3>
+            <span class="arrow">→</span>
           </div>
-          <div class="tags">
-            <span>${tour.categoryName || '관광'}</span>
-          </div>
-          <h4>${tour.title}</h4>
-          <p>${tour.addr1 || '주소 정보 없음'}</p>
+          <p class="desc">${exp.addr1 || '특별한 체험 프로그램'}</p>
+          <p class="meta">체험 프로그램 운영 중</p>
         </div>
       `;
       $container.append(card);
-    });
-
-    // 슬라이더 재초기화
-    const $slider = $('.tour-products-section .tour-slider');
-    initSlider($slider);
+    }
   }
 
-  // 상품 없음 메시지 표시
-  function showNoProductsMessage() {
-    const $container = $('#tourProductCards');
+  // 기본 체험 카드 표시
+  function displayDefaultExperiences() {
+    const $container = $('.experience-section .tour-cards-wrapper');
     $container.html(`
-      <div class="tour-card tour-product">
-        <div class="product-badge">준비중</div>
-        <div class="thumbnail">
-          <img src="/uploads/tour/no-image.png" alt="기본 이미지" />
+      <div class="product-card">
+        <div class="card-header">
+          <h3>체험 프로그램 준비 중</h3>
+          <span class="arrow">→</span>
         </div>
-        <div class="tags">
-          <span>${currentTravelType}</span>
-        </div>
-        <h4>투어 상품을 준비 중입니다</h4>
-        <p>곧 만나보실 수 있어요!</p>
+        <p class="desc">해당 지역의 체험 프로그램을 준비 중입니다.</p>
+        <p class="meta">곧 만나보실 수 있어요!</p>
       </div>
     `);
   }
@@ -310,7 +385,6 @@ $(document).ready(function () {
 
     const totalSlides = Math.ceil(totalCards / cardsPerView);
 
-    // 화살표 이벤트 바인딩
     $slider.find('.slider-arrow.left').off('click').on('click', function () {
       slideCards($slider, -1);
     });
@@ -319,7 +393,6 @@ $(document).ready(function () {
       slideCards($slider, 1);
     });
 
-    // 도트 생성 및 업데이트
     if ($dots.length > 0) {
       $dots.empty();
       for (let i = 0; i < totalSlides; i++) {
@@ -365,7 +438,7 @@ $(document).ready(function () {
 
     $cards.css({
       transform: `translateX(${translateX}px)`,
-      transition: 'transform 0.3s ease',
+      transition: 'transform 0.3s ease'
     });
 
     let $dots = $slider.siblings('.slider-dots');
@@ -379,92 +452,6 @@ $(document).ready(function () {
     }
 
     $slider.data('currentIndex', index);
-  }
-
-  // 지역별 체험 로드
-  function loadRegionExperiences(region) {
-    isLoading = true;
-    $('.experience-section .tour-cards-wrapper').addClass('loading');
-
-    const regionCodeMap = {
-      seoul: '1',
-      gyeonggi: '31',
-      gangwon: '32',
-      daejeon: '3',
-      busan: '6',
-      jeju: '39',
-      gyeongbuk: '35',
-    };
-
-    const areaCode = regionCodeMap[region] || '1';
-
-    $.ajax({
-      url: '/api/tours/search',
-      method: 'GET',
-      data: {
-        areaCode: areaCode,
-        places: JSON.stringify(['체험']),
-        numOfRows: 4,
-      },
-      success: function (response) {
-        if (response.success && response.data) {
-          displayExperienceCards(response.data);
-        } else {
-          displayDefaultExperiences();
-        }
-      },
-      error: function () {
-        console.error('체험 데이터 로드 실패');
-        displayDefaultExperiences();
-      },
-      complete: function () {
-        isLoading = false;
-        $('.experience-section .tour-cards-wrapper').removeClass('loading');
-      },
-    });
-  }
-
-  // 체험 카드 표시
-  function displayExperienceCards(experiences) {
-    const $container = $('.experience-section .tour-cards-wrapper');
-    $container.empty();
-
-    if (!experiences || experiences.length === 0) {
-      displayDefaultExperiences();
-      return;
-    }
-
-    const displayCount = Math.min(experiences.length, 2);
-
-    for (let i = 0; i < displayCount; i++) {
-      const exp = experiences[i];
-      const card = `
-        <div class="product-card" data-id="${exp.contentid}">
-          <div class="card-header">
-            <h3>${exp.title}</h3>
-            <span class="arrow">→</span>
-          </div>
-          <p class="desc">${exp.addr1 || '특별한 체험 프로그램'}</p>
-          <p class="meta">체험 프로그램 운영 중</p>
-        </div>
-      `;
-      $container.append(card);
-    }
-  }
-
-  // 기본 체험 카드 표시
-  function displayDefaultExperiences() {
-    const $container = $('.experience-section .tour-cards-wrapper');
-    $container.html(`
-      <div class="product-card">
-        <div class="card-header">
-          <h3>체험 프로그램 준비 중</h3>
-          <span class="arrow">→</span>
-        </div>
-        <p class="desc">해당 지역의 체험 프로그램을 준비 중입니다.</p>
-        <p class="meta">곧 만나보실 수 있어요!</p>
-      </div>
-    `);
   }
 
   // 반응형 처리
