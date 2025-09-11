@@ -453,8 +453,27 @@ function initPostInteractions() {
 
   // 댓글
   $(document).on('click.post', '.comment-btn', function (e) {
+    // e.preventDefault();
+    // showToast('댓글 기능은 준비 중입니다.', 'info');
     e.preventDefault();
-    showToast('댓글 기능은 준비 중입니다.', 'info');
+  const $post = $(this).closest('.post-card');
+  const postId = ($post.data('postId') || $post[0]?.dataset?.postId || '').toString();
+  if (!postId) { showToast('postId를 찾을 수 없어요.', 'danger'); return; }
+
+  let $box = $post.find('.comments').eq(0);
+  if (!$box.length) {
+    $box = $(makeCommentsBoxHtml());
+    // 이미지 영역 뒤나 본문 뒤에 삽입
+    const $images = $post.find('.post-images').eq(0);
+    if ($images.length) $images.after($box); else $post.find('.post-text').eq(0).after($box);
+  }
+
+  // 최초 로드
+  if ($box.data('loaded') !== 'true') {
+    loadComments($post, postId);
+  }
+  // 토글
+  $box.slideToggle(150);
   });
 
   // 공유
@@ -475,6 +494,231 @@ function initPostInteractions() {
   // ✅ 이미지 클릭은 라이트박스가 document 위임으로 이미 처리 중이므로
   // 여기서 .post-img 클릭 바인딩은 더 이상 필요 없습니다.
 }
+
+// 엔드포인트 모음 (원하면 바꿔 쓰세요)
+const COMMENTS = {
+  list: (postId) => `/community/post/${postId}/comments`,
+  add:  `/community/comment`,
+  upd:  (commentId) => `/community/comment/${commentId}`,
+  del:  (commentId) => `/community/comment/${commentId}`,
+};
+
+function ensureEscape() {
+  if (typeof escapeHtml !== 'function') {
+    window.escapeHtml = (s)=>String(s).replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;' }[m]));
+  }
+}
+ensureEscape();
+
+function makeCommentsBoxHtml() {
+  return `
+  <div class="comments" style="margin-top:12px; border-top:1px solid var(--border-color); padding-top:12px; display:none;">
+    <div class="comments-list" role="list" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <div class="comment-write" style="display:flex; gap:8px; margin-top:10px;">
+      <textarea class="comment-input" placeholder="댓글을 입력하세요"
+        style="flex:1; min-height:44px; padding:10px; border:1px solid var(--border-color); border-radius:10px; resize:vertical;"></textarea>
+      <button class="comment-submit" style="white-space:nowrap; padding:0 14px; border:none; background:var(--primary-color); color:#fff; border-radius:10px;">등록</button>
+    </div>
+  </div>`;
+}
+
+function renderCommentItem(c) {
+  const id = c.id ?? c.commentId;
+  const author = c.username ?? c.authorName ?? '익명';
+  const text = (c.comment ?? c.content ?? '');   // ← 여기!
+  const ts = c.createdAt ?? c.created_at ?? c.reg_dt;
+  const mine = !!(c.canEdit ?? (c.username && window.currentUser && c.username === window.currentUser.username));
+
+  return `
+  <div class="comment-item" role="listitem" data-comment-id="${id}" style="display:flex; gap:8px;">
+    <div class="comment-avatar" style="width:28px;height:28px;border-radius:50%;background:#eee;flex:0 0 auto;"></div>
+    <div class="comment-body" style="flex:1;">
+      <div class="comment-meta" style="display:flex; gap:8px; align-items:center; font-size:12px; color:var(--text-secondary);">
+        <span class="comment-author" style="font-weight:600; color:var(--text-primary);">${escapeHtml(author)}</span>
+        <span class="comment-time">${timeAgo(ts) || ''}</span>
+        ${mine ? `
+          <span class="comment-actions" style="margin-left:auto; display:flex; gap:6px;">
+            <button class="comment-edit-btn" style="border:none;background:none;color:var(--text-secondary);cursor:pointer;">수정</button>
+            <button class="comment-del-btn" style="border:none;background:none;color:var(--accent-color);cursor:pointer;">삭제</button>
+          </span>` : ''}
+      </div>
+      <div class="comment-text" style="white-space:pre-wrap; line-height:1.5; margin-top:4px;">${escapeHtml(text)}</div>
+    </div>
+  </div>`;
+}
+
+function adjustCommentCount($post, delta) {
+  const $t = $post.find('.comment-btn .action-text').eq(0);
+  if (!$t.length) return;
+  const m = ($t.text()||'').match(/\d+/);
+  const cur = m ? parseInt(m[0],10) : 0;
+  const next = Math.max(0, cur + delta);
+  $t.text(`댓글 ${next}`);
+}
+
+function loadComments($post, postId) {
+  const $box = $post.find('.comments').eq(0);
+  const $list = $box.find('.comments-list');
+  const username = window.currentUser?.username || '';
+
+  $box.data('loaded', 'loading');
+  $.ajax({
+    url: COMMENTS.list(postId) + (username ? `?username=${encodeURIComponent(username)}` : ''),
+    method: 'GET',
+    dataType: 'json'
+  }).done(function(rows){
+    const arr = Array.isArray(rows) ? rows : (rows?.content || []);
+    $list.html(arr.map(renderCommentItem).join('') || 
+      '<div style="color:var(--text-secondary); font-size:13px;">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</div>');
+    $box.data('loaded', 'true');
+  }).fail(function(err){
+    console.error('댓글 로드 실패:', err);
+    showToast('댓글을 불러오지 못했습니다.', 'danger');
+    $box.data('loaded', 'false');
+  });
+}
+
+// 등록
+$(document).on('click', '.comment-submit', function(){
+  const $post = $(this).closest('.post-card');
+  const postId = ($post.data('postId') || $post[0]?.dataset?.postId || '').toString();
+  const $box = $post.find('.comments').eq(0);
+  const $list = $box.find('.comments-list');
+  const $input = $box.find('.comment-input');
+  const comment = ($input.val()||'').trim();
+  if (!comment) { showToast('댓글 내용을 입력하세요.', 'warning'); $input.focus(); return; }
+
+  const payload = {
+    postId,
+    comment,
+    username: window.currentUser?.username || 'guest'
+  };
+
+  const $btn = $(this);
+  if ($btn.data('busy')) return;
+  $btn.data('busy', true).prop('disabled', true).text('등록 중...');
+
+  $.ajax({
+    url: COMMENTS.add,
+    method: 'POST',
+    contentType: 'application/json',
+    dataType: 'json',
+    data: JSON.stringify(payload)
+  }).done(function(resp){
+    // 응답 객체 or 성공 시 최소 필드 준비
+    const newRow = (resp && typeof resp === 'object')
+    ? resp
+    : {
+        id: resp?.id,
+        username: payload.username,
+        comment: content,                         // ← comment로 넣기
+        createdAt: new Date().toISOString(),
+        canEdit: true
+      };
+    // 목록 없으면 초기 메시지 치우기
+    if ($list.children().length && $list.children().first().text().includes('아직 댓글이 없습니다')) {
+      $list.empty();
+    }
+    $list.append(renderCommentItem(newRow));
+    $input.val('');
+    adjustCommentCount($post, +1);
+  }).fail(function(err){
+    console.error('댓글 등록 실패:', err);
+    showToast('댓글 등록에 실패했습니다.', 'danger');
+  }).always(function(){
+    $btn.data('busy', false).prop('disabled', false).text('등록');
+  });
+});
+
+// 수정 진입
+$(document).on('click', '.comment-edit-btn', function(){
+  const $item = $(this).closest('.comment-item');
+  const $text = $item.find('.comment-text');
+  const original = $text.text();
+
+  // 이미 편집 중이면 무시
+  if ($item.data('editing') === 'true') return;
+  $item.data('editing', 'true');
+
+  const editor = $(`
+    <div class="comment-editbox" style="margin-top:6px;">
+      <textarea class="comment-edit-input" style="width:100%;min-height:60px;padding:8px;border:1px solid var(--border-color);border-radius:8px;">${escapeHtml(original)}</textarea>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px;">
+        <button type="button" class="comment-edit-cancel" style="border:1px solid var(--border-color);background:#fff;border-radius:8px;padding:6px 12px;">취소</button>
+        <button type="button" class="comment-edit-save" style="border:none;background:var(--primary-color);color:#fff;border-radius:8px;padding:6px 12px;">저장</button>
+      </div>
+    </div>
+  `);
+  $text.hide().after(editor);
+  editor.find('.comment-edit-input').focus();
+});
+
+// 수정 저장/취소
+$(document).on('click', '.comment-edit-cancel', function(){
+  const $item = $(this).closest('.comment-item');
+  $item.find('.comment-editbox').remove();
+  $item.find('.comment-text').show();
+  $item.data('editing', 'false');
+});
+
+$(document).on('click', '.comment-edit-save', function(){
+  const $item = $(this).closest('.comment-item');
+  const commentId = ($item.data('commentId') || $item[0]?.dataset?.commentId || '').toString();
+  const $input = $item.find('.comment-edit-input');
+  const content = ($input.val()||'').trim();
+  if (!content) { showToast('내용을 입력하세요.', 'warning'); $input.focus(); return; }
+
+  const $btn = $(this);
+  if ($btn.data('busy')) return;
+  $btn.data('busy', true).prop('disabled', true).text('저장 중...');
+
+  $.ajax({
+  url: `/community/comment/${commentId}`,
+  method: 'PUT',
+  contentType: 'application/json; charset=UTF-8',
+  dataType: 'json',
+  data: JSON.stringify({
+    comment: content   // ← content가 아니라 comment 키로!
+  })
+}).done(function(resp){
+  $item.find('.comment-text')
+       .text(resp?.comment ?? resp?.content ?? content)
+       .show();
+  $item.find('.comment-editbox').remove();
+  $item.data('editing','false');
+  showToast('댓글이 수정되었습니다.', 'success');
+}).fail(function(err){
+  console.error('댓글 수정 실패:', err);
+  showToast('댓글 수정에 실패했습니다.', 'danger');
+});
+});
+
+// 삭제
+$(document).on('click', '.comment-del-btn', function(){
+  const $item = $(this).closest('.comment-item');
+  const $post = $(this).closest('.post-card');
+  const commentId = ($item.data('commentId') || $item[0]?.dataset?.commentId || '').toString();
+  if (!commentId) return;
+
+  // confirm UI가 따로 있으면 바꿔도 됩니다.
+  if (!confirm('이 댓글을 삭제하시겠습니까?')) return;
+
+  $.ajax({
+    url: COMMENTS.del(commentId),
+    method: 'DELETE'
+  }).done(function(){
+    $item.remove();
+    adjustCommentCount($post, -1);
+    showToast('댓글이 삭제되었습니다.', 'success');
+    const $list = $post.find('.comments-list');
+    if (!$list.children().length) {
+      $list.html('<div style="color:var(--text-secondary); font-size:13px;">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</div>');
+    }
+  }).fail(function(err){
+    console.error('댓글 삭제 실패:', err);
+    showToast('댓글 삭제에 실패했습니다.', 'danger');
+  });
+});
 
 // 좋아요 토글 (dataset 일관 사용)
 function toggleLike($btn) {

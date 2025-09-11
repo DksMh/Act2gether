@@ -310,14 +310,8 @@
 
         
 
-            <!-- 페이지네이션 -->
-            <div class="pagination">
-              <button class="page-btn prev" disabled>이전</button>
-              <button class="page-btn active">1</button>
-              <button class="page-btn">2</button>
-              <button class="page-btn">3</button>
-              <button class="page-btn next">다음</button>
-            </div>
+            <!-- 페이지네이션 컨테이너 -->
+              <div class="pagination"></div>
           </div>
         </div>
       </div>
@@ -357,7 +351,10 @@
   };
   /* ===== 설정: 엔드포인트만 맞추면 됨 ===== */
 const POSTS_ENDPOINT = '/community/all/posts'; // 예: GET /community/posts -> 배열 또는 {content:[...]}
-
+// 페이지네이션 상태
+const PAGE_SIZE = 5;          // 페이지당 5개
+let postsData = [];           // 전체 게시글 (정렬된 원본)
+let currentPage = 1;          // 현재 페이지(1-base)
 /* ===== 유틸 ===== */
 const isArr = Array.isArray;
 function normalizeList(v) {
@@ -563,14 +560,19 @@ async function loadPosts() {
     const data = await res.json();
     // 배열 또는 페이지 객체(content 배열) 대응
     const rows = Array.isArray(data) ? data : (data.content || []);
-    // ✅ 최신순(내림차순) 정렬: createdAt / created_at / reg_dt 우선 사용
     const sorted = [...rows].sort((a, b) => {
       const aT = toMillis(a.createdAt ?? a.created_at ?? a.reg_dt);
       const bT = toMillis(b.createdAt ?? b.created_at ?? b.reg_dt);
-      return bT - aT;
+      return bT - aT; // 최신 내림차순
     });
+
+    // 상태 저장하고 1페이지부터 렌더
+    postsData = sorted;
+    currentPage = 1;
+    renderCurrentPage();  // ← 새 함수
+ 
     console.log("posts >>> " + JSON.stringify(data));
-    renderPosts(sorted);
+    
   } catch (e) {
     console.error('게시글 로드 실패:', e);
     const emptyEl = document.getElementById('postsEmpty');
@@ -580,6 +582,71 @@ async function loadPosts() {
     setLoading(false);
   }
 }
+
+function renderCurrentPage() {
+  const total = postsData.length;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageRows = postsData.slice(start, start + PAGE_SIZE);
+
+  renderPosts(pageRows);      // ← 네가 이미 만든 함수 (카드 렌더)
+  renderPagination(total);    // ← 아래 함수로 버튼/이전/다음 그리기
+}
+
+function renderPagination(total) {
+  const $p = $('.pagination');
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  if (totalPages <= 1) { $p.empty().hide(); return; }
+  $p.show();
+
+  const maxButtons = 5; // 최대 노출할 숫자 버튼 수
+  let start = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+  let end   = Math.min(totalPages, start + maxButtons - 1);
+  if (end - start + 1 < maxButtons) start = Math.max(1, end - maxButtons + 1);
+
+  let html = '';
+  html += `<button class="page-btn prev" ${currentPage===1?'disabled':''}>이전</button>`;
+
+  if (start > 1) {
+    html += `<button class="page-btn" data-page="1">1</button>`;
+    if (start > 2) html += `<span class="page-ellipsis">…</span>`;
+  }
+
+  for (let p = start; p <= end; p++) {
+    html += `<button class="page-btn ${p===currentPage?'active':''}" data-page="${p}">${p}</button>`;
+  }
+
+  if (end < totalPages) {
+    if (end < totalPages - 1) html += `<span class="page-ellipsis">…</span>`;
+    html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+  }
+
+  html += `<button class="page-btn next" ${currentPage===totalPages?'disabled':''}>다음</button>`;
+  $p.html(html);
+}
+
+function setPage(next) {
+  const totalPages = Math.ceil(postsData.length / PAGE_SIZE);
+  const clamped = Math.min(Math.max(1, next), totalPages);
+  if (clamped === currentPage) return;
+  currentPage = clamped;
+  renderCurrentPage();
+}
+
+// 숫자 버튼
+$(document).on('click', '.pagination .page-btn[data-page]', function () {
+  const p = parseInt($(this).attr('data-page'), 10);
+  if (!Number.isFinite(p)) return;
+  setPage(p);
+});
+
+// 이전/다음
+$(document).on('click', '.pagination .page-btn.prev', function () {
+  setPage(currentPage - 1);
+});
+$(document).on('click', '.pagination .page-btn.next', function () {
+  setPage(currentPage + 1);
+});
 
 document.addEventListener('DOMContentLoaded', loadPosts);
 

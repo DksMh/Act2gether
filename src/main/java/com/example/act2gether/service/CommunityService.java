@@ -6,22 +6,29 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.act2gether.dto.CommentCreateRequest;
+import com.example.act2gether.dto.CommentResponse;
+import com.example.act2gether.dto.CommentUpdateRequest;
 import com.example.act2gether.dto.PostDTO;
 import com.example.act2gether.dto.TravelGroupMembersDTO;
+import com.example.act2gether.entity.PostCommentEntity;
 import com.example.act2gether.entity.PostImageEntity;
 import com.example.act2gether.entity.PostLikesEntity;
 import com.example.act2gether.entity.PostsEntity;
 import com.example.act2gether.entity.TravelGroupMembersEntity;
 import com.example.act2gether.entity.TravelGroupsEntity;
 import com.example.act2gether.entity.UserEntity;
+import com.example.act2gether.repository.PostCommentRepository;
 import com.example.act2gether.repository.PostImageRepository;
 import com.example.act2gether.repository.PostLikesRepository;
 import com.example.act2gether.repository.PostsRepository;
@@ -43,6 +50,7 @@ public class CommunityService {
     private final PostsRepository postsRepository;
     private final PostImageRepository postImageRepository;
     private final PostLikesRepository postLikesRepository;
+    private final PostCommentRepository commentRepository;
 
     public List<TravelGroupMembersDTO> getMembers(String id){
         List<TravelGroupMembersEntity> travelGroupMembersEntity = travelGroupMembersRepository.findByGroupId(id);
@@ -281,6 +289,76 @@ public class CommunityService {
         static UpdateResult fail(String msg) {
             return new UpdateResult(false, msg, null, List.of());
         }
+    }
+
+    public List<CommentResponse> list(String postId, @Nullable String currentUsername) {
+        String cur = currentUsername;
+        return commentRepository.findByPostIdOrderByCreatedAtAsc(postId).stream()
+                .map(e -> {
+                    String uname = userRepository.findById(e.getUserId())
+                            .map(UserEntity::getUsername)
+                            .orElse(null);
+                    boolean canEdit = (cur != null && cur.equals(uname));
+                    return new CommentResponse(
+                            e.getCommentId(),
+                            e.getPostId(),
+                            uname,
+                            e.getComment(),
+                            e.getCreatedAt(),
+                            canEdit
+                    );
+                })
+                .toList();
+    }
+
+    @Transactional
+    public CommentResponse add(CommentCreateRequest req) {
+        if (req == null || req.postId() == null || req.username() == null || req.comment() == null || req.comment().isBlank()) {
+            throw new IllegalArgumentException("invalid payload");
+        }
+        var user = userRepository.findByUsername(req.username())
+                .orElseThrow(() -> new IllegalArgumentException("user not found"));
+
+        var ent = PostCommentEntity.of(req.postId(), user.getUserId(), req.comment());
+        var saved = commentRepository.save(ent);
+
+        return new CommentResponse(
+                saved.getCommentId(),
+                saved.getPostId(),
+                user.getUsername(),
+                saved.getComment(),
+                saved.getCreatedAt(),
+                true
+        );
+    }
+
+    @Transactional
+    public CommentResponse update(String commentId, CommentUpdateRequest req) {
+        if (req == null || req.comment() == null || req.comment().isBlank()) {
+            throw new IllegalArgumentException("empty comment");
+        }
+        var ent = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NoSuchElementException("comment not found"));
+        ent.setComment(req.comment());
+        var saved = commentRepository.save(ent);
+
+        String uname = userRepository.findById(saved.getUserId())
+                .map(UserEntity::getUsername)
+                .orElse(null);
+
+        return new CommentResponse(
+                saved.getCommentId(),
+                saved.getPostId(),
+                uname,
+                saved.getComment(),
+                saved.getCreatedAt(),
+                true
+        );
+    }
+
+    @Transactional
+    public void delete(String commentId) {
+        commentRepository.deleteById(commentId);
     }
 
 }

@@ -7,11 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.act2gether.dto.CommentCreateRequest;
+import com.example.act2gether.dto.CommentResponse;
+import com.example.act2gether.dto.CommentUpdateRequest;
 import com.example.act2gether.dto.MembersDTO;
 import com.example.act2gether.dto.PostDTO;
 import com.example.act2gether.dto.ResetPasswordDTO;
@@ -23,7 +27,10 @@ import com.example.act2gether.service.CommunityService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 
@@ -131,6 +138,35 @@ public class CommunityController {
         }
 
         return ResponseEntity.ok("게시글이 삭제되었습니다.");
+    }
+
+    // 목록: GET /community/post/{postId}/comments?username=jsy2 (username은 선택, canEdit 계산용)
+    @GetMapping("/post/{postId}/comments")
+    public ResponseEntity<List<CommentResponse>> list(
+            @PathVariable String postId,
+            @RequestParam(required = false) String username
+    ) {
+        return ResponseEntity.ok(communityService.list(postId, username));
+    }
+
+    // 작성: POST /community/comment  (JSON: {postId, username, comment})
+    @PostMapping(value = "/comment", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommentResponse> add(@RequestBody CommentCreateRequest req) {
+        return ResponseEntity.ok(communityService.add(req));
+    }
+
+    // 수정: PUT /community/comment/{commentId}  (JSON: {comment})
+    @PutMapping(value = "/comment/{commentId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<CommentResponse> update(@PathVariable String commentId,
+                                                  @RequestBody CommentUpdateRequest req) {
+        return ResponseEntity.ok(communityService.update(commentId, req));
+    }
+
+    // 삭제: DELETE /community/comment/{commentId}
+    @DeleteMapping("/comment/{commentId}")
+    public ResponseEntity<Void> delete(@PathVariable String commentId) {
+        communityService.delete(commentId);
+        return ResponseEntity.ok().build();
     }
     
 }
