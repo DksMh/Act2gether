@@ -174,6 +174,46 @@
   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
 }
 
+/* 간소화된 투어 카드 */
+.tour-product-card.compact .tour-places.compact {
+  padding: 1rem 1.5rem;
+}
+
+.tour-product-card.compact .place-list {
+  gap: 0.5rem;
+}
+
+.place-item.highlight {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  border: 0.0625rem solid #cce5ff;
+}
+
+.more-places {
+  padding: 0.75rem;
+  text-align: center;
+  color: #666;
+  font-size: 0.875rem;
+  font-style: italic;
+  border-top: 0.0625rem dashed #e0e0e0;
+  margin-top: 0.5rem;
+}
+
+.more-places span {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #f8f9fa;
+  border-radius: 1rem;
+}
+
+/* 카드 높이 조정 */
+.tour-product-card.compact {
+  min-height: auto;
+}
+
+.tour-product-card.compact .tour-main-image {
+  height: 15rem;
+}
+
 .tour-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -291,7 +331,8 @@
   transform: translateY(-0.125rem);
 }
 
-.loading-message, .no-tour-message {
+.loading-message,
+.no-tour-message {
   text-align: center;
   padding: 3rem;
   color: #666;
@@ -589,7 +630,8 @@
 }
 
 /* ===== 반응형 ===== */
-@media (max-width: 64rem) { /* 1024px */
+@media (max-width: 64rem) {
+  /* 1024px */
 
   .tour-product-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -599,25 +641,26 @@
   .tour-card {
     flex: 0 0 calc(50% - 0.75rem);
   }
-  
+
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .tour-product-card {
     max-width: 100%;
   }
 }
 
-@media (max-width: 48rem) { /* 768px */
+@media (max-width: 48rem) {
+  /* 768px */
   .main-slider {
     height: 18.75rem;
   }
-  
+
   .main-slider .slide-content h2 {
     font-size: 1.75rem;
   }
-  
+
   .main-slider .slide-content p {
     font-size: 1rem;
   }
@@ -625,80 +668,86 @@
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .tour-product-card {
     max-width: 100%;
   }
-  
+
+  /* 투어카드 간소화 */
+  .tour-product-card.compact .tour-main-image {
+    height: 12rem;
+  }
+
   .travel-type-section {
     padding: 2rem 1rem;
   }
-  
+
   .travel-type-filter {
     gap: 0.5rem;
   }
-  
+
   .travel-type-filter li {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
   }
-  
+
   .recommend-section {
     padding: 2rem 1rem;
   }
-  
+
   .recommend-title h2 {
     font-size: 1.5rem;
   }
-  
+
   .tour-card {
     flex: 0 0 100%;
   }
-  
+
   .tour-slider {
     padding: 0 2rem;
   }
-  
+
   .slider-arrow {
     width: 2rem;
     height: 2rem;
     font-size: 1rem;
   }
-  
+
   .product-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .companion-recommend-section {
     padding: 2rem 1rem;
   }
 }
 
-@media (max-width: 30rem) { /* 480px */
+@media (max-width: 30rem) {
+  /* 480px */
   .main-slider {
     height: 15rem;
   }
-  
+
   .main-slider .slide-content h2 {
     font-size: 1.25rem;
   }
-  
+
   .main-slider .slide-content p {
     font-size: 0.875rem;
   }
-  
+
   .travel-type-section h3 {
     font-size: 1.25rem;
   }
-  
+
   .travel-type-filter li {
     padding: 0.375rem 0.75rem;
   }
-  
+
   .tour-slider {
     padding: 0;
   }
-  
+
   .slider-arrow {
     display: none;
   }
