@@ -21,11 +21,10 @@ public class PostDTO {
     private String type;
     private int isDeleted;
     private int likesCount;
+    private int commentCount;
     private String createdAt;
     private String updatedAt;
     private List<String> pictures;
-    private List<String> files;
-    private List<String> locations;
     private String username;
     public static PostDTO of(PostsEntity e, String username) {
         return PostDTO.builder()
@@ -34,12 +33,11 @@ public class PostDTO {
         .memberId(e.getMemberId())
         .groupId(e.getGroupId())
         .likesCount(e.getLikesCount())
+        .commentCount(e.getCommentCount())
         .content(e.getContent())
         .createdAt(e.getCreatedAt())
         .updatedAt(e.getUpdatedAt())
         .pictures(e.getPictures())
-        .files(e.getFiles())
-        .locations(e.getLocations())
         .build();
     }
 
