@@ -4,6 +4,7 @@ import com.example.act2gether.dto.TourDTO;
 import com.example.act2gether.dto.ExperienceDTO;
 import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.UserRepository;
+import com.example.act2gether.service.TourCacheService;
 import com.example.act2gether.service.TourFilterService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -30,6 +32,9 @@ public class MainController {
   private final TourFilterService tourFilterService;
   private final UserRepository userRepository;
   private final ObjectMapper objectMapper;
+
+  @Autowired
+  private TourCacheService cacheService;
 
   @GetMapping("/")
   public String mainPage(Model model, HttpSession session, Authentication authentication) {
@@ -117,7 +122,7 @@ public class MainController {
     return "main";
   }
 
-  // 여행 타입별
+  // 여행 타입별 - 250913 캐싱 추가
   @GetMapping("/api/tours/generate")
   @ResponseBody
   public ResponseEntity<Map<String, Object>> generateTour(
@@ -126,6 +131,14 @@ public class MainController {
       Authentication authentication) {
 
     log.info("투어 생성 요청: type={}", travelType);
+
+    // 캐시 확인
+    String cacheKey = "tour_" + travelType;
+    Optional<Object> cached = cacheService.get(cacheKey);
+    if (cached.isPresent()) {
+      log.info("캐시에서 투어 반환: {}", travelType);
+      return ResponseEntity.ok((Map<String, Object>) cached.get());
+    }
 
     try {
       // 타입별 장소 매핑
@@ -149,9 +162,8 @@ public class MainController {
       List<String> selectedAreaCodes = new ArrayList<>();
       String preferredAreaCode = "";
 
-      if (authentication != null && authentication.isAuthenticated()
-          && !"anonymousUser".equals(authentication.getPrincipal())) {
-
+       if (authentication != null && authentication.isAuthenticated()
+        && !"anonymousUser".equals(authentication.getPrincipal())) {
         String userId = authentication.getName();
         UserEntity user = userRepository.findById(userId).orElse(null);
 
@@ -333,19 +345,34 @@ public class MainController {
         }
       }
 
+      // if (!allTours.isEmpty()) {
+      //   log.info("총 {}개 투어 생성 완료", allTours.size());
+      //   return ResponseEntity.ok(Map.of(
+      //       "success", true,
+      //       "data", Map.of(
+      //           "tourType", travelType,
+      //           "tourList", allTours)));
+      // }
+
       if (!allTours.isEmpty()) {
         log.info("총 {}개 투어 생성 완료", allTours.size());
-        return ResponseEntity.ok(Map.of(
+        
+        // 성공 결과 생성
+        Map<String, Object> successResult = Map.of(
             "success", true,
             "data", Map.of(
                 "tourType", travelType,
-                "tourList", allTours)));
+                "tourList", allTours));
+        
+        // 캐시에 저장
+        cacheService.put(cacheKey, successResult);
+        
+        return ResponseEntity.ok(successResult);
       }
-
       return ResponseEntity.ok(Map.of(
           "success", false,
           "message", "투어 생성에 실패했습니다"));
-
+      
     } catch (Exception e) {
       log.error("투어 생성 실패: {}", e.getMessage(), e);
       return ResponseEntity.ok(Map.of(
@@ -430,36 +457,165 @@ public class MainController {
       model.addAttribute("recommendedTours", new ArrayList<>());
     }
   }
-
-  private void loadSeasonalRecommendations(Model model) {
-    try {
-      String season = getCurrentSeason();
-      model.addAttribute("currentSeason", season);
-
-      List<String> seasonPlaces = getSeasonPlaces(season);
-
-      Map<String, String> params = new HashMap<>();
-      params.put("numOfRows", "6");
-      params.put("places", objectMapper.writeValueAsString(seasonPlaces));
-
-      Map<String, Object> result = tourFilterService.searchTours(params);
-
-      if (result != null && Boolean.TRUE.equals(result.get("success"))) {
-        JsonNode tours = (JsonNode) result.get("data");
-        List<TourDTO> tourList = convertToTourDTOs(tours);
-        model.addAttribute("seasonTours", tourList);
-        log.info("✅ {} 테마 로드 성공: {}개", season, tourList.size());
-      } else {
-        model.addAttribute("seasonTours", new ArrayList<>());
-      }
-
-    } catch (Exception e) {
-      log.error("계절별 추천 로드 실패: {}", e.getMessage());
-      model.addAttribute("seasonTours", new ArrayList<>());
-      model.addAttribute("currentSeason", "가을");
-    }
+  
+  // 1. 최적화된 계절별 지역 선택
+  private List<String> getOptimizedSeasonalAreas(String season) {
+      Map<String, List<String>> seasonAreaMap = new HashMap<>();
+      
+      seasonAreaMap.put("봄", Arrays.asList("39", "36", "35", "1", "37", "31"));
+      seasonAreaMap.put("여름", Arrays.asList("32", "6", "39", "8", "36", "35"));
+      seasonAreaMap.put("가을", Arrays.asList("32", "37", "35", "1", "38", "33"));
+      seasonAreaMap.put("겨울", Arrays.asList("32", "39", "6", "35", "3", "33"));
+      
+      return seasonAreaMap.getOrDefault(season, 
+          Arrays.asList("1", "6", "39", "32", "35", "31"));
   }
 
+  // 2. 투어 정보 생성 헬퍼
+  private Map<String, Object> createSeasonalTourInfo(List<JsonNode> tours, String areaCode, String season) {
+      List<String> tourIds = new ArrayList<>();
+      String cityName = "";
+      String mainImage = "";
+      JsonNode representativeTour = null;
+      
+      // 첫 번째 투어에서 도시명 추출
+      if (tours.size() > 0) {
+          String firstAddr = tours.get(0).path("addr1").asText("");
+          if (!firstAddr.isEmpty()) {
+              String[] parts = firstAddr.split(" ");
+              // 시/군/구 단위만 추출 (같은 지역이므로 모두 동일)
+              if (parts.length >= 2) {
+                  cityName = parts[1]; // 시/군/구 이름만
+              } else if (parts.length >= 1) {
+                  cityName = parts[0];
+              }
+          }
+      }
+      
+      for (JsonNode tour : tours) {
+          tourIds.add(tour.path("contentid").asText());
+          
+          if (mainImage.isEmpty()) {
+              String img1 = tour.path("firstimage").asText("");
+              String img2 = tour.path("firstimage2").asText("");
+              String opt = tour.path("optimizedImage").asText("");
+              
+              if (!img1.isEmpty()) {
+                  mainImage = img1;
+                  representativeTour = tour;
+              } else if (!opt.isEmpty()) {
+                  mainImage = opt;
+                  representativeTour = tour;
+              } else if (!img2.isEmpty()) {
+                  mainImage = img2;
+                  representativeTour = tour;
+              }
+          }
+      }
+      
+      if (representativeTour == null && tours.size() > 0) {
+          representativeTour = tours.get(0);
+      }
+      
+      Map<String, Object> tourInfo = new HashMap<>();
+      tourInfo.put("tourId", String.join("-", tourIds));
+      tourInfo.put("cityName", cityName);
+      tourInfo.put("mainImage", mainImage);
+      tourInfo.put("representativeTour", representativeTour);
+      tourInfo.put("representativeTitle", representativeTour != null ? 
+          representativeTour.path("title").asText("특별 관광지") : "특별 관광지");
+      tourInfo.put("season", season);
+      tourInfo.put("tourCount", tours.size());
+      
+      return tourInfo;
+  }
+
+
+  // 3. 메인 loadSeasonalRecommendations 메서드
+  private void loadSeasonalRecommendations(Model model) {
+      try {
+          String season = getCurrentSeason();
+          model.addAttribute("currentSeason", season);
+          
+          // 캐시 확인
+          String cacheKey = "seasonal_" + season;
+          Optional<Object> cached = cacheService.get(cacheKey);
+          if (cached.isPresent()) {
+              model.addAttribute("seasonTours", cached.get());
+              log.info("캐시에서 {} 테마 투어 반환", season);
+              return;
+          }
+          
+          List<String> seasonPlaces = getSeasonPlaces(season);
+          List<String> seasonalAreas = getOptimizedSeasonalAreas(season);
+          List<Map<String, Object>> seasonalTours = new ArrayList<>();
+          
+          int maxAttempts = Math.min(seasonalAreas.size(), 8);
+          
+          for (int i = 0; i < maxAttempts && seasonalTours.size() < 6; i++) {
+              String areaCode = seasonalAreas.get(i);
+              
+              Map<String, String> params = new HashMap<>();
+              params.put("numOfRows", "12");
+              params.put("places", objectMapper.writeValueAsString(seasonPlaces));
+              params.put("areaCode", areaCode);
+              
+              Map<String, Object> result = tourFilterService.searchTours(params);
+              
+              if (result != null && Boolean.TRUE.equals(result.get("success"))) {
+                  JsonNode tours = (JsonNode) result.get("data");
+                  
+                  if (tours.isArray() && tours.size() >= 6) {
+                      // 이미지 있는 것 우선 정렬
+                      List<JsonNode> validTours = new ArrayList<>();
+                      List<JsonNode> withImage = new ArrayList<>();
+                      List<JsonNode> withoutImage = new ArrayList<>();
+                      
+                      for (JsonNode tour : tours) {
+                          boolean hasImage = !tour.path("firstimage").asText("").isEmpty() ||
+                                          !tour.path("optimizedImage").asText("").isEmpty() ||
+                                          !tour.path("firstimage2").asText("").isEmpty();
+                          if (hasImage) {
+                              withImage.add(tour);
+                          } else {
+                              withoutImage.add(tour);
+                          }
+                      }
+                      
+                      validTours.addAll(withImage);
+                      validTours.addAll(withoutImage);
+                      
+                      if (validTours.size() >= 6) {
+                          Map<String, Object> tourInfo = createSeasonalTourInfo(
+                              validTours.subList(0, 6), 
+                              areaCode, 
+                              season
+                          );
+                          
+                          seasonalTours.add(tourInfo);
+                          log.info("계절 투어 생성: {} ({}) - {}", 
+                              tourInfo.get("cityName"), areaCode, season);
+                      }
+                  }
+              }
+          }
+          
+          // 캐싱
+          if (!seasonalTours.isEmpty()) {
+              cacheService.put(cacheKey, seasonalTours);
+          }
+          
+          model.addAttribute("seasonTours", seasonalTours);
+          log.info("✅ {} 테마 투어 로드 완료: {}개", season, seasonalTours.size());
+          
+      } catch (Exception e) {
+          log.error("계절별 추천 로드 실패: {}", e.getMessage(), e);
+          model.addAttribute("seasonTours", new ArrayList<>());
+          model.addAttribute("currentSeason", getCurrentSeason());
+      }
+  }
+
+  // 지역별
   private void loadRegionalExperiences(Model model) {
     try {
       Map<String, String> params = new HashMap<>();

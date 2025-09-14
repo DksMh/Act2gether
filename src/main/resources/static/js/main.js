@@ -1,6 +1,11 @@
 // main.js - 메인 페이지 동작 스크립트
 
 $(document).ready(function () {
+  // 파일 상단에 추가
+  let requestQueue = [];
+  let isProcessing = false;
+  const tourCache = new Map();
+
   // 전역 변수
   let isLoading = false;
   let currentUser = null;
@@ -14,6 +19,7 @@ $(document).ready(function () {
     bindEvents();
     startMainSlider();
     initAllSliders();
+    initSeasonalSlider(); // 계절별 슬라이더 초기화
     generateTour("culture"); // 초기 로드 시 문화 투어 생성
   }
 
@@ -81,6 +87,34 @@ $(document).ready(function () {
       generateTour(type);
     });
 
+    // 계절별 투어 카드 클릭 이벤트
+    $(document).on('click', '.seasonal-tour', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const $card = $(this);
+      const tourId = $card.data('tour-id');
+      const cityName = $card.data('city');
+      
+      if (!tourId) {
+        console.log('투어 ID가 없습니다');
+        return;
+      }
+      
+      // 로그인 체크
+      if (!currentUser || !currentUser.isAuthenticated) {
+        if (confirm('투어 상세 정보를 보시려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?')) {
+          window.location.href = `/login?redirect=/tour-detail?tourId=${tourId}`;
+        }
+      } else {
+        // 투어 상세 페이지로 이동
+        console.log(`${cityName} 투어 상세 페이지로 이동: ${tourId}`);
+        window.location.href = `/tour-detail?tourId=${tourId}`;
+      }
+    });
+    
+    // 계절별 투어 hover 효과 제거 (CSS로만 처리하므로 JS 이벤트 제거)
+
     // 지역 필터 클릭
     $(".region-filter .region").on("click", function () {
       if (isLoading) return;
@@ -92,8 +126,8 @@ $(document).ready(function () {
       loadRegionExperiences(region);
     });
 
-    // 일반 투어 카드 클릭 (계절별, 지역별 등)
-    $(document).on("click", ".tour-card", function (e) {
+    // 일반 투어 카드 클릭 (계절별이 아닌 다른 카드들)
+    $(document).on("click", ".tour-card:not(.seasonal-tour)", function (e) {
       e.preventDefault();
       const tourId = $(this).data("id");
       if (tourId) {
@@ -117,9 +151,25 @@ $(document).ready(function () {
     );
   }
 
-  // 투어 생성 함수
+  // 투어 생성 함수 - 캐싱 적용
   function generateTour(type) {
+    // 캐시 확인
+    const cached = tourCache.get(type);
+    if (cached && (Date.now() - cached.time < 300000)) { // 5분 캐시
+      console.log("캐시에서 투어 데이터 사용:", type);
+      displayTourCards(cached.data);
+      updateTravelThemeTitle(type);
+      return;
+    }
+    
+    // 중복 요청 방지
+    if (isProcessing) {
+      console.log("이미 처리 중인 요청이 있습니다");
+      return;
+    }
+    
     isLoading = true;
+    isProcessing = true;
     showLoadingMessage();
 
     $.ajax({
@@ -133,6 +183,12 @@ $(document).ready(function () {
         console.log("투어 생성 응답:", response);
 
         if (response.success && response.data) {
+          // 캐시에 저장
+          tourCache.set(type, {
+            data: response.data,
+            time: Date.now()
+          });
+          
           displayTourCards(response.data);
           updateTravelThemeTitle(type);
         } else {
@@ -145,10 +201,28 @@ $(document).ready(function () {
       },
       complete: function () {
         isLoading = false;
+        isProcessing = false;
       },
     });
   }
 
+  // 계절별 투어 슬라이더 초기화
+  function initSeasonalSlider() {
+    const $seasonSection = $('.season-section');
+    if ($seasonSection.length === 0) return;
+    
+    const $slider = $seasonSection.find('.tour-slider');
+    const $cards = $slider.find('.seasonal-tour');
+    
+    if ($cards.length > 3) {
+      // 3개 이상일 때만 슬라이더 활성화
+      initSlider($slider);
+    } else {
+      // 슬라이더 컨트롤 숨기기
+      $slider.find('.slider-arrow, .slider-dots').hide();
+    }
+  }
+  
   // 여러 투어 카드 표시 함수
   function displayTourCards(data) {
     const $container = $("#tourProductContainer");
@@ -209,7 +283,7 @@ $(document).ready(function () {
 
           // 이미지가 없으면 타입별 기본 이미지 사용
           if (!displayImage || displayImage.includes("no-image")) {
-            // 타입별 기본 이미지 경로 (실제 이미지 파일이 있다고 가정)
+            // 타입별 기본 이미지 경로
             const defaultImages = {
               culture: "/images/default-culture.jpg",
               healing: "/images/default-healing.jpg",
