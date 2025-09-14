@@ -1,5 +1,11 @@
 package com.example.act2gether.entity;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
+import com.example.act2gether.dto.MembersDTO;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -31,4 +37,14 @@ public class TravelGroupMembersEntity {
 
     @Column(name = "joined_at")
     private String joinedAt;
+
+    public static TravelGroupMembersEntity of(MembersDTO membersDTO) {
+       return TravelGroupMembersEntity.builder()
+            .memberId(UUID.randomUUID().toString())
+            .groupId(membersDTO.getGroupId())
+            .userId(membersDTO.getUserId())
+            .memberType(membersDTO.getMemberType())
+            .joinedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+            .build();
+    }
 }
