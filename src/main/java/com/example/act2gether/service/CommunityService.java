@@ -158,6 +158,18 @@ public class CommunityService {
         return true;
     }
 
+    @Transactional
+    public boolean saveCommentCount(PostDTO postDTO) {
+        PostsEntity postOpt = postsRepository.findById(postDTO.getPostId()).orElse(null);
+        if (postOpt == null) {
+            return false;
+        }
+
+        postOpt.saveCommentCount(postDTO.getCommentCount());
+        
+        return true;
+    }
+
      @Transactional
     public boolean savePostLike(PostDTO postDTO) {
         // 1) 사용자/멤버 확인

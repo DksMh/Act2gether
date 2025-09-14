@@ -53,6 +53,9 @@ public class PostsEntity {
     @Column(name = "updated_at")
     private String updatedAt;
 
+    @Column(name = "comment_count")
+    private int commentCount;
+
     // ✅ 단일 컬럼(JSON 문자열)로 저장하기 위한 컨버터 적용
     @Convert(converter = StringListJsonConverter.class)
     @Column(name = "pictures", columnDefinition = "TEXT")
@@ -77,6 +80,7 @@ public class PostsEntity {
         .type(null)
         // .isDeleted(false)
         .likesCount(0) 
+        .commentCount(0)
         .createdAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
         .updatedAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
         .pictures(null)
@@ -86,5 +90,9 @@ public class PostsEntity {
     }
     public void saveLikesCount(int likesCount) {
         this.likesCount = likesCount;
+    }
+
+    public void saveCommentCount(int commentCount) {
+        this.commentCount = commentCount;
     }
 }

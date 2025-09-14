@@ -553,7 +553,29 @@ function adjustCommentCount($post, delta) {
   const m = ($t.text()||'').match(/\d+/);
   const cur = m ? parseInt(m[0],10) : 0;
   const next = Math.max(0, cur + delta);
-  $t.text(`댓글 ${next}`);
+  const postId =
+  $post.data('postId') ||                 // jQuery data-api
+  $post.attr('data-post-id') ||           // HTML data attribute
+  ($post.data('post') && $post.data('post').id);  // 전체 객체에 있으면
+  console.log("postId : " + $post.attr('data-post-id'));
+  const data = {
+    postId: postId,
+    commentCount: next
+  };
+  $.ajax({
+        url: "/community/post/commentCount",
+        type: "POST",
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        success: function () {
+          $t.text(`댓글 ${next}`);
+          console.log("댓글 수 업데이트 완료");
+        },
+        error: function (req, status, err) {
+          console.error("댓글 수 업데이트 오휴:", err);
+        }
+      });
+ 
 }
 
 function loadComments($post, postId) {
@@ -693,7 +715,7 @@ $(document).on('click', '.comment-edit-save', function(){
 });
 });
 
-// 삭제
+// 댓글 삭제
 $(document).on('click', '.comment-del-btn', function(){
   const $item = $(this).closest('.comment-item');
   const $post = $(this).closest('.post-card');

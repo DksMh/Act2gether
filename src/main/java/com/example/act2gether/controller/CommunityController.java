@@ -168,5 +168,16 @@ public class CommunityController {
         communityService.delete(commentId);
         return ResponseEntity.ok().build();
     }
+
+    //posts의 commentCount 컬럼만 저장
+     @PostMapping("/post/commentCount")
+    public ResponseEntity<?> postCommentCount(@RequestBody PostDTO postDTO) {
+        boolean isSave = communityService.saveCommentCount(postDTO);
+        if(!isSave){
+            return ResponseEntity.badRequest().body("댓글 수 저장 실패했습니다.");
+        }
+
+        return ResponseEntity.ok("댓글 수 저장 성공했습니다.");
+    }
     
 }
