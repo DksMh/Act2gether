@@ -21,6 +21,7 @@ import com.example.act2gether.dto.CommentCreateRequest;
 import com.example.act2gether.dto.CommentResponse;
 import com.example.act2gether.dto.CommentUpdateRequest;
 import com.example.act2gether.dto.GroupMetaResponse;
+import com.example.act2gether.dto.MembersDTO;
 import com.example.act2gether.dto.PostDTO;
 import com.example.act2gether.dto.TravelGroupMembersDTO;
 import com.example.act2gether.entity.PostCommentEntity;
@@ -286,7 +287,7 @@ public class CommunityService {
                         s = s.substring(1, s.length() - 1); // [] 제거
                         if (s.isBlank()) return List.of();
                         return Arrays.stream(s.split(","))
-                                .map(x -> x.replaceAll("^\\s*\"|\"\\s*$", "")) // 앞뒤 따옴표 제거
+                                .map(x -> x.replaceAll("^\s*\"|\"\s*$", "")) // 앞뒤 따옴표 제거
                                 .filter(str -> !str.isBlank())
                                 .toList();
                     } catch (Exception ignore) {}
@@ -391,12 +392,20 @@ public class CommunityService {
         Map<String, Object> intro;
         try {
             intro = om.readValue(introJson, new TypeReference<>() {});
+            Object v1 = intro.get("toAge");                // 없으면 null
+            String toAge = (v1 != null) ? String.valueOf(v1) : null; 
+            Object v2 = intro.get("fromAge");                // 없으면 null
+            String fromAge = (v2 != null) ? String.valueOf(v2) : null; 
+
             String title = (String) intro.get("title");
             String description = (String) intro.get("description");
             String flexible = String.valueOf(intro.get("flexible"));
-            String noLimit =  String.valueOf(intro.get("noLimit"));
+            boolean noLimit =  (Boolean) intro.get("noLimit");
             String departureRegion = (String) intro.get("departureRegion");
             String genderPolicy = (String) intro.get("genderPolicy");
+            if(!noLimit){
+                genderPolicy = genderPolicy + "(" + fromAge +"대 ~ "+ toAge + "대)";
+            }
             String s = g.getStartDate();
             String e = g.getEndDate();
             String schedule = (s != null && e != null) ? (s + "~" + e.substring(5)) // "YYYY.MM.DD~MM.DD"
@@ -408,7 +417,6 @@ public class CommunityService {
                     description,
                     departureRegion,
                     flexible,
-                    noLimit,
                     s,
                     e,
                     schedule,
@@ -424,6 +432,16 @@ public class CommunityService {
         }
         return null;
         
+    }
+
+    public boolean saveMember(MembersDTO membersDTO) {
+     
+        List<TravelGroupMembersEntity> members = travelGroupMembersRepository.findByGroupIdAndUserId(membersDTO.getGroupId(), membersDTO.getUserId());
+        if(members.size() > 0){
+            return false;
+        }
+        travelGroupMembersRepository.save(TravelGroupMembersEntity.of(membersDTO));
+        return true;
     }
 
 }

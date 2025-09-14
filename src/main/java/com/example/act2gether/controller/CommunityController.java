@@ -52,6 +52,15 @@ public class CommunityController {
         return ResponseEntity.ok(travelGroupMembersDTO);
     }
 
+    @PostMapping("/member/save")
+    public ResponseEntity<?> setMembers(@RequestBody MembersDTO membersDTO) {
+        boolean isSetMember = communityService.saveMember(membersDTO);
+        if(!isSetMember){
+            return ResponseEntity.badRequest().body("이미 가입된 커뮤니티입니다.");
+        }
+        return ResponseEntity.ok().body("커뮤니티 가입 성공했습니다");
+    }
+
     @GetMapping("/groups")
     public ResponseEntity<?> getGroups(@RequestBody MembersDTO membersDTO) {
         List<TravelGroupsEntity> travelGroupsEntities = communityService.getGroups();

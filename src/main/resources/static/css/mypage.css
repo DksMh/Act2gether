@@ -281,6 +281,51 @@ body.modal-open { overflow: hidden; }
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+
+/* 공통 색 변수 없으면 기본값 */
+  :root{
+    --modal-bg:#fff; --modal-border:#e6e6e6; --text:#222; --muted:#6b7280;
+    --shadow:0 10px 30px rgba(0,0,0,.18); --radius:16px; --accent:#2563eb;
+  }
+  /* 컨테이너 */
+  #settingsModal[hidden]{ display:none; }
+  #settingsModal{ position:fixed; inset:0; z-index:10000; }
+  #settingsModal .modal-backdrop{
+    position:absolute; inset:0; background:rgba(0,0,0,.35);
+  }
+  #settingsModal .modal-panel{
+    position:absolute; inset:auto; left:50%; top:50%;
+    transform:translate(-50%,-50%) scale(.98);
+    width:min(560px, calc(100vw - 32px));
+    max-height:calc(100vh - 80px);
+    background:var(--modal-bg); border-radius:var(--radius);
+    box-shadow:var(--shadow); overflow:hidden; opacity:0; transition:.18s;
+    display:flex; flex-direction:column;
+  }
+  #settingsModal.open .modal-panel{ transform:translate(-50%,-50%) scale(1); opacity:1; }
+  /* 헤더 */
+  #settingsModal .modal-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 18px; border-bottom:1px solid var(--modal-border);
+  }
+  #settingsModal .modal-title{ font-size:20px; font-weight:700; color:var(--text); }
+  #settingsModal .modal-close{
+    border:0; background:transparent; font-size:22px; line-height:1;
+    padding:6px; border-radius:8px; cursor:pointer;
+  }
+  #settingsModal .modal-close:hover{ background:#f3f4f6; }
+  /* 리스트 */
+  #settingsModal .list{ padding:6px 0; overflow:auto; }
+  #settingsModal .item{
+    width:100%; display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding:18px; background:#fff; border:0; border-bottom:1px solid var(--modal-border);
+    cursor:pointer; text-align:left; font-size:16px; color:var(--text);
+  }
+  #settingsModal .item:last-child{ border-bottom:0; }
+  #settingsModal .item:hover{ background:#fafafa; }
+  #settingsModal .chev{ color:var(--muted); font-size:18px; }
+  /* 탈퇴 항목 강조 */
+  #settingsModal .item.danger{ color:#dc2626; }
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

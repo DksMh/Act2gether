@@ -2035,7 +2035,9 @@ window.tourDetail = {
 
     // 폼 데이터 수집
     const noAgeLimit = document.getElementById("noAgeLimit").checked;
+    var groupId =crypto.randomUUID();
     const groupData = {
+      groupId: groupId,
       tourId: this.currentTour.tourId,
       groupName: document.getElementById("groupName").value,
       startDate: document.getElementById("startDate").value,
@@ -2059,28 +2061,50 @@ window.tourDetail = {
 
     try {
       // API 호출
-      const response = await fetch("/api/travel-groups/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(groupData),
-        credentials: "include", // 세션 쿠키 포함
-      });
+const response = await fetch("/api/travel-groups/create", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(groupData),
+  credentials: "include", // 세션 쿠키 포함
+});
 
-      const result = await response.json();
+const result = await response.json();
 
-      if (result.success) {
-        this.showToast("여행 그룹이 성공적으로 생성되었습니다!", "success");
-        this.closeTravelModal();
+if (result.success) {
+  this.showToast("여행 그룹이 성공적으로 생성되었습니다!", "success");
 
-        // 커뮤니티 페이지로 이동
-        setTimeout(() => {
-          window.location.href = `/community?groupId=${result.groupId}`;
-        }, 1500);
-      } else {
-        this.showToast(result.message || "그룹 생성에 실패했습니다.", "error");
-      }
+  // 멤버 추가 payload
+  const data = {
+    groupId: groupId,
+    tourId: this.currentTour.tourId,
+    userId: this.currentUser,
+    memberType: "owner",
+  };
+
+  try {
+    const resJoin = await fetch("/community/member/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+      credentials: "include",
+    });
+      // 실패해도 커뮤니티로 보내고 싶으면 에러만 로그
+      if (!resJoin.ok) throw new Error("HTTP " + resJoin.status);
+      // 필요하면 const joinResult = await resJoin.json();
+      console.log("투어 커뮤니티 생성/참여 성공");
+    } catch (err) {
+      console.warn("투어 그룹 참여 실패(무시하고 이동):", err);
+      this.showToast("이미 참여 중일 수 있어요. 커뮤니티로 이동합니다.", "error");
+    }
+
+    this.closeTravelModal();
+    setTimeout(() => {
+      // 서버가 groupId를 반환해야 함
+      window.location.href = `/community?groupId=${encodeURIComponent(result.groupId)}`;
+    }, 800);
+  } else {
+    this.showToast(result.message || "그룹 생성에 실패했습니다.", "error");
+  }
     } catch (error) {
       console.error("여행 그룹 생성 오류:", error);
       this.showToast("그룹 생성 중 오류가 발생했습니다.", "error");

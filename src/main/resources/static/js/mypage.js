@@ -144,6 +144,193 @@ $(document).ready(function() {
     if (!btn) return;
     btn.classList.toggle('selected');
   });
+
+  // 모달 DOM이 없으면 생성
+  function ensureSettingsModal(){
+    let $m = $('#settingsModal');
+    if($m.length) return $m;
+
+    const html = `
+      <div id="settingsModal" hidden>
+        <div class="modal-backdrop" role="presentation"></div>
+        <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" tabindex="-1">
+          <div class="modal-header">
+            <div class="modal-title" id="settingsTitle">개인정보 설정</div>
+            <button class="modal-close" aria-label="닫기">✕</button>
+          </div>
+          <div class="list">
+            <button class="item" data-action="avatar">대표 사진 변경 <span class="chev">›</span></button>
+            <button class="item" data-action="profile">닉네임 / 거주지역 변경 <span class="chev">›</span></button>
+            <button class="item" data-action="password">비밀번호 변경 <span class="chev">›</span></button>
+            <button class="item" data-action="consents">정책 동의 이력 <span class="chev">›</span></button>
+            <button class="item danger" data-action="withdraw">서비스 탈퇴 <span class="chev">›</span></button>
+          </div>
+        </div>
+      </div>`;
+    $('body').append(html);
+    $m = $('#settingsModal');
+    return $m;
+  }
+
+  function openSettingsModal(){
+    const $m = ensureSettingsModal();
+    $m.removeAttr('hidden');
+    requestAnimationFrame(()=> $m.addClass('open')); // 애니메이션
+    $('body').css('overflow','hidden');              // 스크롤 잠금
+    // 포커스 이동
+    $m.find('.modal-panel').trigger('focus');
+  }
+
+  function closeSettingsModal(){
+    const $m = $('#settingsModal');
+    $m.removeClass('open');
+    setTimeout(()=>{ $m.attr('hidden',''); $('body').css('overflow',''); }, 160);
+  }
+
+  // 트리거: #settings 클릭 시 오픈
+  $('#settings').off('click.openSettings').on('click.openSettings', function(e){
+    e.preventDefault();
+    openSettingsModal();
+  });
+
+  // 닫기(배경/버튼/ESC)
+  $(document).on('click', '#settingsModal .modal-close, #settingsModal .modal-backdrop', closeSettingsModal);
+  $(document).on('keydown', function(e){
+    if(e.key === 'Escape' && $('#settingsModal').is(':visible')) closeSettingsModal();
+  });
+
+  // 항목 클릭 핸들러(필요시 실제 화면/모달/페이지로 변경)
+  $(document).on('click', '#settingsModal .item', function(){
+    const action = $(this).data('action');
+
+    switch(action){
+      case 'avatar':
+        // TODO: 프로필이미지 변경 모달/페이지 열기
+        openAvatarSheet();
+        break;
+      case 'profile':
+        if (window.showToast) showToast('닉네임/거주지역 변경 화면을 여는 중…', 'info');
+        break;
+      case 'password':
+        if (window.showToast) showToast('비밀번호 변경 화면을 여는 중…', 'info');
+        break;
+      case 'consents':
+        if (window.showToast) showToast('정책 동의 이력 조회 화면을 여는 중…', 'info');
+        break;
+      case 'withdraw':
+        // 실제로는 확인 다이얼로그 -> 탈퇴 API 호출 흐름 권장
+        if (confirm('정말 서비스에서 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+          // fetch('/api/account/withdraw', { method:'POST' }) …
+          if (window.showToast) showToast('탈퇴 요청을 처리했습니다.', 'success');
+        }
+        break;
+    }
+    // 필요 시 모달을 닫고 다음 화면으로 전환
+    // closeSettingsModal();
+  });
+
+  /** 아바타 변경 시트 열기 */
+function openAvatarSheet(){
+  const $modal = $('#settingsModal');
+  if ($('#avatarSheet').length) { $('#avatarSheet').remove(); }
+
+  const curUrl = getCurrentAvatarUrl();
+  const sheet = $(`
+    <div id="avatarSheet" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.25); z-index:10001;">
+      <div style="width:min(520px, 92vw); background:#fff; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.18); overflow:hidden;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid #eee;">
+          <strong>대표 사진 변경</strong>
+          <button class="as-close" style="border:0;background:transparent;font-size:18px;">✕</button>
+        </div>
+        <div style="padding:16px;">
+          <div style="display:flex; gap:16px; align-items:flex-start;">
+            <div style="flex:0 0 120px; height:120px; border-radius:9999px; overflow:hidden; border:1px solid #eee;">
+              <img id="avatarPreview" src="${curUrl}" alt="미리보기" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <div style="flex:1;">
+              <input type="file" id="avatarFile" accept="image/*">
+              <p style="color:#6b7280; font-size:12px; margin:8px 0 0;">
+                JPG/PNG, 최대 10MB. 정사각형 이미지가 가장 예뻐요 😊
+              </p>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid #eee;">
+          <button class="as-cancel" style="padding:8px 14px; border:1px solid #e5e7eb; background:#fff; border-radius:8px;">취소</button>
+          <button class="as-save"   style="padding:8px 14px; border:0; background:#2563eb; color:#fff; border-radius:8px;" disabled>저장</button>
+        </div>
+      </div>
+    </div>
+  `);
+
+  $modal.append(sheet);
+
+  // 파일 선택 → 미리보기
+  let pickedFile = null;
+  $('#avatarFile').on('change', function(e){
+    const f = (e.target.files||[])[0];
+    if (!f) return;
+    if (!f.type.startsWith('image/')) { toast('이미지 파일만 업로드할 수 있어요.','warning'); return; }
+    if (f.size > 10 * 1024 * 1024) { toast('최대 10MB까지 가능합니다.','warning'); return; }
+
+    pickedFile = f;
+    const url = URL.createObjectURL(f);
+    $('#avatarPreview').attr('src', url);
+    sheet.find('.as-save').prop('disabled', false);
+  });
+
+  // 닫기
+  sheet.on('click', '.as-close, .as-cancel', function(){
+    sheet.remove();
+  });
+
+  // 저장(업로드)
+  sheet.on('click', '.as-save', function(){
+    if (!pickedFile) { toast('먼저 이미지를 선택해주세요.','warning'); return; }
+
+    const fd = new FormData();
+    console.log("username >>> " + $('#nickname').text().trim());
+    fd.append('username', $('#nickname').text().trim());
+    fd.append('file', pickedFile);
+
+    const $btn = $(this).prop('disabled', true).text('업로드 중…');
+    $.ajax({
+      url: '/profile/account/avatar',
+      method: 'POST',
+      data: fd, processData: false, contentType: false
+    }).done(function(resp){
+      // 서버가 avatarUrl 반환한다고 가정
+      const newUrl = (resp && resp.avatarUrl) ? (resp.avatarUrl + '?v=' + Date.now()) : getCurrentAvatarUrl(true);
+      applyAvatarToPage(newUrl);
+      toast('대표 사진이 변경되었습니다!','success');
+      sheet.remove();
+    }).fail(function(xhr){
+      console.error(xhr);
+      toast('업로드에 실패했습니다.','danger');
+      $btn.prop('disabled', false).text('저장');
+    });
+  });
+}
+
+function getCurrentAvatarUrl(useBust){
+  // 페이지의 원형 아바타 이미지 셀렉터 맞춰서 사용
+  const $img = $('#profileAvatar, .profile-avatar img').eq(0);
+  const url = $img.attr('src');
+  return useBust ? (url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now()) : url;
+}
+
+function applyAvatarToPage(url){
+  const $img = $('#profileAvatar, .profile-avatar img').eq(0);
+  if ($img.length) $img.attr('src', url);
+}
+
+// 토스트 헬퍼(프로젝트의 showToast가 있으면 그걸 사용)
+function toast(msg, type){ if (window.showToast) showToast(msg, type||'info'); else alert(msg); }
+
+// 설정 모달의 “대표 사진 변경” 항목 클릭 → 아바타 시트 열기
+// $(document).on('click', '#settingsModal .item[data-action="avatar"]', function(){
+//   openAvatarSheet();
+// });
 });
 
 // 사용자 관심사 업데이트

@@ -23,7 +23,9 @@
     <span id="emailSpan" th:text="${email}" style="display:none">없음</span>
     <!-- 상단 프로필 -->
     <div class="profile">
-      <div class="avatar"></div>
+      <div class="avatar"><img id="profileAvatar"
+     th:src="@{'/profile/avatars/user/' + ${username}}"
+     alt="프로필" /></div>
       <div class="user-meta">
         <h1><span id="nickname"></span>님</h1>
         <div class="sub">
@@ -35,7 +37,7 @@
       <div style="margin-left:auto" class="row">
         <!-- <span class="chip">선호 투어 정보 수정</span> -->
         <button class="btn-sm" id="tour">선호 투어 정보 수정</button>
-        <button class="btn-sm">설정</button>
+        <button class="btn-sm" id="settings">개인정보 설정</button>
       </div>
     </div>
 

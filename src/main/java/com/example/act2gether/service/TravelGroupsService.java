@@ -41,7 +41,8 @@ public class TravelGroupsService {
   public String createTravelGroup(TravelGroupCreateDTO dto, String userId) {
     try {
       // 고유 ID 생성
-      String groupId = UUID.randomUUID().toString();
+      String groupId = dto.getGroupId();
+      // String groupId = UUID.randomUUID().toString();
 
       // 현재 시간
       String createdAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
