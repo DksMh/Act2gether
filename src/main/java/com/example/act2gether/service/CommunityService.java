@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.act2gether.dto.CommentCreateRequest;
 import com.example.act2gether.dto.CommentResponse;
 import com.example.act2gether.dto.CommentUpdateRequest;
+import com.example.act2gether.dto.GroupMetaResponse;
 import com.example.act2gether.dto.PostDTO;
 import com.example.act2gether.dto.TravelGroupMembersDTO;
 import com.example.act2gether.entity.PostCommentEntity;
@@ -35,6 +37,10 @@ import com.example.act2gether.repository.PostsRepository;
 import com.example.act2gether.repository.TravelGroupMembersRepository;
 import com.example.act2gether.repository.TravelGroupsRepository;
 import com.example.act2gether.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -371,6 +377,53 @@ public class CommunityService {
     @Transactional
     public void delete(String commentId) {
         commentRepository.deleteById(commentId);
+    }
+
+    public GroupMetaResponse getMeta(String groupId) {
+        var g = travelGroupsRepository.findById(groupId)
+                .orElseThrow(() -> new NoSuchElementException("group not found"));
+
+        long members = travelGroupMembersRepository.countByGroupId(groupId);
+        String introJson = g.getIntro();          // e.g. {"title":"...","region":"서울","tags":["국내","여행"]}
+        ObjectMapper om = new ObjectMapper();
+
+        // 1) Map으로 읽기
+        Map<String, Object> intro;
+        try {
+            intro = om.readValue(introJson, new TypeReference<>() {});
+            String title = (String) intro.get("title");
+            String description = (String) intro.get("description");
+            String flexible = String.valueOf(intro.get("flexible"));
+            String noLimit =  String.valueOf(intro.get("noLimit"));
+            String departureRegion = (String) intro.get("departureRegion");
+            String genderPolicy = (String) intro.get("genderPolicy");
+            String s = g.getStartDate();
+            String e = g.getEndDate();
+            String schedule = (s != null && e != null) ? (s + "~" + e.substring(5)) // "YYYY.MM.DD~MM.DD"
+                            : (s != null ? s : (e != null ? e : null));
+
+            return new GroupMetaResponse(
+                    g.getGroupId(),
+                    title,
+                    description,
+                    departureRegion,
+                    flexible,
+                    noLimit,
+                    s,
+                    e,
+                    schedule,
+                    genderPolicy,
+                    members
+            );
+        } catch (JsonMappingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (JsonProcessingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
+        
     }
 
 }

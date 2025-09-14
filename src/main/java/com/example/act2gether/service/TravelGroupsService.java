@@ -67,13 +67,13 @@ public class TravelGroupsService {
       String genderPolicy;
       switch (dto.getGenderLimit()) {
         case "male":
-          genderPolicy = "male";
+          genderPolicy = "남성";
           break;
         case "female":
-          genderPolicy = "female";
+          genderPolicy = "여성";
           break;
         default:
-          genderPolicy = "both"; // 성별 무관
+          genderPolicy = "성별무관"; // 성별 무관
           break;
       }
       introJson.put("genderPolicy", genderPolicy);

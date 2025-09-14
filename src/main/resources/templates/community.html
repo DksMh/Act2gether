@@ -82,24 +82,20 @@
               </h3>
               <div class="info-list">
                 <div class="info-item">
-                  <span class="info-label">모임 이름</span>
+                  <span class="info-label" >모임 이름</span>
                   <span class="info-value"
-                    >중년 여성들의 소박한 국내 여행 기록</span
+                    id="gatheringName">중년 여성들의 소박한 국내 여행 기록</span
                   >
                 </div>
                 <div class="info-item">
                   <span class="info-label">모임 성격</span>
                   <span class="info-value">국내여행</span>
                 </div>
-                <div class="info-item">
-                  <span class="info-label">음성 채팅</span>
-                  <span class="info-value badge-success">사용</span>
-                </div>
               </div>
 
               <div class="description-box">
                 <h4>모임 소개</h4>
-                <p>
+                <p id="gatheringDes">
                   친근하고 자유로운 분위기로 30대 중반부터 60대 중후반까지의
                   다양한 연령대가 함께하는 모임입니다. 국내의 맛있는 음식들을
                   즐기고 서로 좋은 정보를 나누며 친목을 도모하는 것이
@@ -181,7 +177,7 @@
             </div> -->
 
             <!-- 빠른 링크 -->
-            <div class="sidebar-card">
+            <!-- <div class="sidebar-card">
               <h3 class="card-title">
                 <span class="title-icon">🔗</span>
                 빠른 메뉴
@@ -204,7 +200,7 @@
                   <span class="link-text">채팅방</span>
                 </a>
               </div>
-            </div>
+            </div> -->
           </aside>
           <!-- 오른쪽: 게시글 영역 -->
           <div class="posts-section">
@@ -542,10 +538,12 @@ function setLoading(on) {
 
 async function loadPosts() {
   setLoading(true);
-  const groupId = '1f2d3c4b-5a6e-4f80-9123-456789abcdef';
+  const qp = new URLSearchParams(window.location.search);
+  const groupId1 = qp.get('groupId');
+  // const groupId = '1f2d3c4b-5a6e-4f80-9123-456789abcdef';
   try {
     const payload = {
-      groupId: groupId,
+      groupId: groupId1,
     };
 
    const res = await fetch(POSTS_ENDPOINT, {
@@ -648,8 +646,38 @@ $(document).on('click', '.pagination .page-btn.next', function () {
   setPage(currentPage + 1);
 });
 
-document.addEventListener('DOMContentLoaded', loadPosts);
+async function loadGroupMeta() {
+    const qp = new URLSearchParams(window.location.search);
+  const groupId = qp.get('groupId');
 
+  try {
+    const res = await fetch(`/community/group/${encodeURIComponent(groupId)}/meta`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const m = await res.json();
+    console.log(m);
+
+    document.querySelector('.community-title')  .textContent = m.title ?? '';
+    document.querySelector('.community-subtitle').textContent = m.description ?? '';
+
+    // 메타 값 주입
+    document.querySelector('.meta-item .meta-label + .meta-value') // 첫번째 value를 잡기 어려우면 아래처럼 각각 지정
+    // 권장: 각각 선택자 명시해두기
+    document.querySelector('.meta-item:nth-child(1) .meta-value').textContent = (m.members ?? 0) + '명';
+    document.querySelector('.meta-item:nth-child(2) .meta-value').textContent = m.departureRegion ?? '';
+    document.querySelector('.meta-item:nth-child(3) .meta-value').textContent = m.schedule ?? '';
+    document.querySelector('.meta-item:nth-child(4) .meta-value').textContent = m.genderPolicy ?? '';
+    $('#gatheringName').text(m.title);
+    $('#gatheringDes').text(m.description);
+    // 배너 이미지가 있다면 배경도 교체 가능
+    // document.querySelector('.banner').style.backgroundImage = `url(${m.bannerImageUrl})`;
+  } catch (e) {
+    console.error('그룹 메타 로드 실패:', e);
+    showToast('그룹 정보를 불러오지 못했습니다.', 'danger');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadPosts);
+document.addEventListener('DOMContentLoaded', loadGroupMeta);
 (function(){
   const lb = document.getElementById('imageLightbox');
   const imgEl = lb.querySelector('#lbImage');
