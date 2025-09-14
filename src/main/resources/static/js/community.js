@@ -8,7 +8,9 @@ const USER_PERMISSIONS = {
 };
 
 $(document).ready(function () {
-  const groupId = '1f2d3c4b-5a6e-4f80-9123-456789abcdef';
+  // const groupId = '1f2d3c4b-5a6e-4f80-9123-456789abcdef';
+   const qp = new URLSearchParams(window.location.search);
+  const groupId = qp.get('groupId');
   loadSidebarMembers(groupId);
   // 초기화 함수들
   initSeniorFriendlyFeatures();
@@ -309,7 +311,9 @@ function initWritePost() {
     }
 
     // 🔎 그룹 ID는 실제 값으로 교체
-    const groupId = window.currentGroupId || "1f2d3c4b-5a6e-4f80-9123-456789abcdef";
+    const qp = new URLSearchParams(window.location.search);
+  const groupId = qp.get('groupId');
+    // const groupId = window.currentGroupId || "1f2d3c4b-5a6e-4f80-9123-456789abcdef";
 
    // 항상 FormData 전송 (이미지 유무와 무관)
     const fd = new FormData();
@@ -1549,8 +1553,10 @@ function openMemberModal() {
 
 // 멤버 리스트 생성
 function generateMemberList() {
+  const qp = new URLSearchParams(window.location.search);
+  const groupId1 = qp.get('groupId');
   const groupId = {
-        groupId: "1f2d3c4b-5a6e-4f80-9123-456789abcdef" //이 정보 화면에서 갖고와야함(임시)
+        groupId: groupId1 //이 정보 화면에서 갖고와야함(임시)
     };
   const members = []
   // 멤버정보 갖고오기

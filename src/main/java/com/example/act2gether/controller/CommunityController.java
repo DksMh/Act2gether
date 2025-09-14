@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.act2gether.dto.CommentCreateRequest;
 import com.example.act2gether.dto.CommentResponse;
 import com.example.act2gether.dto.CommentUpdateRequest;
+import com.example.act2gether.dto.GroupMetaResponse;
 import com.example.act2gether.dto.MembersDTO;
 import com.example.act2gether.dto.PostDTO;
 import com.example.act2gether.dto.ResetPasswordDTO;
@@ -55,6 +56,11 @@ public class CommunityController {
     public ResponseEntity<?> getGroups(@RequestBody MembersDTO membersDTO) {
         List<TravelGroupsEntity> travelGroupsEntities = communityService.getGroups();
         return ResponseEntity.ok(travelGroupsEntities);
+    }
+
+    @GetMapping("/group/{groupId}/meta")
+    public ResponseEntity<GroupMetaResponse> meta(@PathVariable String groupId) {
+        return ResponseEntity.ok(communityService.getMeta(groupId));
     }
 
     @PostMapping("/all/posts")
@@ -179,5 +185,7 @@ public class CommunityController {
 
         return ResponseEntity.ok("댓글 수 저장 성공했습니다.");
     }
+
+
     
 }

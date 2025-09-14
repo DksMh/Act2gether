@@ -11,4 +11,5 @@ public interface TravelGroupMembersRepository extends JpaRepository<TravelGroupM
     List<TravelGroupMembersEntity> findByGroupId(String groupId);
     Optional<TravelGroupMembersEntity> findByUserId(String userId);
     Optional<TravelGroupMembersEntity> findByMemberId(String memberId);
+    long countByGroupId(String groupId);  
 }
