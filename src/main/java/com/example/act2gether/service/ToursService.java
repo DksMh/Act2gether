@@ -102,4 +102,45 @@ public class ToursService {
       return 0;
     }
   }
+
+  // ToursService.java에 추가
+  /**
+   * 지역 코드로 해당 지역 투어 정보 조회
+   */
+  public List<ToursEntity> getToursByRegionCode(String regionCode) {
+      try {
+          // 지역코드를 region 문자열로 변환
+          String regionName = REGION_NAME_MAP.get(regionCode);
+          if (regionName == null) {
+              log.warn("알 수 없는 지역 코드: {}", regionCode);
+              return new ArrayList<>();
+          }
+          
+          // region 컬럼으로 조회
+          return toursRepository.findByRegion(regionName);
+      } catch (Exception e) {
+          log.error("지역별 투어 조회 실패: regionCode={}, error={}", regionCode, e.getMessage());
+          return new ArrayList<>();
+      }
+  }
+
+  /**
+   * 랜덤 지역 투어 1개 조회 (여행 꿀정보용)
+   */
+  public ToursEntity getRandomTourByRegion(String regionCode) {
+      try {
+          List<ToursEntity> tours = getToursByRegionCode(regionCode);
+          if (tours.isEmpty()) {
+              return null;
+          }
+          
+          // 랜덤으로 하나 선택
+          Random random = new Random();
+          return tours.get(random.nextInt(tours.size()));
+      } catch (Exception e) {
+          log.error("랜덤 투어 조회 실패: {}", e.getMessage());
+          return null;
+      }
+  }
+
 }

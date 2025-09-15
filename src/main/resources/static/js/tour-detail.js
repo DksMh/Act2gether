@@ -20,6 +20,11 @@ window.tourDetail = {
   isWishlisted: false,
   // 카카오 지도
   currentInfoWindow: null,
+  // 카카오 지도 의료시설 관련 추가
+  medicalMarkers: [],  // 병원/약국 마커 저장 배열
+  showMedical: false,  // 의료시설 표시 상태
+  ps: null,  // 카카오 장소 검색 객체
+
   // 갤러리 상태
   currentImageIndex: 0,
   totalImages: 0,
@@ -144,6 +149,9 @@ window.tourDetail = {
     this.renderSpotAccordions();
     this.renderImageGallery();
     this.setupEventListeners();
+
+    // 🆕 지역 특색 정보 로드
+    this.loadRegionTips();
 
     // 찜하기 상태 확인
     this.checkWishlistStatus(sessionData.tourId);
@@ -423,6 +431,53 @@ window.tourDetail = {
   /**
    * 실제 카카오맵 생성수정 - 경로 라인 추가)
    */
+  // createKakaoMap(container) {
+  //   if (!this.currentSpots.length) return;
+
+  //   try {
+  //     const firstSpot = this.currentSpots[0];
+  //     const centerLat = parseFloat(firstSpot.mapy);
+  //     const centerLng = parseFloat(firstSpot.mapx);
+
+  //     if (isNaN(centerLat) || isNaN(centerLng)) {
+  //       throw new Error("유효하지 않은 좌표 정보");
+  //     }
+
+  //     const mapOption = {
+  //       center: new kakao.maps.LatLng(centerLat, centerLng),
+  //       level: this.currentSpots.length > 3 ? 9 : 7, // 관광지 수에 때라 줌레벨 조정
+  //     };
+
+  //     this.kakaoMap = new kakao.maps.Map(container, mapOption);
+
+  //     // 지도 클릭시 인포윈도우 닫기
+  //     kakao.maps.event.addListener(this.kakaoMap, "click", () => {
+  //       this.closeInfoWindow();
+  //     });
+
+  //     // 관광지별 마커 생성
+  //     this.currentSpots.forEach((spot, index) => {
+  //       this.createSpotMarker(spot, index + 1);
+  //     });
+
+  //     // 투어 경로 라인 그리기
+  //     this.createTourPath();
+
+  //     // 지도 영역 자동 조정
+  //     this.fitMapBounds();
+
+  //     console.log(
+  //       "카카오맵 생성 완료:",
+  //       this.currentSpots.length + "개 마커 + 경로 라인"
+  //     );
+  //   } catch (error) {
+  //     console.error("카카오맵 생성 실패:", error);
+  //     throw error;
+  //   }
+  // },
+  /**
+   * 실제 카카오맵 생성 (수정된 버전)
+   */
   createKakaoMap(container) {
     if (!this.currentSpots.length) return;
 
@@ -437,10 +492,13 @@ window.tourDetail = {
 
       const mapOption = {
         center: new kakao.maps.LatLng(centerLat, centerLng),
-        level: this.currentSpots.length > 3 ? 9 : 7, // 관광지 수에 때라 줌레벨 조정
+        level: this.currentSpots.length > 3 ? 9 : 7,
       };
 
       this.kakaoMap = new kakao.maps.Map(container, mapOption);
+
+      // 장소 검색 객체 생성
+      this.ps = new kakao.maps.services.Places();
 
       // 지도 클릭시 인포윈도우 닫기
       kakao.maps.event.addListener(this.kakaoMap, "click", () => {
@@ -458,14 +516,186 @@ window.tourDetail = {
       // 지도 영역 자동 조정
       this.fitMapBounds();
 
-      console.log(
-        "카카오맵 생성 완료:",
-        this.currentSpots.length + "개 마커 + 경로 라인"
-      );
+      // 의료시설 토글 버튼 추가
+      this.addMedicalToggleButton();
+
+      console.log("카카오맵 생성 완료:", this.currentSpots.length + "개 마커 + 경로 라인");
     } catch (error) {
       console.error("카카오맵 생성 실패:", error);
       throw error;
     }
+  },
+
+  /**
+   * 의료시설 토글 버튼 추가
+   */
+  addMedicalToggleButton() {
+    const mapContainer = document.getElementById('tour-kakao-map');
+    if (!mapContainer) return;
+
+    // 기존 버튼이 있으면 제거
+    const existingButton = document.getElementById('medicalToggleBtn');
+    if (existingButton) {
+      existingButton.remove();
+    }
+
+    // 토글 버튼 생성
+    const toggleBtn = document.createElement('div');
+    toggleBtn.id = 'medicalToggleBtn';
+    toggleBtn.className = 'medical-toggle-btn';
+    toggleBtn.innerHTML = `
+      <button onclick="tourDetail.toggleMedicalFacilities()" class="toggle-medical">
+        <span class="medical-icon">🏥</span>
+        <span class="toggle-text">병원/약국 ${this.showMedical ? 'OFF' : 'ON'}</span>
+      </button>
+    `;
+    
+    mapContainer.appendChild(toggleBtn);
+  },
+
+  /**
+   * 병원/약국 표시 토글
+   */
+  toggleMedicalFacilities() {
+    this.showMedical = !this.showMedical;
+    
+    const toggleBtn = document.querySelector('.medical-toggle-btn .toggle-text');
+    if (toggleBtn) {
+      toggleBtn.textContent = `병원/약국 ${this.showMedical ? 'OFF' : 'ON'}`;
+    }
+
+    if (this.showMedical) {
+      this.searchMedicalFacilities();
+    } else {
+      this.clearMedicalMarkers();
+    }
+  },
+
+  /**
+   * 병원과 약국 검색
+   */
+  searchMedicalFacilities() {
+    if (!this.ps || !this.kakaoMap) return;
+
+    // 각 관광지 주변 검색
+    this.currentSpots.forEach((spot) => {
+      const lat = parseFloat(spot.mapy);
+      const lng = parseFloat(spot.mapx);
+      
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const position = new kakao.maps.LatLng(lat, lng);
+        
+        // 병원 검색
+        this.ps.categorySearch('HP8', (data, status) => {
+          if (status === kakao.maps.services.Status.OK) {
+            data.forEach(place => {
+              this.createMedicalMarker(place, 'hospital');
+            });
+          }
+        }, {
+          location: position,
+          radius: 2000, // 2km 반경
+          size: 5 // 최대 5개
+        });
+
+        // 약국 검색
+        this.ps.categorySearch('PM9', (data, status) => {
+          if (status === kakao.maps.services.Status.OK) {
+            data.forEach(place => {
+              this.createMedicalMarker(place, 'pharmacy');
+            });
+          }
+        }, {
+          location: position,
+          radius: 1000, // 1km 반경
+          size: 3 // 최대 3개
+        });
+      }
+    });
+  },
+
+  /**
+   * 의료시설 마커 생성
+   */
+  createMedicalMarker(place, type) {
+    const position = new kakao.maps.LatLng(place.y, place.x);
+    
+    // 마커 이미지 설정
+    const imageSrc = type === 'hospital' 
+      ? this.createMedicalMarkerImage('🏥', '#FF6B6B')
+      : this.createMedicalMarkerImage('💊', '#4ECDC4');
+    const imageSize = new kakao.maps.Size(25, 25);
+    const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+
+    const marker = new kakao.maps.Marker({
+      position: position,
+      image: markerImage,
+      title: place.place_name
+    });
+
+    marker.setMap(this.kakaoMap);
+    this.medicalMarkers.push(marker);
+
+    // 인포윈도우 생성
+    const infoWindow = new kakao.maps.InfoWindow({
+      content: `
+        <div class="medical-infowindow">
+          <strong>${place.place_name}</strong>
+          <p>${place.road_address_name || place.address_name}</p>
+          ${place.phone ? `<p>📞 ${place.phone}</p>` : ''}
+          <p class="medical-distance">거리: ${place.distance ? place.distance + 'm' : '정보없음'}</p>
+        </div>
+      `,
+      removable: true
+    });
+
+    // 마커 클릭 이벤트
+    kakao.maps.event.addListener(marker, 'click', () => {
+      if (this.currentInfoWindow) {
+        this.currentInfoWindow.close();
+      }
+      infoWindow.open(this.kakaoMap, marker);
+      this.currentInfoWindow = infoWindow;
+    });
+  },
+
+  /**
+   * 의료시설 마커 이미지 생성
+   */
+  createMedicalMarkerImage(emoji, bgColor) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 25;
+    canvas.height = 25;
+    const ctx = canvas.getContext('2d');
+
+    // 원형 배경
+    ctx.fillStyle = bgColor;
+    ctx.beginPath();
+    ctx.arc(12.5, 12.5, 12, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // 테두리
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 이모지
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, 12.5, 12.5);
+
+    return canvas.toDataURL();
+  },
+
+  /**
+   * 의료시설 마커 제거
+   */
+  clearMedicalMarkers() {
+    this.medicalMarkers.forEach(marker => {
+      marker.setMap(null);
+    });
+    this.medicalMarkers = [];
   },
 
   /**
@@ -1625,6 +1855,82 @@ window.tourDetail = {
     };
     return icons[category] || "🍽️";
   },
+
+  /**
+   * 지역별 여행 꿀정보 로드
+   */
+  async loadRegionTips() {
+      const tipsSection = document.getElementById('tourTipsSection');
+      if (!tipsSection || !this.currentTour) return;
+      
+      try {
+          // 현재 투어의 지역 코드 가져오기
+          const areaCode = this.currentTour.areaCode || '1';
+          
+          const response = await fetch(`/tour-detail/region-tips/${areaCode}`);
+          const result = await response.json();
+          
+          if (result.success && result.hasData && result.data) {
+              // 데이터가 있을 때
+              this.renderRegionTips(result.data);
+          } else {
+              // 데이터가 없을 때 - 준비 중 표시
+              this.renderPreparingTips(result.regionName || this.currentTour.region);
+          }
+      } catch (error) {
+          console.error('지역 팁 로드 실패:', error);
+          this.renderPreparingTips(this.currentTour.region);
+      }
+  },
+
+  /**
+   * 준비 중 표시
+   */
+  renderPreparingTips(regionName) {
+      const tipsSection = document.getElementById('tourTipsSection');
+      if (!tipsSection) return;
+      
+      const html = `
+          <h2 class="section-title">💡 여행 꿀정보</h2>
+          <div class="tips-placeholder preparing">
+              <div class="placeholder-icon">🚧</div>
+              <h3>${regionName} 지역 특색 정보 준비 중</h3>
+              <p>더 나은 여행 정보를 제공하기 위해 준비하고 있습니다.</p>
+              <p class="coming-soon">곧 업데이트 예정입니다!</p>
+          </div>
+      `;
+      
+      tipsSection.innerHTML = html;
+  },
+
+  /**
+   * 지역 특색 정보 렌더링 (데이터가 있을 때)
+   */
+  renderRegionTips(tipData) {
+      const tipsSection = document.getElementById('tourTipsSection');
+      if (!tipsSection) return;
+      
+      let html = `
+          <h2 class="section-title">💡 ${tipData.region} 여행 꿀정보</h2>
+          <div class="tips-content">
+              <div class="region-special-tour">
+                  <div class="special-tour-header">
+                      <span class="special-icon">🎯</span>
+                      <h3>${tipData.title || '지역 특색 체험'}</h3>
+                  </div>
+                  <p class="special-description">${tipData.description || ''}</p>
+                  ${tipData.url ? `
+                      <a href="${tipData.url}" target="_blank" class="special-link">
+                          자세히 보기 →
+                      </a>
+                  ` : ''}
+              </div>
+          </div>
+      `;
+      
+      tipsSection.innerHTML = html;
+  },
+
 
   /**
    * ❤️ 찜하기 기능 (AJAX)
