@@ -8,7 +8,7 @@
   width: 100%;
   height: 25rem;
   overflow: hidden;
-  border-radius: 0.625rem;
+  /* border-radius: 0.625rem; */
   box-shadow: 0 0.25rem 0.375rem rgba(20, 20, 20, 0.1);
 }
 
@@ -162,7 +162,7 @@
 
 /* ===== 투어 상품 카드 (6개 관광지 묶음) ===== */
 .tour-container {
-  padding: 2rem 0;
+  /* padding: 2rem 0; */
 }
 
 /* 투어 상품 그리드 */
@@ -170,9 +170,10 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
-  padding: 2rem 0;
+  /* padding: 2rem 0; */
 }
 
+/* ===== 투어 상품 카드 수정 (6개 관광지 묶음) ===== */
 .tour-product-card {
   background: var(--color-white);
   border-radius: 0.75rem;
@@ -188,7 +189,6 @@
   box-shadow: 0 0.5rem 1.5rem rgba(20, 20, 20, 0.12);
 }
 
-/* 간소화된 투어 카드 */
 .tour-product-card.compact .tour-places.compact {
   padding: 1rem 1.5rem;
 }
@@ -203,13 +203,13 @@
 }
 
 .more-places {
-  padding: 0.75rem;
+  /* padding: 0.75rem; */
   text-align: center;
   color: var(--color-gray-500);
   font-size: var(--font-p);
   font-style: italic;
-  border-top: 0.0625rem dashed var(--color-gray-200);
-  margin-top: 0.5rem;
+  /* border-top: 0.0625rem dashed var(--color-gray-200); */
+  /* margin-top: 0.5rem; */
 }
 
 .more-places span {
@@ -240,17 +240,11 @@
 .tour-header h3 {
   font-size: var(--font-h4);
   font-weight: var(--weight-semibold);
+  color: #fff;
   margin: 0;
 }
 
-.tour-count {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: var(--font-p);
-  font-weight: var(--weight-medium);
-}
-
+/* 투어 메인 이미지 컨테이너 */
 .tour-main-image {
   height: 20rem;
   overflow: hidden;
@@ -263,6 +257,21 @@
   object-fit: cover;
 }
 
+/* 투어 카운트 배지 - 이미지 위에 표시 */
+.tour-count-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(20, 20, 20, 0.8);
+  color: var(--color-white);
+  padding: 0.5rem 1rem;
+  border-radius: 1.5rem;
+  font-size: var(--font-p);
+  font-weight: var(--weight-semibold);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
 .tour-places {
   padding: 1.5rem;
 }
@@ -368,10 +377,10 @@
   padding: 0 3rem;
 }
 
-.tour-cards-wrapper {
+/* .tour-cards-wrapper {
   overflow: hidden;
   position: relative;
-}
+} */
 
 .tour-cards {
   display: flex;
@@ -512,11 +521,12 @@
   transition: all 0.3s ease;
   cursor: pointer;
   min-height: 24rem;
+  width: 100%;
 }
 
 .tour-card.seasonal-tour:hover {
   transform: translateY(-0.5rem);
-  box-shadow: 0 0.75rem 1.5rem rgba(20, 20, 20, 0.12);
+  /* box-shadow: 0 0.75rem 1.5rem rgba(20, 20, 20, 0.12); */
 }
 
 /* 지역 배지 */
@@ -627,29 +637,38 @@
   color: var(--color-black);
 }
 
-/* 카드 하단 액션 영역 */
-.tour-action-area {
-  padding: 0.75rem 1rem;
-  border-top: 1px solid var(--color-gray-100);
-  background: var(--color-gray-050);
-  transition: all 0.3s ease;
+/* 카드 하단 액션 영역 - 호버 시 표시 */
+.hover-action {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: rgba(20, 20, 20, 0.95);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  z-index: 10;
 }
 
-.seasonal-tour:hover .tour-action-area {
+.seasonal-tour:hover .hover-action {
+  transform: translateY(0);
+}
+
+.hover-action .btn-tour-detail {
+  width: 100%;
+  padding: 0.75rem;
   background: var(--color-main);
-}
-
-.seasonal-tour .tour-action-text {
-  text-align: center;
-  font-size: var(--font-p);
-  color: var(--color-gray-500);
-  font-weight: var(--weight-medium);
-  transition: color 0.3s ease;
-}
-
-.seasonal-tour:hover .tour-action-text {
   color: var(--color-white);
+  border: none;
+  border-radius: 0.5rem;
+  font-size: var(--font-h6);
   font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.hover-action .btn-tour-detail:hover {
+  background: var(--color-alarm);
 }
 
 /* 데이터 없음 카드 */
@@ -684,21 +703,22 @@
 /* 계절별 섹션 슬라이더 */
 .season-section .tour-slider {
   position: relative;
-  padding: 0 3.5rem;
+  padding: 0 2.5rem;
   margin: 0 auto;
-  max-width: 100%;
+  max-width: var(--grid-width);
 }
 
 .season-section .tour-cards-wrapper {
   overflow: hidden;
   position: relative;
   margin: 0 auto;
+  max-width: 100%;
 }
 
 .season-section .tour-cards {
-  display: flex;
-  transition: transform 0.3s ease;
-  gap: 1.5rem;
+  /* display: grid;
+  grid-template-columns: repeat(3, 1fr); */
+  /* gap: 1.5rem; */
   padding: 0.5rem;
 }
 
@@ -709,7 +729,7 @@
 }
 
 .season-section .tour-cards-wrapper.loading::after {
-  content: '계절별 투어를 불러오는 중...';
+  content: "계절별 투어를 불러오는 중...";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -726,7 +746,7 @@
 /* ===== 지역 필터 ===== */
 .region-filter {
   display: flex;
-  justify-content: center;
+  justify-content: left;
   gap: 0.5rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
@@ -826,7 +846,8 @@
   border: 0.0625rem solid var(--color-gray-200);
 }
 
-.companion-recommend-section .btn-primary {
+.companion-recommend-section .btn-primary,
+.companion-recommend-section button.btn-primary {
   background: var(--color-main);
   color: var(--color-white);
   border: none;
@@ -836,9 +857,12 @@
   font-size: var(--font-h6);
   font-weight: var(--weight-medium);
   transition: all 0.3s;
+  display: inline-block;
+  width: auto;
 }
 
-.companion-recommend-section .btn-primary:hover {
+.companion-recommend-section .btn-primary:hover,
+.companion-recommend-section button.btn-primary:hover {
   background: var(--color-alarm);
   transform: translateY(-0.125rem);
 }
@@ -888,16 +912,25 @@
   border: 0.0625rem solid #ffccb3;
 }
 
-.extra-services .btn-primary {
+.extra-services .btn-primary,
+.extra-services button.btn-primary {
   background: var(--color-main);
   color: var(--color-white);
   padding: 0.5rem 1.5rem;
   font-size: var(--font-h6);
   font-weight: var(--weight-medium);
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-block;
+  width: auto;
 }
 
-.extra-services .btn-primary:hover {
+.extra-services .btn-primary:hover,
+.extra-services button.btn-primary:hover {
   background: var(--color-alarm);
+  transform: translateY(-0.125rem);
 }
 
 /* ===== 로딩 상태 ===== */
@@ -918,7 +951,8 @@
 }
 
 /* ===== 반응형 - 태블릿 ===== */
-@media (max-width: 64rem) { /* 1024px */
+@media (max-width: 64rem) {
+  /* 1024px */
   .tour-product-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
@@ -928,6 +962,11 @@
     flex: 0 0 calc(50% - 0.75rem);
   }
 
+  .tour-count-badge {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+  }
+
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -935,15 +974,16 @@
   .tour-product-card {
     max-width: 100%;
   }
-  
+
   /* 계절별 */
-  .seasonal-tour {
-    flex: 0 0 calc(50% - 0.75rem);
+  .season-section .tour-cards {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 /* ===== 반응형 - 모바일 ===== */
-@media (max-width: 48rem) { /* 768px */
+@media (max-width: 48rem) {
+  /* 768px */
   .main-slider {
     height: 18.75rem;
   }
@@ -955,7 +995,7 @@
   .main-slider .slide-content p {
     font-size: 1rem; /* 16px */
   }
-  
+
   .tour-product-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
@@ -968,6 +1008,12 @@
   /* 투어카드 간소화 */
   .tour-product-card.compact .tour-main-image {
     height: 12rem;
+  }
+  .tour-count-badge {
+    top: 0.75rem;
+    right: 0.75rem;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
   }
 
   .travel-type-section {
@@ -1022,42 +1068,67 @@
   }
 
   /* 계절별 */
-  .seasonal-tour {
+  .season-section .tour-card.seasonal-tour {
     flex: 0 0 100%;
+    min-width: 100%;
     min-height: auto;
   }
-  
+
+  .season-section .tour-cards {
+    gap: 1rem;
+  }
+
   .tour-badge {
     font-size: 0.75rem; /* 12px */
     padding: 0.25rem 0.75rem;
   }
-  
+
   .seasonal-tour .thumbnail {
     height: 10rem;
   }
-  
+
   .seasonal-tour .tags {
     padding: 0.5rem 0.75rem 0.25rem;
   }
-  
+
   .seasonal-tour h4 {
     font-size: 1rem; /* 16px */
     padding: 0.25rem 0.75rem 0;
   }
-  
+
   .seasonal-tour .tour-summary {
     padding: 0.25rem 0.75rem 0.75rem;
     font-size: 0.8125rem; /* 13px */
   }
-  
+
   /* 모바일에서는 호버 대신 항상 표시 */
-  .hover-action {
+  .hover-action,
+  .tour-action-area {
     display: none !important;
+  }
+
+  /* 모바일용 버튼 */
+  .seasonal-tour .mobile-action {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--color-gray-100);
+    background: var(--color-gray-050);
+  }
+
+  .seasonal-tour .mobile-action .btn-tour-detail {
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--color-main);
+    color: var(--color-white);
+    border: none;
+    border-radius: 0.375rem;
+    font-size: var(--font-p);
+    font-weight: var(--weight-medium);
   }
 }
 
 /* ===== 반응형 - 소형 모바일 ===== */
-@media (max-width: 30rem) { /* 480px */
+@media (max-width: 30rem) {
+  /* 480px */
   .main-slider {
     height: 15rem;
   }
@@ -1085,11 +1156,11 @@
   .slider-arrow {
     display: none;
   }
-  
+
   .recommend-title h2 {
     font-size: 1.5rem; /* 24px */
   }
-  
+
   .extra-services h2 {
     font-size: 1.5rem; /* 24px */
   }
