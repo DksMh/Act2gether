@@ -18,7 +18,7 @@ public class ProfileDTO {
     private String realname; //사용자이름
     private String gender;
     private String age;
-    private String regin;
+    private String region;
     private String user_role;
     private String phone_number;
     private String health_status;
@@ -40,7 +40,7 @@ public class ProfileDTO {
         .realname(userEntity.getRealname())
         .gender(userEntity.getGender())
         .age(userEntity.getAge())
-        .regin(userEntity.getRegin())
+        .region(userEntity.getRegion())
         .user_role(userEntity.getUserRole())
         .phone_number(userEntity.getPhoneNumber())
         .health_status(userEntity.getHealthStatus())

@@ -63,4 +63,16 @@ public class ProfileService {
         UserEntity userEntity = userRepository.findByUsername(username).orElse(null);
         return avatarRepository.findFirstByUserIdOrderByCreatedAtDesc(userEntity.getUserId()).orElse(null);
     }
+
+    @Transactional
+    public UserEntity updateNR(String username, String region, String me) {
+        UserEntity userEntity = userRepository.findByUsername(me).orElse(null);
+        userEntity.setUsernameAndRegion(username, region);
+        return userEntity;
+    }
+
+    public List<String> getUserNames() {
+        List<String> usernames = userRepository.findAllUsernames();
+        return usernames;
+    }
 }

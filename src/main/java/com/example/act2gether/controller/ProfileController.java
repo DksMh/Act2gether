@@ -1,6 +1,7 @@
 package com.example.act2gether.controller;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.act2gether.dto.EmailDTO;
 import com.example.act2gether.dto.ProfileDTO;
+import com.example.act2gether.dto.UserDTO;
 import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.UserRepository;
 import com.example.act2gether.service.ProfileService;
@@ -69,7 +71,6 @@ public class ProfileController {
     // 아바타 조회(캐시 방지 쿼리스트링 사용 권장: ?v=timestamp)
     @GetMapping("/avatars/user/{username}")
     public ResponseEntity<byte[]> getAvatar(@PathVariable String username) {
-        log.info(">>> USerID : {}", username);
         var avatar = profileService.getAvatarByUserId(username);
         if (avatar == null) {
             // 기본 이미지 제공(정적 리소스 경로에 파일을 두었다고 가정)
@@ -80,6 +81,19 @@ public class ProfileController {
                 .contentType(MediaType.parseMediaType(avatar.getContentType()))
                 .cacheControl(CacheControl.noCache().mustRevalidate())
                 .body(avatar.getData());
+    }
+
+    @PostMapping("/updateNR")
+    public ResponseEntity<?> updateNR(@RequestBody UserDTO userDTO) {
+        log.info("me : {}", userDTO.getMe());
+        UserEntity user = profileService.updateNR(userDTO.getUsername(), userDTO.getRegion(), userDTO.getMe());
+        return ResponseEntity.status(HttpStatus.OK).body(user);
+    }
+
+    @GetMapping("/username")
+    public ResponseEntity<?> getAllUserName() {
+        List<String> usernames = profileService.getUserNames();
+        return ResponseEntity.status(HttpStatus.OK).body(usernames);
     }
 }
 

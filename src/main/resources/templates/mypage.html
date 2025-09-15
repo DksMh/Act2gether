@@ -21,6 +21,7 @@
     <main class="container">
 
     <span id="emailSpan" th:text="${email}" style="display:none">없음</span>
+    <span id="usernameSpan" th:text="${username}" style="display:none">없음</span>
     <!-- 상단 프로필 -->
     <div class="profile">
       <div class="avatar"><img id="profileAvatar"
@@ -176,6 +177,39 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 닉네임/거주지역 변경 모달 -->
+<div id="nickRegionModal" class="nr-modal" hidden>
+  <div class="nr-backdrop"></div>
+
+  <div class="nr-panel" role="dialog" aria-modal="true" aria-labelledby="nrTitle">
+    <div class="nr-header">
+      <h3 id="nrTitle">닉네임 / 거주지역 변경</h3>
+      <button type="button" class="nr-close" aria-label="닫기">✕</button>
+    </div>
+
+    <div class="nr-body">
+      <label class="nr-label" for="nrNickname" >닉네임</label>
+      <input id="nrNickname" class="nr-input" type="text" maxlength="12" th:value="${username}" placeholder="닉네임을 입력하세요" />
+
+      <label class="nr-label" for="nrRegion">거주지역</label>
+      <select id="nrRegion" class="nr-input">
+        <!-- <option value="">선택해주세요</option> -->
+        <option>서울</option><option>경기</option><option>인천</option>
+        <option>부산</option><option>대구</option><option>대전</option>
+        <option>광주</option><option>울산</option><option>세종</option>
+        <option>강원</option><option>충북</option><option>충남</option>
+        <option>전북</option><option>전남</option>
+        <option>경북</option><option>경남</option><option>제주</option>
+      </select>
+    </div>
+
+    <div class="nr-footer">
+      <button type="button" class="nr-btn nr-cancel">취소</button>
+      <button type="button" class="nr-btn nr-save">완료</button>
     </div>
   </div>
 </div>

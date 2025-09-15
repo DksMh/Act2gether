@@ -1,8 +1,10 @@
 package com.example.act2gether.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.example.act2gether.entity.UserEntity;
 
@@ -18,4 +20,6 @@ public interface UserRepository extends JpaRepository<UserEntity, String>{
 
     Optional<UserEntity> findByRealnameAndUsername(String realname, String username);
     Optional<UserEntity> findByUsername(String username);
+    @Query("select u.username from UserEntity u")
+    List<String> findAllUsernames();
 }

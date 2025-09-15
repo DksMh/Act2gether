@@ -689,7 +689,7 @@ function completeSignup() {
         password: document.getElementById('password').value,
         age: age.toString(), // birthYear에서 age 계산
         gender: document.getElementById('gender').value,
-        regin: document.getElementById('region').value, // region → regin
+        region: document.getElementById('region').value, 
         interests: null, // 관심사는 나중에 설정
         status: "active",
         agreement: JSON.stringify(agreement)
