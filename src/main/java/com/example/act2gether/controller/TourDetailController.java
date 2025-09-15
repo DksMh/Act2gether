@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.act2gether.service.TourFilterService;
+import com.example.act2gether.service.ToursService;
+import com.example.act2gether.entity.ToursEntity;
 import com.example.act2gether.entity.TravelGroupsEntity;
 import com.example.act2gether.repository.TravelGroupsRepository;
 import com.example.act2gether.service.BarrierFreeService;
@@ -67,6 +69,10 @@ public class TourDetailController {
   // TourDetailController 클래스 상단에 Repository 주입 추가
   @Autowired
   private TravelGroupsRepository travelGroupsRepository;
+  
+  // 여행 꿀정보
+  @Autowired
+  private ToursService toursService;
 
   // ✅ 새로 추가: 카카오맵 API 키
   @Value("${kakao.map.api.key}")
@@ -754,7 +760,6 @@ public class TourDetailController {
           "message", "상세정보를 불러올 수 없습니다"));
     }
   }
-  // TourDetailController.java에 추가할 메서드들
 
   /**
    * 🔍 여행 그룹 존재 여부 확인
@@ -887,5 +892,62 @@ public class TourDetailController {
       return ResponseEntity.ok(response);
     }
   }
+
+
+  /**
+   * 지역별 여행 꿀정보 조회
+   * GET /tour-detail/region-tips/{areaCode}
+   */
+  @GetMapping("/region-tips/{areaCode}")
+  public ResponseEntity<Map<String, Object>> getRegionTips(@PathVariable String areaCode) {
+      log.info("🌟 지역별 여행 꿀정보 조회: areaCode={}", areaCode);
+      
+      Map<String, Object> response = new HashMap<>();
+      
+      try {
+          // 지역 코드로 투어 정보 조회
+          ToursEntity regionTour = toursService.getRandomTourByRegion(areaCode);
+          
+          if (regionTour != null) {
+              Map<String, Object> tipData = new HashMap<>();
+              tipData.put("tourId", regionTour.getTourId());
+              tipData.put("region", regionTour.getRegion());
+              tipData.put("url", regionTour.getUrl());
+              tipData.put("tourExplain", regionTour.getTourExplain());
+              
+              // tourExplain 파싱 (제목과 설명 분리)
+              String explain = regionTour.getTourExplain();
+              if (explain != null && explain.contains(" - ")) {
+                  String[] parts = explain.split(" - ", 2);
+                  tipData.put("title", parts[0]);
+                  tipData.put("description", parts.length > 1 ? parts[1] : "");
+              } else {
+                  tipData.put("title", explain != null ? explain : "지역 특색 여행");
+                  tipData.put("description", "");
+              }
+              
+              response.put("success", true);
+              response.put("hasData", true);
+              response.put("data", tipData);
+              
+          } else {
+              // 해당 지역 정보가 없을 때
+              String regionName = toursService.getRegionName(areaCode);
+              response.put("success", true);
+              response.put("hasData", false);
+              response.put("regionName", regionName);
+              response.put("message", "해당 지역의 특색 정보를 준비 중입니다");
+          }
+          
+      } catch (Exception e) {
+          log.error("지역 꿀정보 조회 실패: {}", e.getMessage(), e);
+          response.put("success", false);
+          response.put("hasData", false);
+          response.put("message", "지역 정보 조회 중 오류가 발생했습니다");
+      }
+      
+      return ResponseEntity.ok(response);
+  }
+
 
 }
