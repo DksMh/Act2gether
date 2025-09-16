@@ -219,7 +219,7 @@ $(document).ready(function() {
         openPasswordModal();
         break;
       case 'consents':
-        if (window.showToast) showToast('정책 동의 이력 조회 화면을 여는 중…', 'info');
+        openPolicyModal();
         break;
       case 'withdraw':
         // 실제로는 확인 다이얼로그 -> 탈퇴 API 호출 흐름 권장
@@ -232,6 +232,235 @@ $(document).ready(function() {
     // 필요 시 모달을 닫고 다음 화면으로 전환
     // closeSettingsModal();
   });
+
+  // =================== 정책(약관) 모달 ===================
+(function(){
+  // 약관 전문 문자열(예시/샘플) — 필요 시 서버에서 불러와도 됨
+  // 약관 내용 정의 (기존과 동일)
+const termsContent = {
+    이용약관: `
+        <h5>제1조 (목적)</h5>
+        <p>이 약관은 여기부터(이하 "회사")가 제공하는 여행 추천 서비스(이하 "서비스")의 이용에 관한 조건과 절차, 회사와 회원 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
+        
+        <h5>제2조 (정의)</h5>
+        <p>1. "서비스"란 회사가 제공하는 여행 추천, 예약, 커뮤니티 등 모든 서비스를 의미합니다.</p>
+        <p>2. "회원"이란 회사의 서비스에 접속하여 이 약관에 따라 회사와 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 고객을 말합니다.</p>
+        
+        <h5>제3조 (약관의 효력 및 변경)</h5>
+        <p>1. 이 약관은 서비스 화면에 게시하거나 기타의 방법으로 회원에게 공지함으로써 효력을 발생합니다.</p>
+        <p>2. 회사는 필요한 경우 이 약관을 변경할 수 있으며, 변경된 약관은 서비스 내에서 공지합니다.</p>
+    `,
+    개인정보처리방침: `
+        <h5>1. 개인정보의 처리 목적</h5>
+        <p>회사는 다음의 목적을 위하여 개인정보를 처리합니다:</p>
+        <p>- 서비스 제공 및 계약 이행</p>
+        <p>- 회원 식별 및 인증</p>
+        <p>- 고객 문의 처리 및 서비스 개선</p>
+        <p>- 맞춤형 여행 추천 (연령층, 성별, 거주지역 기반)</p>
+        <p>- 통계 분석 및 서비스 품질 향상</p>
+        
+        <h5>2. 수집하는 개인정보 항목</h5>
+        <p>필수항목: 이메일, 닉네임, 이름, 비밀번호, 연령층, 성별, 거주지역</p>
+        <p>선택항목: 여행 관심사, 마케팅 수신 동의</p>
+        <p>※ <strong>연령층, 성별</strong>은 맞춤형 서비스 제공을 위한 필수 정보로, 가입 후 변경이 제한됩니다.</p>
+        <p>※ <strong>거주지역</strong>은 마이페이지에서 언제든지 수정 가능합니다.</p>
+        
+        <h5>3. 개인정보의 처리 및 보유 기간</h5>
+        <p>회사는 법령에 따른 개인정보 보유·이용기간 또는 정보주체로부터 개인정보를 수집시에 동의받은 개인정보 보유·이용기간 내에서 개인정보를 처리·보유합니다.</p>
+        
+        <h5>4. 개인정보의 제3자 제공</h5>
+        <p>회사는 개인정보를 제1조(개인정보의 처리 목적)에서 명시한 범위 내에서만 처리하며, 정보주체의 동의, 법률의 특별한 규정 등 개인정보보호법 제17조 및 제18조에 해당하는 경우에만 개인정보를 제3자에게 제공합니다.</p>
+    `,
+    위치정보약관: `
+        <h5>제1조 (목적)</h5>
+        <p>본 약관은 여기부터가 제공하는 위치정보서비스의 이용과 관련하여 회사와 개인위치정보주체와의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
+        
+        <h5>제2조 (위치정보의 수집)</h5>
+        <p>1. 회사는 다음과 같은 방법으로 개인위치정보를 수집합니다:</p>
+        <p>- GPS 위성정보를 이용한 위치정보 수집</p>
+        <p>- 기지국 및 와이파이 정보를 이용한 위치정보 수집</p>
+        
+        <h5>제3조 (위치정보의 이용·제공)</h5>
+        <p>1. 회사는 수집된 위치정보를 다음 목적으로 이용합니다:</p>
+        <p>- 위치기반 여행지 추천 서비스 제공</p>
+        <p>- 주변 관광지 정보 제공</p>
+        <p>- 교통정보 및 길찾기 서비스 제공</p>
+    `,
+    마케팅정보: `
+        <h5>마케팅 정보 수신 동의</h5>
+        <p>회사는 다음과 같은 마케팅 정보를 제공합니다:</p>
+        <p>- 신규 서비스 및 상품 정보</p>
+        <p>- 맞춤형 여행 추천 정보</p>
+        <p>- 할인 혜택 및 이벤트 정보</p>
+        
+        <h5>정보 제공 방법</h5>
+        <p>- 이메일</p>
+        <p>- SMS/MMS</p>
+        <p>- 앱 푸시 알림</p>
+        
+        <h5>동의 철회</h5>
+        <p>마케팅 정보 수신에 대한 동의는 언제든지 철회할 수 있으며, 철회 시 해당 정보 제공이 중단됩니다.</p>
+    `,
+    이벤트정보: `
+        <h5>이벤트 및 할인 혜택 알림 동의</h5>
+        <p>회사는 다음과 같은 이벤트 정보를 제공합니다:</p>
+        <p>- 기간 한정 할인 이벤트</p>
+        <p>- 시즌별 특가 상품 정보</p>
+        <p>- 회원 대상 특별 혜택</p>
+        <p>- 포인트 적립 및 사용 안내</p>
+        
+        <h5>알림 방법</h5>
+        <p>- 앱 푸시 알림</p>
+        <p>- 카카오톡 알림톡</p>
+        <p>- 이메일 뉴스레터</p>
+        
+        <h5>동의 철회</h5>
+        <p>이벤트 정보 수신 동의는 언제든지 철회 가능하며, 마이페이지에서 설정을 변경할 수 있습니다.</p>
+    `
+};
+const DOCS = termsContent;
+  // 모달 열기
+  window.openPolicyModal = async function openPolicyModal(){
+    // (선택) 설정 모달이 따로 있다면 닫기
+    if (typeof closeSettingsModal === 'function') closeSettingsModal();
+
+    const $m = $('#policyModal');
+    if (!$m.length) {
+      console.warn('#policyModal 을 찾을 수 없습니다.');
+      return;
+    }
+
+    const userData = {
+        username: (window.currentUser?.username || '').toLowerCase()
+    };
+
+    const res = await fetch('/profile/agreement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(userData)
+    });
+
+    let data = {};
+    const txt = await res.text();
+    try { data = JSON.parse(txt); } catch { data = { success: res.ok, message: txt }; }
+    console.log(data);
+    if (!res.ok || data.success === false) {
+    toast(data.message || '동의 내역 불러오기에 실패했습니다.');
+    return;
+    }
+    
+    $('#p-terms4').prop('checked', data.marketing);
+    $('#p-terms5').prop('checked', data.event);
+
+    // 초기화: 체크/버튼 상태/본문박스 접기
+    // $m.find('input[type="checkbox"]').prop('checked', false);
+    $m.find('.policy-doc-inline').hide();
+    $m.find('.policy-link').text('전문 보기').data('orig', '전문 보기');
+
+    $m.attr('hidden', false);
+    document.body.style.overflow = 'hidden';
+  };
+
+  // 모달 닫기
+  function closePolicyModal(){
+    $('#policyModal').attr('hidden', true);
+    document.body.style.overflow = '';
+  }
+
+  // 닫기 트리거(✕ 버튼/백드롭/ESC)
+  $(document).on('click', '#policyModal .policy-close, #policyModal .policy-backdrop', closePolicyModal);
+  $(document).on('keydown', function(e){
+    if (e.key === 'Escape') closePolicyModal();
+  });
+$(document).off('click', '#policyModal .policy-link'); // 중복 방지
+  // “전문 보기” 링크: 해당 항목 아래에 본문 토글(접기/펼치기)
+  $(document).on('click', '#policyModal .policy-link', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const $link = $(this);
+    const key   = $link.data('doc') || '';
+    const html  = DOCS[key] || '내용이 준비되지 않았습니다.';
+
+    const $item = $link.closest('.policy-item');
+    let $doc    = $item.next('.policy-doc-inline');
+
+    if (!$doc.length) {
+      $doc = $('<div class="policy-doc-inline" aria-live="polite"></div>').insertAfter($item);
+    }
+
+    // ★ 핵심: HTML 그대로 렌더
+  $doc.html(html);
+
+  const willOpen = $doc.is(':hidden');
+  // 다른 열린 섹션 닫기 + 다른 링크 원복
+  $('.policy-doc-inline').not($doc).slideUp(150);
+  $('#policyModal .policy-link').not($link).text('전문 보기').attr('aria-expanded','false');
+
+
+  if (willOpen) {
+    $doc.hide().attr('hidden', false).slideDown(150, () => {
+      $doc[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    $link.text('접기').attr('aria-expanded', 'true');
+  } else {
+    $doc.stop(true, true).slideUp(150, () => $doc.attr('hidden', true));
+    $link.text('전문 보기').attr('aria-expanded', 'false');
+  }
+  });
+
+  // 저장(확인) — 필요 시 서버로 동의 이력 전송
+  $(document).on('click', '#policyConfirmBtn', async function(){
+    const $btn = $(this);
+    if ($btn.data('busy')) return;
+
+    const consents = {
+        age: true,
+        terms:    true,
+        privacy:  true,
+        location: true,
+        marketing:$('#p-terms4').is(':checked'),
+        event:   $('#p-terms5').is(':checked'),
+      };
+
+    const userData = {
+        username: (window.currentUser?.username || '').toLowerCase(),
+        agreement: JSON.stringify(consents)
+    };
+
+    try {
+      $btn.data('busy', true).prop('disabled', true).text('저장 중…');
+
+      // 서버 저장이 필요 없으면 아래 fetch는 주석 처리하고 토스트만 띄우세요.
+      const res = await fetch('/profile/policy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(userData)
+      });
+
+      let data = {};
+      const txt = await res.text();
+      try { data = JSON.parse(txt); } catch { data = { success: res.ok, message: txt }; }
+
+      if (!res.ok || data.success === false) {
+        toast(data.message || '동의 내역 저장에 실패했습니다.');
+        return;
+      }
+
+      toast('동의 내역이 저장되었습니다.', 'success');
+      closePolicyModal();
+    } catch (err) {
+      console.error(err);
+      toast('요청 처리 중 오류가 발생했습니다.');
+    } finally {
+      $btn.data('busy', false).prop('disabled', false).text('저장');
+    }
+  });
+
+
+})();
 
   // ==== 비밀번호변경 열기/닫기 도우미 ====
 function openPasswordModal() {
@@ -407,7 +636,6 @@ $(document).on('click', '#nickRegionModal .nr-save', async function(){
 
   /** 아바타 변경 시트 열기 */
 function openAvatarSheet(){
-  closeSettingsModal();
   const $modal = $('#settingsModal');
   if ($('#avatarSheet').length) { $('#avatarSheet').remove(); }
 

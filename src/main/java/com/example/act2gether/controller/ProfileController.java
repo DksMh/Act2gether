@@ -104,6 +104,20 @@ public class ProfileController {
         }
         return ResponseEntity.status(HttpStatus.OK).body("비밀번호 변경 성공했습니다.");
     }
+
+    @PostMapping("/policy")
+    public ResponseEntity<?> setPolicy(@RequestBody UserDTO userDTO) {
+        profileService.setPolicy(userDTO);
+        
+        return ResponseEntity.status(HttpStatus.OK).body("정책 업데이트에 성공했습니다.");
+    }
+
+    @PostMapping("/agreement")
+    public ResponseEntity<?> getAgreement(@RequestBody UserDTO userDTO) {
+        String user = profileService.getAgreement(userDTO);
+        
+        return ResponseEntity.status(HttpStatus.OK).body(user);
+    }
 }
 
 

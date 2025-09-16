@@ -88,4 +88,16 @@ public class ProfileService {
         userEntity.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         return true;
     }
+
+    @Transactional
+    public boolean setPolicy(UserDTO userDTO) {
+        UserEntity userEntity = userRepository.findByUsername(userDTO.getUsername()).orElse(null);
+        userEntity.setPolicy(userDTO.getAgreement());
+        return true;
+    }
+
+    public String getAgreement(UserDTO userDTO) {
+        UserEntity userEntity = userRepository.findByUsername(userDTO.getUsername()).orElse(null);
+        return userEntity.getAgreement();
+    }
 }

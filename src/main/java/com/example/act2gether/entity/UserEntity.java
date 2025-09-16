@@ -91,4 +91,8 @@ public class UserEntity {
         this.password = password2;
     }
 
+    public void setPolicy(String agreement2) {
+        this.agreement = agreement2;
+    }
+
 }

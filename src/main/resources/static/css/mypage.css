@@ -402,3 +402,75 @@ body.modal-open { overflow: hidden; }
 .pw-submit[disabled]{opacity:.6;cursor:not-allowed}
 .pw-help{margin:10px 0 0;color:#9aa0a6;font-size:12px;text-align:left}
 
+
+/* ===== 정책/약관 모달 스타일 (pw-modal과 동일 패턴) ===== */
+.policy-modal[hidden]{display:none}
+.policy-modal{position:fixed; inset:0; z-index:1000}
+.policy-close{
+  position:absolute;top:10px;right:12px;border:0;background:transparent;cursor:pointer;
+  font-size:20px;color:#9aa0a6
+}
+.policy-backdrop{position:absolute; inset:0; background:rgba(0,0,0,.45)}
+.policy-panel{
+  position:relative; z-index:1; margin:4.5rem auto; max-width:680px; width:calc(100% - 2rem);
+  background:#fff; border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,.25);
+  padding:20px 20px 16px;
+}
+.policy-title{margin:0 0 12px; font-size:20px}
+.policy-body{display:flex; flex-direction:column; gap:10px; max-height:70vh; overflow:auto; padding-right:4px}
+.policy-age{display:flex; align-items:center; gap:8px; padding:8px 0}
+.policy-item{
+  display:flex; align-items:center; gap:10px; padding:10px 8px; border:1px solid #ececec; border-radius:10px;
+}
+.policy-item input{transform:scale(1.05)}
+.policy-all{background:#f7f9ff; border-color:#d8e2ff}
+.policy-link{margin-left:auto; font-size:13px; color:#ff5900; text-decoration:none}
+.policy-link:hover{text-decoration:underline}
+.policy-actions{display:flex; gap:8px; justify-content:flex-end; margin-top:8px}
+.policy-btn{padding:10px 14px; border:none; border-radius:10px; cursor:pointer; font-weight:600}
+.policy-btn.primary{background:#ff5900; color:#fff}
+.policy-btn.primary:disabled{opacity:.6; cursor:default}
+.policy-btn.ghost{background:#f3f3f3; color:#333}
+
+
+/* 행은 그대로 flex… */
+.policy-item{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 8px; border:1px solid #ececec; border-radius:10px;
+  overflow: visible;              /* 가림 방지 */
+}
+
+/* 🔧 오른쪽 링크가 0px로 눌리지 않게 고정 */
+.policy-item .policy-link{
+  margin-left:auto;
+  flex: 0 0 auto;                 /* ← shrink 금지 */
+  white-space: nowrap;            /* 줄바꿈 금지 */
+  min-width: 64px;                /* (선택) 안전폭 */
+  text-align: right;
+  position: relative; z-index: 1; /* 겹침 방지 */
+}
+
+
+/* 약관 본문 인라인 박스 — 기본은 숨김 */
+.policy-doc-inline{
+  display: none;               /* 중요 */
+  width: 100%;
+  box-sizing: border-box;
+  margin: 10px 0 16px 44px;    /* 체크박스 들여쓰기 정도 */
+  padding: 14px 16px;
+  border: 1px solid var(--border-color,#e5e7eb);
+  border-radius: 12px;
+  background: #fff;
+
+  max-height: 48vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  font-size: .95rem;
+  line-height: 1.6;
+  color: var(--text-primary,#111827);
+  white-space: normal;
+  word-break: keep-all;
+}
+.policy-link.toggling{ pointer-events:none; opacity:.6; } /* 토글 중 클릭 방지(선택) */
+
