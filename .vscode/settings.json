@@ -1,5 +1,6 @@
 {
   "liveServer.settings.port": 5501,
   "commentTranslate.targetLanguage": "en",
-  "java.compile.nullAnalysis.mode": "disabled"
+  "java.compile.nullAnalysis.mode": "disabled",
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

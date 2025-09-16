@@ -1,154 +1,148 @@
-<!-- header.html -->
+<!-- header.html (수정 버전) -->
 <div th:fragment="header">
   <header>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-
-    <!-- 글자 크기 조절 컨트롤 (전체 사이트 적용) -->
-    <div
-      class="font-size-controls"
-      id="globalFontControls"
-      style="
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: var(--color-white);
-        padding: 12px;
-        border-radius: 12px;
-        box-shadow: 0 4px 16px rgba(20, 20, 20, 0.08);
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        border: 1px solid var(--color-gray-200);
-        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui,
-          Roboto, sans-serif;
-      "
-    >
-      <div
-        style="
-          font-size: 0.75rem;
-          color: var(--color-gray-500);
-          text-align: center;
-          font-weight: var(--weight-semibold);
-        "
-      >
-        글자크기
-      </div>
-      <button
-        class="font-btn active"
-        data-size="normal"
-        style="
-          padding: 10px 14px;
-          border: 1px solid var(--color-main);
-          background: var(--color-main);
-          color: var(--color-white);
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: var(--font-p);
-          font-weight: var(--weight-medium);
-          font-family: 'Pretendard', sans-serif;
-          transition: all 0.2s;
-        "
-      >
-        기본
-      </button>
-      <button
-        class="font-btn"
-        data-size="large"
-        style="
-          padding: 10px 14px;
-          border: 1px solid var(--color-gray-200);
-          background: var(--color-white);
-          color: var(--color-black);
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: var(--font-p);
-          font-weight: var(--weight-medium);
-          font-family: 'Pretendard', sans-serif;
-          transition: all 0.2s;
-        "
-      >
-        조금 크게
-      </button>
-      <button
-        class="font-btn"
-        data-size="xlarge"
-        style="
-          padding: 10px 14px;
-          border: 1px solid var(--color-gray-200);
-          background: var(--color-white);
-          color: var(--color-black);
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: var(--font-p);
-          font-weight: var(--weight-medium);
-          font-family: 'Pretendard', sans-serif;
-          transition: all 0.2s;
-        "
-      >
-        크게
-      </button>
-    </div>
-
-    <!-- 글자 크기 조절용 스타일 -->
+    
+    <!-- style.css를 먼저 로드 (CSS 변수 정의) -->
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- Critical CSS (레이아웃 깨짐 방지 + 기본 스타일) -->
     <style>
-      /* 기본 크기 (디자인 가이드 기준) */
-      html.font-size-normal {
-        font-size: 16px; /* 기본 rem 단위 */
+      /* 긴급 기본값 (style.css 로드 전) */
+      :root {
+        --color-black: #141414;
+        --color-gray-500: #646464;
+        --color-gray-200: #e0e0e0;
+        --color-gray-100: #eeeeee;
+        --color-gray-050: #f5f5f5;
+        --color-white: #ffffff;
+        --color-main: #ff5900;
+        --font-h4: 1.5rem;
+        --font-h6: 1rem;
+        --font-p: 0.875rem;
+        --weight-bold: 700;
+        --weight-medium: 500;
+        --grid-width: 72rem;
       }
-
-      /* 조금 크게 (약 8% 증가) */
-      html.font-size-large {
-        font-size: 17.28px;
+      
+      header {
+        background: #ffffff;
+        border-bottom: 1px solid #e0e0e0;
       }
-
-      /* 크게 (약 16% 증가) */
-      html.font-size-xlarge {
-        font-size: 18.56px;
+      
+      .header-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 1rem 2rem;
       }
-
-      /* 타블렛 반응형 */
-      @media (max-width: 1024px) {
-        html.font-size-normal {
-          font-size: 16px;
-        }
-
-        html.font-size-large {
-          font-size: 17px;
-        }
-
-        html.font-size-xlarge {
-          font-size: 18px;
-        }
+      
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
       }
-
-      /* 모바일 반응형 */
-      @media (max-width: 768px) {
-        html.font-size-normal {
-          font-size: 16px;
-        }
-
-        html.font-size-large {
-          font-size: 17px;
-        }
-
-        html.font-size-xlarge {
-          font-size: 18px;
-        }
-
-        /* 모바일에서는 글자 크기 조절 컨트롤 숨김 (선택사항) */
-        #globalFontControls {
+      
+      .logo {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: #ff5900;
+      }
+      
+      .logo a {
+        color: inherit;
+        text-decoration: none;
+      }
+      
+      .main-menu {
+        display: flex;
+        gap: 2rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      
+      .main-menu a {
+        color: #141414;
+        text-decoration: none;
+        font-size: 1rem;
+      }
+      
+      .mobile-menu-toggle,
+      .mobile-menu,
+      .mobile-menu-overlay,
+      .mobile-font-controls {
+        display: none;
+      }
+      
+      .font-size-controls {
+        display: none;
+      }
+      
+      @media(max-width: 768px) {
+        .header-left nav,
+        .header-right .header-actions {
           display: none !important;
         }
+        .mobile-menu-toggle {
+          display: block;
+          width: 48px;
+          height: 48px;
+          border: 2px solid #c2c2c2;
+          background: transparent;
+          border-radius: 8px;
+          cursor: pointer;
+          position: relative;
+        }
+        .mobile-menu-toggle span {
+          display: block;
+          width: 24px;
+          height: 3px;
+          background: #141414;
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          transition: all 0.3s;
+        }
+        .mobile-menu-toggle span:nth-child(1) { top: 14px; }
+        .mobile-menu-toggle span:nth-child(2) { top: 22px; }
+        .mobile-menu-toggle span:nth-child(3) { top: 30px; }
       }
     </style>
 
+    <!-- header.css 로드 -->
+    <link rel="stylesheet" href="/css/header.css">
+    
+    <!-- 글자 크기 조절 컨트롤 (전체 디바이스) -->
+    <div class="font-size-controls" id="globalFontControls">
+      <div class="font-label">글자크기</div>
+      <button class="font-btn active" data-size="normal" aria-label="기본 크기">기본</button>
+      <button class="font-btn" data-size="large" aria-label="조금 크게">크게</button>
+      <button class="font-btn" data-size="xlarge" aria-label="크게">더 크게</button>
+    </div>
+    
+    <!-- 모바일 전용 간단 버전 -->
+    <div class="font-size-controls-mobile" role="region" aria-label="글자 크기 조절">
+      <button type="button" class="font-toggle-btn" aria-expanded="false" aria-controls="font-popup">
+        <span class="icon" aria-hidden="true">가</span>
+        <span class="label">글자 크기</span>
+      </button>
+
+      <div id="font-popup" class="font-popup" role="menu" aria-label="글자 크기 옵션">
+        <button class="font-btn-mobile" data-font-size="normal" role="menuitem">기본</button>
+        <button class="font-btn-mobile" data-font-size="large" role="menuitem">크게</button>
+        <button class="font-btn-mobile" data-font-size="xlarge" role="menuitem">더 크게</button>
+      </div>
+    </div>
+
     <div class="header-wrapper">
       <div class="header-left">
-        <!-- 왼쪽: 로고 -->
+        <!-- 로고 -->
         <div class="logo"><a href="/">여기부터</a></div>
 
-        <!-- 가운데: 네비게이션 -->
+        <!-- 데스크톱 네비게이션 -->
         <nav>
           <ul class="main-menu">
             <li><a href="/tour-search">투어 탐색</a></li>
@@ -167,142 +161,85 @@
       </div>
 
       <div class="header-right">
-        <!-- 오른쪽: 로그인 상태에 따라 달라짐 -->
+        <!-- 데스크톱 로그인/회원가입 -->
         <div class="header-actions">
-          <!-- [비로그인 시 노출] -->
+          <!-- 비로그인 시 -->
           <div class="auth-buttons" th:if="${!isAuthenticated}">
-            <a href="/login" class="btn-primary">로그인</a>
-            <a href="/signup" class="btn-primary">회원가입</a>
+            <a href="/login" class="btn btn-primary">로그인</a>
+            <a href="/signup" class="btn btn-primary">회원가입</a>
           </div>
 
-          <!-- [로그인 시 노출] -->
+          <!-- 로그인 시 -->
           <div class="user-buttons" th:if="${isAuthenticated}">
-            <!-- 닉네임은 변경 가능하므로 안전하게 처리 -->
-            <span
-              class="user-welcome"
-              th:text="${username != null ? username + '님' : '사용자님'}"
-              >사용자님</span
-            >
-
-            <!-- 관리자만 보이는 메뉴 (선택사항) -->
+            <span class="user-welcome" th:text="${username != null ? username + '님' : '사용자님'}">사용자님</span>
             <a href="/admin" th:if="${isAdmin}" class="admin-link">관리자</a>
-
             <a href="/mypage#wishlist">찜 목록</a>
-            <a href="/mypage" class="btn-secondary">내 정보</a>
+            <a href="/mypage" class="btn btn-secondary">내 정보</a>
             <a href="/users/logout" class="btn-logout">로그아웃</a>
           </div>
 
           <!-- 검색 아이콘 -->
-          <button class="search-icon" aria-label="검색">&#128269;</button>
+          <button class="search-icon" aria-label="검색">🔍</button>
+        </div>
+
+        <!-- 모바일 햄버거 메뉴 버튼 -->
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="메뉴 열기">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 모바일 메뉴 오버레이 -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- 모바일 슬라이드 메뉴 -->
+    <div class="mobile-menu" id="mobileMenu">
+      <div class="mobile-menu-header">
+        <div class="logo"><a href="/">여기부터</a></div>
+        <button class="mobile-menu-close" id="mobileMenuClose" aria-label="메뉴 닫기">×</button>
+      </div>
+
+      <!-- 모바일 글자 크기 조절 (메뉴 내부에서 제거) -->
+
+      <!-- 모바일 네비게이션 -->
+      <ul class="mobile-menu-nav">
+        <li><a href="/tour-search">투어 탐색</a></li>
+        <li><a href="/community-search">모임 찾기</a></li>
+        <li><a href="#">서비스 소개</a></li>
+        <li><a href="#">서비스 이용</a></li>
+        <li>
+          <a href="#">고객센터</a>
+          <div class="mobile-submenu">
+            <a href="/faq">자주 묻는 질문</a>
+            <a href="/qna">문의 게시판</a>
+          </div>
+        </li>
+      </ul>
+
+      <!-- 모바일 로그인/회원가입 -->
+      <div class="mobile-menu-actions">
+        <!-- 비로그인 시 -->
+        <div th:if="${!isAuthenticated}">
+          <a href="/login" class="btn btn-primary">로그인</a>
+          <a href="/signup" class="btn btn-secondary">회원가입</a>
+        </div>
+
+        <!-- 로그인 시 -->
+        <div th:if="${isAuthenticated}">
+          <div class="user-info">
+            <span th:text="${username != null ? username + '님 환영합니다' : '환영합니다'}">환영합니다</span>
+          </div>
+          <a href="/mypage" class="btn btn-primary">내 정보</a>
+          <a href="/mypage#wishlist" class="btn btn-secondary">찜 목록</a>
+          <a href="/admin" th:if="${isAdmin}" class="btn btn-secondary">관리자</a>
+          <a href="/users/logout" class="btn btn-outline">로그아웃</a>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- 글자 크기 조절 전역 스크립트 -->
-  <script>
-    (function () {
-      // 전역 글자 크기 조절 기능
-      function initGlobalFontSize() {
-        // 글자 크기 변경 함수 (rem 기반)
-        function changeFontSize(size) {
-          // html 요소에 클래스 추가/제거
-          const htmlElement = document.documentElement;
-
-          // 기존 폰트 크기 클래스 제거
-          htmlElement.classList.remove(
-            "font-size-normal",
-            "font-size-large",
-            "font-size-xlarge"
-          );
-
-          // 새 폰트 크기 클래스 추가
-          htmlElement.classList.add(`font-size-${size}`);
-
-          // 로컬 스토리지에 설정 저장
-          localStorage.setItem("globalFontSize", size);
-        }
-
-        // 저장된 설정 로드
-        function loadSavedFontSize() {
-          const savedSize = localStorage.getItem("globalFontSize") || "normal";
-          changeFontSize(savedSize);
-
-          // 버튼 상태 업데이트
-          const buttons = document.querySelectorAll(
-            "#globalFontControls .font-btn"
-          );
-          if (!buttons.length) return; // 모바일에서 컨트롤이 없을 경우
-
-          buttons.forEach((btn) => {
-            btn.classList.remove("active");
-            btn.style.background = "var(--color-white)";
-            btn.style.color = "var(--color-black)";
-            btn.style.borderColor = "var(--color-gray-200)";
-          });
-
-          const activeBtn = document.querySelector(
-            `#globalFontControls .font-btn[data-size="${savedSize}"]`
-          );
-          if (activeBtn) {
-            activeBtn.classList.add("active");
-            activeBtn.style.background = "var(--color-main)";
-            activeBtn.style.color = "var(--color-white)";
-            activeBtn.style.borderColor = "var(--color-main)";
-          }
-        }
-
-        // 버튼 클릭 이벤트 바인딩
-        const buttons = document.querySelectorAll(
-          "#globalFontControls .font-btn"
-        );
-        buttons.forEach((btn) => {
-          btn.addEventListener("click", function () {
-            const size = this.dataset.size;
-
-            // 모든 버튼 스타일 초기화
-            buttons.forEach((b) => {
-              b.classList.remove("active");
-              b.style.background = "var(--color-white)";
-              b.style.color = "var(--color-black)";
-              b.style.borderColor = "var(--color-gray-200)";
-            });
-
-            // 클릭된 버튼 활성화
-            this.classList.add("active");
-            this.style.background = "var(--color-main)";
-            this.style.color = "var(--color-white)";
-            this.style.borderColor = "var(--color-main)";
-
-            changeFontSize(size);
-          });
-
-          // 호버 효과
-          btn.addEventListener("mouseenter", function () {
-            if (!this.classList.contains("active")) {
-              this.style.background = "var(--color-gray-050)";
-              this.style.borderColor = "var(--color-gray-300)";
-            }
-          });
-
-          btn.addEventListener("mouseleave", function () {
-            if (!this.classList.contains("active")) {
-              this.style.background = "var(--color-white)";
-              this.style.borderColor = "var(--color-gray-200)";
-            }
-          });
-        });
-
-        // 초기 로드
-        loadSavedFontSize();
-      }
-
-      // DOM 로드 완료 시 실행
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initGlobalFontSize);
-      } else {
-        initGlobalFontSize();
-      }
-    })();
-  </script>
+  <!-- JavaScript 파일 (defer로 비동기 로드) -->
+  <script src="/js/header.js" defer></script>
 </div>

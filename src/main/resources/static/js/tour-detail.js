@@ -245,7 +245,7 @@ window.tourDetail = {
    */
   async loadFromApi(tourId) {
     try {
-      const response = await fetch(`/tour/${tourId}/fallback`);
+      const response = await fetch(`/tour-detail/${tourId}/fallback`);
       const result = await response.json();
 
       console.log("📦 API 응답:", result);
@@ -263,10 +263,13 @@ window.tourDetail = {
         this.renderImageGallery();
         this.renderRestaurants();
         this.setupEventListeners();
+        
+        // 지역 특색 정보 로드
+        this.loadRegionTips();
 
         // 찜하기 상태 확인
         this.checkWishlistStatus(tourId);
-        // 🔥 여행 그룹 상태 확인 추가
+        // 여행 그룹 상태 확인 추가
         this.checkTravelGroupStatus(tourId);
 
         this.showSuccess("투어 정보를 불러왔습니다! (API 활용)");
@@ -1866,8 +1869,14 @@ window.tourDetail = {
       try {
           // 현재 투어의 지역 코드 가져오기
           const areaCode = this.currentTour.areaCode || '1';
-          
-          const response = await fetch(`/tour-detail/region-tips/${areaCode}`);
+          // 시군구 코드도 가져오기
+          const sigunguCode = this.currentTour.sigunguCode || '';
+          // 시군구 코드가 있으면 함께 전송
+           const url = `/tour-detail/region-tips/${areaCode}${sigunguCode ? '?sigunguCode=' + sigunguCode : ''}`;
+        
+          console.log('🌟 지역 팁 조회: areaCode=' + areaCode + ', region=' + this.currentTour.region);
+        
+          const response = await fetch(url);
           const result = await response.json();
           
           if (result.success && result.hasData && result.data) {
@@ -1875,11 +1884,16 @@ window.tourDetail = {
               this.renderRegionTips(result.data);
           } else {
               // 데이터가 없을 때 - 준비 중 표시
-              this.renderPreparingTips(result.regionName || this.currentTour.region);
+              // regionName이 없으면 currentTour의 region 사용
+              const regionName = result.regionName || this.currentTour.region || '해당 지역';
+              this.renderPreparingTips(regionName);
+              //this.renderPreparingTips(result.regionName || this.currentTour.region);
           }
       } catch (error) {
           console.error('지역 팁 로드 실패:', error);
-          this.renderPreparingTips(this.currentTour.region);
+          // this.renderPreparingTips(this.currentTour.region);
+          // 에러 시 현재 투어의 지역명  사용
+          this.renderPreparingTips(this.currentTour.region || '해당 지역');
       }
   },
 
@@ -1910,25 +1924,54 @@ window.tourDetail = {
       const tipsSection = document.getElementById('tourTipsSection');
       if (!tipsSection) return;
       
-      let html = `
-          <h2 class="section-title">💡 ${tipData.region} 여행 꿀정보</h2>
-          <div class="tips-content">
-              <div class="region-special-tour">
-                  <div class="special-tour-header">
-                      <span class="special-icon">🎯</span>
-                      <h3>${tipData.title || '지역 특색 체험'}</h3>
-                  </div>
-                  <p class="special-description">${tipData.description || ''}</p>
-                  ${tipData.url ? `
-                      <a href="${tipData.url}" target="_blank" class="special-link">
-                          자세히 보기 →
-                      </a>
-                  ` : ''}
+      // 배열인 경우 (여러 투어)
+      if (Array.isArray(tipData)) {
+          let html = `
+              <h2 class="section-title">💡 ${tipData[0].region} 여행 꿀정보</h2>
+              <div class="tips-content">
+          `;
+          
+          tipData.forEach((tip, index) => {
+              const url = tip.url || '#';
+              html += `
+                  <a href="${url}" target="_blank" class="region-special-tour-link" ${!tip.url ? 'style="pointer-events: none;"' : ''}>
+                      <div class="region-special-tour">
+                          <div class="special-tour-header">
+                              <h3>${tip.title || '지역 특색 체험'}</h3>
+                          </div>
+                          <p class="special-description">${tip.description || ''}</p>
+                          <span class="special-link-arrow">
+                              자세히 보기 <span class="arrow">→</span>
+                          </span>
+                      </div>
+                  </a>
+              `;
+          });
+          
+          html += '</div>';
+          tipsSection.innerHTML = html;
+      }
+      // 단일 객체인 경우 (기존 코드 호환)
+      else {
+          const url = tipData.url || '#';
+          let html = `
+              <h2 class="section-title">💡 ${tipData.region} 여행 꿀정보</h2>
+              <div class="tips-content">
+                  <a href="${url}" target="_blank" class="region-special-tour-link" ${!tipData.url ? 'style="pointer-events: none;"' : ''}>
+                      <div class="region-special-tour">
+                          <div class="special-tour-header">
+                              <h3>${tipData.title || '지역 특색 체험'}</h3>
+                          </div>
+                          <p class="special-description">${tipData.description || ''}</p>
+                          <span class="special-link-arrow">
+                              자세히 보기 <span class="arrow">→</span>
+                          </span>
+                      </div>
+                  </a>
               </div>
-          </div>
-      `;
-      
-      tipsSection.innerHTML = html;
+          `;
+          tipsSection.innerHTML = html;
+      }
   },
 
 

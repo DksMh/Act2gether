@@ -36,4 +36,7 @@ public class ToursEntity {
 
     @Column(name = "`tour_explain`", length = 255)
     private String tourExplain;
+
+     @Column(name = "sigungu_code", length = 10)
+    private String sigunguCode; // 시군구 추가
 }
