@@ -214,6 +214,34 @@
   </div>
 </div>
 
+<!-- 비밀번호 변경 모달 -->
+<div id="pwModal" class="pw-modal" hidden>
+  <div class="pw-backdrop"></div>
+
+  <div class="pw-panel" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+    <button type="button" class="pw-close" aria-label="닫기">✕</button>
+
+    <h3 id="pwTitle" class="pw-title">비밀번호 변경</h3>
+
+    <div class="pw-body">
+      <label class="pw-label" for="pwCurrent">현재 비밀번호</label>
+      <input id="pwCurrent" class="pw-input" type="password" autocomplete="current-password"
+             placeholder="사용 중인 비밀번호를 입력해주세요" />
+
+      <label class="pw-label" for="pwNew">새 비밀번호</label>
+      <input id="pwNew" class="pw-input" type="password" autocomplete="new-password"
+             placeholder="영문, 숫자, 특수문자 12자 이내 입력해주세요" />
+
+      <label class="pw-label" for="pwNew2">새 비밀번호 확인</label>
+      <input id="pwNew2" class="pw-input" type="password" autocomplete="new-password"
+             placeholder="한 번 더 입력해주세요" />
+
+      <button type="button" class="pw-submit">완료</button>
+      <p class="pw-help">비밀번호를 바꾸면 새 비밀번호로 다시 접속해주세요.</p>
+    </div>
+  </div>
+</div>
+
     <!-- Footer -->
      <div th:replace="footer :: footer"></div>
   </body>

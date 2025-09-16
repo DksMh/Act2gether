@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.act2gether.dto.ProfileDTO;
+import com.example.act2gether.dto.UserDTO;
 import com.example.act2gether.entity.ReviewsEntity;
 import com.example.act2gether.entity.UserAvatarEntity;
 import com.example.act2gether.entity.UserEntity;
@@ -28,6 +30,7 @@ public class ProfileService {
     private final UserRepository userRepository;
     private final ReviewsRepository reviewsRepository;
     private final UserAvatarRepository avatarRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public ProfileDTO getProfile(String email){
         UserEntity userEntity = userRepository.findByEmail(email).orElse(null);
@@ -74,5 +77,15 @@ public class ProfileService {
     public List<String> getUserNames() {
         List<String> usernames = userRepository.findAllUsernames();
         return usernames;
+    }
+
+    @Transactional
+    public boolean setPassword(UserDTO userDTO) {
+        UserEntity userEntity = userRepository.findByUsername(userDTO.getUsername()).orElse(null);
+        if(!passwordEncoder.matches(userDTO.getRawPassword(), userEntity.getPassword())){
+            return false;
+        }
+        userEntity.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        return true;
     }
 }

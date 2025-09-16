@@ -95,6 +95,15 @@ public class ProfileController {
         List<String> usernames = profileService.getUserNames();
         return ResponseEntity.status(HttpStatus.OK).body(usernames);
     }
+
+    @PostMapping("/password")
+    public ResponseEntity<?> setPassword(@RequestBody UserDTO userDTO) {
+        boolean password = profileService.setPassword(userDTO);
+        if(!password){
+            return ResponseEntity.badRequest().body("비밀번호를 잘못 입력했습니다.");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body("비밀번호 변경 성공했습니다.");
+    }
 }
 
 

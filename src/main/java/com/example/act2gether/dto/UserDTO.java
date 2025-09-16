@@ -26,4 +26,5 @@ public class UserDTO {
     private int failure_count;
     private String login_id;
     private String me;
+    private String rawPassword;
 }

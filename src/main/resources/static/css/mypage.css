@@ -45,9 +45,9 @@
 
     /* 활성(선택) */
     .pill.active {
-      background: #111;
+      background: #ff5900;
       color: #fff;
-      border-color: #111;
+      border-color: #ff5900;
       font-weight: 600;
     }
 
@@ -363,11 +363,42 @@ body.modal-open { overflow: hidden; }
   width:100%; padding: 10px 12px; border:1px solid #ddd; border-radius: 10px;
   font-size: 15px; outline: none;
 }
-.nr-input:focus { border-color: #ff6b00; box-shadow: 0 0 0 3px rgba(255,107,0,.15); }
+.nr-input:focus { border-color: #ff5900; box-shadow: 0 0 0 3px rgba(255,107,0,.15); }
 .nr-help { color:#888; display:block; margin-top: 6px; }
 
 .nr-footer { display:flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid #eee; }
 .nr-btn { padding: 10px 16px; border-radius: 10px; border:1px solid #ddd; background:#fff; cursor:pointer; }
-.nr-save { background:#ff6b00; border-color:#ff6b00; color:#fff; }
+.nr-save { background:#ff5900; border-color:#ff5900; color:#fff; }
 .nr-save:disabled { opacity:.6; cursor: not-allowed; }
+
+/* 표시/숨김 */
+.pw-modal[hidden]{display:none!important}
+
+/* 레이어 */
+.pw-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:2000}
+.pw-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.pw-panel{
+  position:relative;background:#fff;border-radius:16px;width:min(520px,92vw);
+  box-shadow:0 12px 40px rgba(0,0,0,.2); animation:pw-pop .18s ease-out
+}
+@keyframes pw-pop{from{transform:translateY(6px);opacity:.6}to{transform:none;opacity:1}}
+
+.pw-close{
+  position:absolute;top:10px;right:12px;border:0;background:transparent;cursor:pointer;
+  font-size:20px;color:#9aa0a6
+}
+.pw-title{padding:16px 20px 6px;margin:0;font-size:16px;font-weight:700;color:#111}
+.pw-body{padding:8px 20px 18px}
+.pw-label{display:block;margin:10px 0 6px;color:#6b7280;font-size:13px}
+.pw-input{
+  width:100%;padding:12px 12px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;
+  outline:none
+}
+.pw-input:focus{border-color:#ff5900;box-shadow:0 0 0 3px rgba(255,107,0,.15)}
+.pw-submit{
+  margin-top:14px;width:100%;height:46px;border:0;border-radius:10px;cursor:pointer;
+  background:#ff5900;color:#fff;font-weight:700;font-size:15px
+}
+.pw-submit[disabled]{opacity:.6;cursor:not-allowed}
+.pw-help{margin:10px 0 0;color:#9aa0a6;font-size:12px;text-align:left}
 

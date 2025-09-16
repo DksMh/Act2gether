@@ -87,4 +87,8 @@ public class UserEntity {
         this.region = region2;
     }
 
+    public void setPassword(String password2) {
+        this.password = password2;
+    }
+
 }

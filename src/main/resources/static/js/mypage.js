@@ -216,7 +216,7 @@ $(document).ready(function() {
         openNickRegionModal();
         break;
       case 'password':
-        if (window.showToast) showToast('비밀번호 변경 화면을 여는 중…', 'info');
+        openPasswordModal();
         break;
       case 'consents':
         if (window.showToast) showToast('정책 동의 이력 조회 화면을 여는 중…', 'info');
@@ -233,7 +233,82 @@ $(document).ready(function() {
     // closeSettingsModal();
   });
 
-  // ==== 열기/닫기 도우미 ====
+  // ==== 비밀번호변경 열기/닫기 도우미 ====
+function openPasswordModal() {
+  closeSettingsModal();
+  const m = document.getElementById('pwModal');
+  m.hidden = false;
+  document.body.style.overflow = 'hidden';
+  $('#pwModal input').val('');         // 초기화
+  $('#pwCurrent').focus();
+}
+
+// 닫기
+$(document).on('click', '#pwModal .pw-close, #pwModal .pw-backdrop', function(){
+  $('#pwModal').attr('hidden', true);
+});
+// ESC로 닫기
+$(document).on('keydown', function(e){
+  if (e.key === 'Escape') $('#pwModal').attr('hidden', true);
+});
+// Enter로 제출
+$(document).on('keydown', '#pwModal input', function(e){
+  if (e.key === 'Enter') $('#pwModal .pw-submit').click();
+});
+
+// 저장
+$(document).on('click', '#pwModal .pw-submit', async function(){
+  const $btn = $(this);
+  if ($btn.data('busy')) return;
+
+  const cur  = $('#pwCurrent').val().trim();
+  const next = $('#pwNew').val().trim();
+  const next2= $('#pwNew2').val().trim();
+  const me   = (window.currentUser?.username || '').toLowerCase();
+
+  // 검증
+  if (!cur)  return toast('현재 비밀번호를 입력해주세요.');
+  if (!next) return toast('새 비밀번호를 입력해주세요.');
+  if (next.length < 8 || next.length > 12) return toast('비밀번호는 8~12자입니다.');
+  if (!/[A-Za-z]/.test(next) || !/\d/.test(next)) return toast('영문과 숫자를 포함해야 합니다.');
+  if (next !== next2) return toast('새 비밀번호가 일치하지 않습니다.');
+
+  try {
+    $btn.data('busy', true).prop('disabled', true).text('변경 중...');
+    const res = await fetch('/profile/password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ username: me, rawPassword: cur, password: next })
+    });
+
+    // 응답이 text일 수도, json일 수도 있으니 안전 파싱
+    let data = {};
+    const txt = await res.text();
+    try { data = JSON.parse(txt); } catch { data = { success: res.ok, message: txt }; }
+
+    if (!res.ok || data.success === false) {
+      toast(data.message || '비밀번호 변경에 실패했습니다.');
+      return;
+    }
+
+    toast('비밀번호가 변경되었습니다.', 'success');
+    $('#pwModal').attr('hidden', true);
+    // 필요시: location.href = '/logout';
+  } catch (err) {
+    console.error(err);
+    toast('요청 처리 중 오류가 발생했습니다.');
+  } finally {
+    $btn.data('busy', false).prop('disabled', false).text('완료');
+  }
+
+  function toast(msg, type){
+    if (typeof showToast === 'function') showToast(msg, type || 'info');
+    else alert(msg);
+  }
+});
+
+  // ==== 닉네임, 거주지 열기/닫기 도우미 ====
 function openNickRegionModal() {
   closeSettingsModal();
   const m = document.getElementById('nickRegionModal');
