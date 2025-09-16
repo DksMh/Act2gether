@@ -39,6 +39,20 @@ public class ToursService {
       put("39", "제주");
     }
   };
+  /**
+   * 지역 코드로 지역명 조회
+   */
+  // public String getRegionName(String regionCode) {
+  //   return REGION_NAME_MAP.getOrDefault(regionCode, "기타");
+  // }
+  public String getRegionName(String regionCode) {
+        if (regionCode == null || regionCode.trim().isEmpty()) {
+            return "지역 정보 없음";
+        }
+        String name = REGION_NAME_MAP.get(regionCode);
+        return name != null ? name : "지역 정보 없음";
+  }
+    
 
   /**
    * 지역별 투어 조회 (해당 지역 전체)
@@ -84,13 +98,6 @@ public class ToursService {
   }
 
   /**
-   * 지역 코드로 지역명 조회
-   */
-  public String getRegionName(String regionCode) {
-    return REGION_NAME_MAP.getOrDefault(regionCode, "기타");
-  }
-
-  /**
    * 지역별 투어 개수 조회
    */
   @Transactional(readOnly = true)
@@ -124,23 +131,77 @@ public class ToursService {
       }
   }
 
-  /**
-   * 랜덤 지역 투어 1개 조회 (여행 꿀정보용)
-   */
-  public ToursEntity getRandomTourByRegion(String regionCode) {
+   /**
+     * 지역별 모든 투어 조회 (여행 꿀정보용)
+     */
+    public List<ToursEntity> getAllToursByRegion(String regionCode) {
+        try {
+            log.info("📍 전체 투어 조회 시작 - regionCode: '{}'", regionCode);
+            
+            // regionCode(1)를 지역명(서울)으로 변환
+            String regionName = REGION_NAME_MAP.get(regionCode);
+            if (regionName == null) {
+                log.warn("알 수 없는 지역 코드: {}", regionCode);
+                return new ArrayList<>();
+            }
+            
+            log.info("📍 지역명으로 변환: {} -> {}", regionCode, regionName);
+            
+            // region 컬럼에 '서울'로 저장되어 있으므로 지역명으로 조회
+            List<ToursEntity> tours = toursRepository.findByRegion(regionName);
+            
+            // 없으면 regionCode로도 시도 (혹시 '1'로 저장된 경우 대비)
+            if (tours.isEmpty()) {
+                tours = toursRepository.findByRegion(regionCode);
+                log.info("📍 regionCode로 재조회 - 개수: {}", tours.size());
+            }
+            
+            log.info("✅ 전체 투어 조회 완료: region={}, 결과={}개", regionName, tours.size());
+            
+            // 디버깅용 로그
+            for (ToursEntity tour : tours) {
+                log.info("📍 투어: id={}, explain={}", tour.getTourId(), tour.getTourExplain());
+            }
+            
+            return tours;
+            
+        } catch (Exception e) {
+            log.error("전체 투어 조회 실패: {}", e.getMessage(), e);
+            return new ArrayList<>();
+        }
+  }
+  // 시군구로 찾기
+  public ToursEntity getRandomTourByRegionAndSigungu(String regionCode, String sigunguCode) {
       try {
-          List<ToursEntity> tours = getToursByRegionCode(regionCode);
-          if (tours.isEmpty()) {
-              return null;
+          List<ToursEntity> tours;
+          
+          // 1차: 시군구 일치하는 투어 찾기
+          if (sigunguCode != null && !sigunguCode.isEmpty()) {
+              tours = toursRepository.findByRegionAndSigunguCode(regionCode, sigunguCode);
+              
+              if (!tours.isEmpty()) {
+                  log.info("✅ 시군구 매칭 성공: region={}, sigungu={}, 결과={}개", 
+                          regionCode, sigunguCode, tours.size());
+                  Random random = new Random();
+                  return tours.get(random.nextInt(tours.size()));
+              }
           }
           
-          // 랜덤으로 하나 선택
-          Random random = new Random();
-          return tours.get(random.nextInt(tours.size()));
+          // 2차: 시군구 없는 광역 데이터 찾기 (광역시나 세종 등)
+          tours = toursRepository.findByRegionAndSigunguCode(regionCode, null);
+          
+          if (!tours.isEmpty()) {
+              log.info("✅ 광역 매칭 성공: region={}, 결과={}개", regionCode, tours.size());
+              Random random = new Random();
+              return tours.get(random.nextInt(tours.size()));
+          }
+          
+          log.info("⚠️ 해당 지역 투어 정보 없음: region={}, sigungu={}", regionCode, sigunguCode);
+          return null;
+          
       } catch (Exception e) {
-          log.error("랜덤 투어 조회 실패: {}", e.getMessage());
+          log.error("투어 조회 실패: {}", e.getMessage());
           return null;
       }
   }
-
 }

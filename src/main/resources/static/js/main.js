@@ -120,11 +120,11 @@ $(document).ready(function () {
             "투어 상세 정보를 보시려면 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?"
           )
         ) {
-          window.location.href = `/login?redirect=/tour-detail?tourId=${tourId}`;
+          window.location.href = `/login?redirect=/tour-detail?id=${tourId}`;
         }
       } else {
         console.log(`${cityName} 투어 상세 페이지로 이동: ${tourId}`);
-        window.location.href = `/tour-detail?tourId=${tourId}`;
+        window.location.href = `/tour-detail?id=${tourId}`;
       }
     });
 
@@ -133,7 +133,7 @@ $(document).ready(function () {
       e.preventDefault();
       const tourId = $(this).data("id");
       if (tourId) {
-        window.location.href = `/tour-detail?contentId=${tourId}`;
+        window.location.href = `/tour-detail?id=${tourId}`;
       }
     });
 
