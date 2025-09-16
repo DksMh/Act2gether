@@ -32,7 +32,7 @@ public class UserEntity {
     private String password;
     private String gender;
     private String age;
-    private String regin;
+    private String region;
 
     @Column(name = "user_role")
     private String userRole;
@@ -62,7 +62,7 @@ public class UserEntity {
         .password(userDTO.getPassword())
         .gender(userDTO.getGender())
         .age(userDTO.getAge())
-        .regin(userDTO.getRegin())
+        .region(userDTO.getRegion())
         .userRole("USER")// 기본값은 null대신 user로 줌
         .phoneNumber(null)
         .interests(interests)
@@ -80,6 +80,11 @@ public class UserEntity {
     public void updateInterestsByEmail(String interestsJson, String updatedAt2) {
         this.interests = interestsJson;
         this.updatedAt = updatedAt2;
+    }
+
+    public void setUsernameAndRegion(String username2, String region2) {
+        this.username = username2;
+        this.region = region2;
     }
 
 }

@@ -13,7 +13,7 @@ public class UserDTO {
     private String password;
     private String gender;
     private String age;
-    private String regin;
+    private String region;
     private String user_role;
     private String phone_number;
     private String health_status;
@@ -25,4 +25,5 @@ public class UserDTO {
     private String agreement;
     private int failure_count;
     private String login_id;
+    private String me;
 }

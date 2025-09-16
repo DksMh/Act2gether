@@ -51,6 +51,9 @@ const doneTrips = [
 ];
 
 $(document).ready(function() {
+  window.currentUser = {
+    username: document.getElementById('usernameSpan')?.textContent?.trim() || null,
+  };
     let interests = null;
 
     function applySelected(containerSelector, values) {
@@ -79,6 +82,7 @@ $(document).ready(function() {
             $('#nickname').text(res.username);
             $('#ageGroup').text(res.age);
             $('#gender').text(res.gender);
+            $('#location').text(res.region);
             const interestsObj = JSON.parse(res.interests);
             interests = (typeof res.interests === "string")
                         ? JSON.parse(res.interests)
@@ -209,7 +213,7 @@ $(document).ready(function() {
         openAvatarSheet();
         break;
       case 'profile':
-        if (window.showToast) showToast('닉네임/거주지역 변경 화면을 여는 중…', 'info');
+        openNickRegionModal();
         break;
       case 'password':
         if (window.showToast) showToast('비밀번호 변경 화면을 여는 중…', 'info');
@@ -229,8 +233,106 @@ $(document).ready(function() {
     // closeSettingsModal();
   });
 
+  // ==== 열기/닫기 도우미 ====
+function openNickRegionModal() {
+  closeSettingsModal();
+  const m = document.getElementById('nickRegionModal');
+  m.hidden = false;
+  document.body.style.overflow = 'hidden';
+  const targetText = $('#location').text().trim();
+  $('#nrRegion').val(targetText).trigger('change');
+
+}
+function closeNickRegionModal() {
+  const m = document.getElementById('nickRegionModal');
+  m.hidden = true;
+  document.body.style.overflow = '';
+}
+
+// ==== 닉네임/거주지 변경 ====
+// POST /profile/updateNR  body: { username, region } -> { username, region }
+async function updateProfileBasic(payload) {
+  const res = await fetch('/profile/updateNR', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+async function getUsernames() {
+  const res = await fetch('/profile/username', {
+    method: 'GET'
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const list = await res.json();
+  return Array.isArray(list)
+    ? list.map(s => String(s).trim()).filter(Boolean)
+    : [];
+}
+
+// 2) 닫기 버튼/백드롭
+$(document).on('click', '#nickRegionModal .nr-close, #nickRegionModal .nr-backdrop, #nickRegionModal .nr-cancel', function(){
+  closeNickRegionModal();
+});
+
+// 3) 저장
+$(document).on('click', '#nickRegionModal .nr-save', async function(){
+  const $btn = $(this);
+  if ($btn.data('busy')) return;
+
+  const nickname = $('#nrNickname').val().trim();
+  const region   = $('#nrRegion').val();
+  const me        = (window.currentUser?.username || '').toLowerCase();
+
+  if (!nickname) { showToast('닉네임을 입력해주세요.', 'warning'); return; }
+
+   try {
+    const usernames = await getUsernames();          
+    const lowerSet  = new Set(usernames.map(u => u.toLowerCase()));
+    console.log("username : " + me);
+    // 본인의 기존 닉네임은 통과, 그 외엔 중복 금지
+    const isDup = lowerSet.has(nickname.toLowerCase()) && nickname.toLowerCase() !== me;
+    if (isDup) {
+      showToast('이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해 주세요.', 'warning');
+      $('#nrNickname').focus();
+      return;
+    }
+  } catch (e) {
+    console.error('username 목록 조회 실패:', e);
+    showToast('닉네임 중복 확인에 실패했습니다. 잠시 후 다시 시도해주세요.', 'danger');
+    return;
+  }
+
+  $btn.data('busy', true).prop('disabled', true).text('저장 중...');
+
+  try {
+    const data = {
+      username: nickname,
+      region: region,
+      me: me
+    }
+    const saved = await updateProfileBasic(data);
+    // 화면 동기화 (있을 때만)
+    $('#nickname, .js-nickname').text(saved.nickname || nickname);
+    $('#location, .js-residence').text(saved.region || region);
+    window.currentUser.username = saved.nickname || nickname;
+
+    showToast('변경사항이 저장되었습니다.', 'success');
+    closeNickRegionModal();
+    // location.reload();
+  } catch(err) {
+    console.error('프로필 저장 실패:', err);
+    showToast('저장 중 오류가 발생했습니다.', 'danger');
+  } finally {
+    $btn.data('busy', false).prop('disabled', false).text('완료');
+  }
+});
+
   /** 아바타 변경 시트 열기 */
 function openAvatarSheet(){
+  closeSettingsModal();
   const $modal = $('#settingsModal');
   if ($('#avatarSheet').length) { $('#avatarSheet').remove(); }
 
@@ -591,5 +693,61 @@ function renderPills(containerSelector, items) {
 
   items.forEach((txt) => {
     $wrap.append($('<span/>', { class: 'pill', text: txt }));
+  });
+}
+
+// 토스트 메시지 표시
+function showToast(message, type = "success") {
+  const types = {
+    success: { icon: "✅", color: "var(--success-color)" },
+    error: { icon: "❌", color: "var(--accent-color)" },
+    warning: { icon: "⚠️", color: "var(--warning-color)" },
+    info: { icon: "ℹ️", color: "var(--secondary-color)" },
+  };
+
+  const config = types[type] || types["success"];
+
+  const toastHtml = `
+        <div class="toast" style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${config.color};
+            color: white;
+            padding: 16px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-medium);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 400px;
+            font-size: 16px;
+            font-weight: 500;
+            transform: translateX(100%);
+            transition: transform 0.4s ease;
+        ">
+            <span>${config.icon}</span>
+            <span>${message}</span>
+        </div>
+    `;
+
+  $("body").append(toastHtml);
+
+  const $toast = $(".toast").last();
+
+  // 애니메이션으로 토스트 표시
+  setTimeout(() => $toast.css("transform", "translateX(0)"), 100);
+
+  // 4초 후 자동 제거
+  setTimeout(() => {
+    $toast.css("transform", "translateX(100%)");
+    setTimeout(() => $toast.remove(), 400);
+  }, 4000);
+
+  // 클릭으로 수동 제거
+  $toast.on("click", function () {
+    $(this).css("transform", "translateX(100%)");
+    setTimeout(() => $(this).remove(), 400);
   });
 }
