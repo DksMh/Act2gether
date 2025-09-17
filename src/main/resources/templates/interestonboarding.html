@@ -7,7 +7,12 @@
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/interestonboarding.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <link
+      rel="stylesheet"
+      as="style"
+      crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+    />
     <script src="/js/interestonboarding.js"></script>
   </head>
   <body>
@@ -56,39 +61,127 @@
           </div>
         </div>
 
+        <!-- 2. 장소 선택 (투어 검색과 동일한 7개 그룹) -->
         <div class="question-section">
           <h3 class="question-title">2. 어떤 장소로 가고 싶으신가요?</h3>
-          <p class="question-subtitle">복수 선택 가능</p>
-          <div class="options-grid" id="placeOptions">
-            <button class="option-button" data-value="해변">해변</button>
-            <button class="option-button" data-value="산">산</button>
-            <button class="option-button" data-value="도시관광">
-              도시관광
-            </button>
-            <button class="option-button" data-value="시골">시골</button>
-            <button class="option-button" data-value="호수">호수</button>
-            <button class="option-button" data-value="온천지역">
-              온천지역
-            </button>
-            <button class="option-button" data-value="섬지역">섬지역</button>
+          <p class="question-subtitle">복수 선택 가능 (최대 6개)</p>
+
+          <!-- 자연관광지 그룹 -->
+          <div class="place-group">
+            <h4 class="place-group-title">🏞️ 자연관광지</h4>
+            <div class="options-grid place-grid">
+              <button class="option-button" data-value="해변">해변</button>
+              <button class="option-button" data-value="산/공원">
+                산/공원
+              </button>
+              <button class="option-button" data-value="계곡/폭포">
+                계곡/폭포
+              </button>
+              <button class="option-button" data-value="호수/강">
+                호수/강
+              </button>
+              <button class="option-button" data-value="수목원">수목원</button>
+              <button class="option-button" data-value="자연휴양림">
+                자연휴양림
+              </button>
+              <button class="option-button" data-value="자연생태관광지">
+                자연생태관광지
+              </button>
+            </div>
+          </div>
+
+          <!-- 역사관광지 그룹 -->
+          <div class="place-group">
+            <h4 class="place-group-title">🏛️ 역사관광지</h4>
+            <div class="options-grid place-grid">
+              <button class="option-button" data-value="고궁/문">
+                고궁/문
+              </button>
+              <button class="option-button" data-value="민속마을/가옥">
+                민속마을/가옥
+              </button>
+              <button class="option-button" data-value="유적지">유적지</button>
+              <button class="option-button" data-value="사찰">사찰</button>
+              <button class="option-button" data-value="종교성지">
+                종교성지
+              </button>
+            </div>
+          </div>
+
+          <!-- 휴양관광지 그룹 -->
+          <div class="place-group">
+            <h4 class="place-group-title">🛀 휴양관광지</h4>
+            <div class="options-grid place-grid">
+              <button class="option-button" data-value="온천">온천</button>
+              <button class="option-button" data-value="테마파크">
+                테마파크
+              </button>
+              <button class="option-button" data-value="관광단지">
+                관광단지
+              </button>
+              <button class="option-button" data-value="창질방">창질방</button>
+              <button class="option-button" data-value="유람선/잠수함관광">
+                유람선/잠수함관광
+              </button>
+            </div>
+          </div>
+
+          <!-- 체험관광지 그룹 -->
+          <div class="place-group">
+            <h4 class="place-group-title">🎨 체험관광지</h4>
+            <div class="options-grid place-grid">
+              <button class="option-button" data-value="체험">체험</button>
+            </div>
+          </div>
+
+          <!-- 문화시설 그룹 -->
+          <div class="place-group">
+            <h4 class="place-group-title">🖼️ 문화시설</h4>
+            <div class="options-grid place-grid">
+              <button class="option-button" data-value="박물관">박물관</button>
+              <button class="option-button" data-value="미술관">미술관</button>
+            </div>
+          </div>
+
+          <!-- 육상레포츠 그룹 -->
+          <div class="place-group">
+            <h4 class="place-group-title">🏃 육상레포츠</h4>
+            <div class="options-grid place-grid">
+              <button class="option-button" data-value="트래킹">트래킹</button>
+              <button class="option-button" data-value="골프장">골프장</button>
+              <button class="option-button" data-value="스키장">스키장</button>
+              <button class="option-button" data-value="캠핑장">캠핑장</button>
+            </div>
+          </div>
+
+          <!-- 수상레포츠 그룹 -->
+          <div class="place-group">
+            <h4 class="place-group-title">🏊 수상레포츠</h4>
+            <div class="options-grid place-grid">
+              <button class="option-button" data-value="낚시">낚시</button>
+            </div>
           </div>
         </div>
 
+        <!-- 3. 편의시설 선택 (투어 검색과 동일) -->
         <div class="question-section">
           <h3 class="question-title">
             3. 개인적으로 필요한 사항이 있으신가요?
           </h3>
-          <p class="question-subtitle">복수 선택 가능</p>
+          <p class="question-subtitle">하나만 선택 가능</p>
           <div class="options-grid" id="needsOptions">
-            <button class="option-button" data-value="접근성">접근성</button>
-            <button class="option-button" data-value="휠체어">휠체어</button>
-            <button class="option-button" data-value="유치원시설">
-              유치원시설
+            <button class="option-button" data-value="주차 편의">
+              🅿️ 주차 편의
             </button>
-            <button class="option-button" data-value="병원">병원</button>
-            <button class="option-button" data-value="약국">약국</button>
-            <button class="option-button" data-value="응급실">응급실</button>
-            <button class="option-button" data-value="없음">없음</button>
+            <button class="option-button" data-value="접근 편의">
+              🛤️ 접근 편의
+            </button>
+            <button class="option-button" data-value="시설 편의">
+              🚻 시설 편의
+            </button>
+            <button class="option-button" data-value="필요없음">
+              필요없음
+            </button>
           </div>
         </div>
 

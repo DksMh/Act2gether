@@ -11,7 +11,6 @@
 	<groupId>com.example</groupId>
 	<artifactId>act2gether</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>  <!-- WAR 패키징 추가 -->
 	<name>act2gether</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
@@ -35,13 +34,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		
-		<!-- Tomcat provided 스코프 추가 -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -59,6 +51,7 @@
 			<artifactId>lombok</artifactId>
 			<version>1.18.30</version>
   		<scope>provided</scope>
+			<!-- <optional>true</optional> -->
 		</dependency>
 		<!-- Jakarta Bean Validation -->
 		<dependency>
@@ -66,7 +59,7 @@
 			<artifactId>jakarta.validation-api</artifactId>
 			<version>3.0.2</version>
 		</dependency>
-		<!-- Jakarta Persistence (JPA) -->
+		<!-- Jakarta Persistence (JPA 어노테이션용) -->
 		<dependency>
 			<groupId>jakarta.persistence</groupId>
 			<artifactId>jakarta.persistence-api</artifactId>
@@ -121,7 +114,6 @@
 	</dependencies>
 
 	<build>
-		<finalName>act2gether</finalName>  <!--  WAR 파일명 설정 -->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -131,21 +123,11 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>1.18.30</version>
+							<version>1.18.30</version> <!-- 이거 꼭! -->
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
-			
-			<!--  WAR 플러그인 추가 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<failOnMissingWebXml>false</failOnMissingWebXml>
-				</configuration>
-			</plugin>
-			
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
