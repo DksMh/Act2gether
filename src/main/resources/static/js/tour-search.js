@@ -938,13 +938,13 @@ let tourSearchManager = {
 
     console.log("🎯 관심사 자동 적용 시작:", this.userInterests);
 
-    // 지역 적용 (첫 번째 지역만)
-    if (this.userInterests.regions?.length > 0) {
+    // 지역 적용 (preferredRegions로 수정)
+    if (this.userInterests.preferredRegions?.length > 0) {
       const regionFilter = document.getElementById("regionFilter");
       if (regionFilter) {
         const firstRegion =
-          this.userInterests.regions[0].textContent ||
-          this.userInterests.regions[0];
+          this.userInterests.preferredRegions[0].textContent ||
+          this.userInterests.preferredRegions[0];
         regionFilter.value = firstRegion;
         this.markAsUserInterest(regionFilter);
         this.handleRegionChange();
@@ -966,7 +966,7 @@ let tourSearchManager = {
         const firstNeed =
           this.userInterests.needs[0].textContent ||
           this.userInterests.needs[0];
-        if (firstNeed !== "해당없음") {
+        if (firstNeed !== "필요없음") {
           needsFilter.value = firstNeed;
           this.markAsUserInterest(needsFilter);
         }

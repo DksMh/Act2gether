@@ -1,158 +1,296 @@
-
-  //이거 디비 찜목록에서 가져올 것이기 때문에 차후 지워야하고 변경 필요
+//이거 디비 찜목록에서 가져올 것이기 때문에 차후 지워야하고 변경 필요
 const sampleWishlist = [
-  { title: "[관광 상품] 오로라와 맛의 신세계", summary: "짧은 설명이 들어갑니다. 여행지/상품 안내 등" },
-  { title: "[관광 상품] 휴가의 정석", summary: "짧은 설명이 들어갑니다. 여행지/상품 안내 등" },
-  { title: "[관광 상품] 오로라와 맛의 신세계", summary: "짧은 설명이 들어갑니다. 여행지/상품 안내 등" },
-  { title: "[관광 상품] 어서와요 경주에", summary: "짧은 설명이 들어갑니다. 여행지/상품 안내 등" },
-  { title: "[관광 상품] 한국의 스위스", summary: "짧은 설명이 들어갑니다. 여행지/상품 안내 등" }
+  {
+    title: "[관광 상품] 오로라와 맛의 신세계",
+    summary: "짧은 설명이 들어갑니다. 여행지/상품 안내 등",
+  },
+  {
+    title: "[관광 상품] 휴가의 정석",
+    summary: "짧은 설명이 들어갑니다. 여행지/상품 안내 등",
+  },
+  {
+    title: "[관광 상품] 오로라와 맛의 신세계",
+    summary: "짧은 설명이 들어갑니다. 여행지/상품 안내 등",
+  },
+  {
+    title: "[관광 상품] 어서와요 경주에",
+    summary: "짧은 설명이 들어갑니다. 여행지/상품 안내 등",
+  },
+  {
+    title: "[관광 상품] 한국의 스위스",
+    summary: "짧은 설명이 들어갑니다. 여행지/상품 안내 등",
+  },
 ];
-  //이거 디비 모임에서 가져올 것이기 때문에 차후 지워야하고 변경 필요
+//이거 디비 모임에서 가져올 것이기 때문에 차후 지워야하고 변경 필요
 const trips = [
   {
     title: "강원도 동해로 새벽 새찰하러 가요 서울 출발 당일",
     schedule: "00.00~00.00",
-    depart: "서울"
+    depart: "서울",
   },
   {
     title: "중년 여성끼리 소박하게 국내 여행 가요",
     schedule: "00.00~00.00",
-    depart: "서울"
+    depart: "서울",
   },
   {
     title: "모임명",
     schedule: "00.00~00.00",
-    depart: "서울"
+    depart: "서울",
   },
   {
     title: "강원랜드로 컴온",
     schedule: "00.00~00.00",
-    depart: "강원"
+    depart: "강원",
   },
   {
     title: "유채꽃과 함께 보내는 봄",
     schedule: "00.00~00.00",
-    depart: "제주"
-  }
+    depart: "제주",
+  },
 ];
 
-  //이거 디비 모임에서 가져올 것이기 때문에 차후 지워야하고 변경 필요
+//이거 디비 모임에서 가져올 것이기 때문에 차후 지워야하고 변경 필요
 const doneTrips = [
   {
     title: "시원한 계곡으로 오세요",
     schedule: "00.00~00.00",
-    depart: "서울"
+    depart: "서울",
   },
   {
     title: "메리크리스마스",
     schedule: "00.00~00.00",
-    depart: "경기"
-  }
+    depart: "경기",
+  },
 ];
 
-$(document).ready(function() {
-  window.currentUser = {
-    username: document.getElementById('usernameSpan')?.textContent?.trim() || null,
-  };
-    let interests = null;
+// 전역 변수
+let userInterests = {};
+let selectedPlaceCount = 0;
+const MAX_PLACE_SELECTION = 6;
 
-    function applySelected(containerSelector, values) {
-        const $scope = $(containerSelector);
-        // 먼저 초기화
-        $scope.find('.option-button').removeClass('selected');
-        if (!Array.isArray(values)) return;
-        values.forEach(v => {
-        // data-value="..."와 매칭 (따옴표/특수문자 있을 수 있으니 이스케이프 처리 권장)
-        $scope.find(`.option-button[data-value="${v}"]`).addClass('selected');
+$(document).ready(function () {
+  window.currentUser = {
+    username:
+      document.getElementById("usernameSpan")?.textContent?.trim() || null,
+  };
+  let interests = null;
+
+  function applySelected(containerSelector, values) {
+    const $scope = $(containerSelector);
+    // 먼저 초기화
+    $scope.find(".option-button").removeClass("selected");
+    if (!Array.isArray(values)) return;
+    values.forEach((v) => {
+      // data-value="..."와 매칭 (따옴표/특수문자 있을 수 있으니 이스케이프 처리 권장)
+      $scope.find(`.option-button[data-value="${v}"]`).addClass("selected");
+    });
+  }
+
+  var emailData = $("#emailSpan").text().trim();
+  const data = {
+    email: emailData,
+  };
+  console.log(emailData);
+  $.ajax({
+    url: "/profile/user",
+    type: "post",
+    contentType: "application/json",
+    data: JSON.stringify(data),
+    success: function (res, textStatus, jqXHR) {
+      console.log(res);
+      $("#nickname").text(res.username);
+      $("#ageGroup").text(res.age);
+      $("#gender").text(res.gender);
+      $("#location").text(res.region);
+      const interestsObj = JSON.parse(res.interests);
+      interests =
+        typeof res.interests === "string"
+          ? JSON.parse(res.interests)
+          : res.interests || {};
+
+      renderPills("#prefRegions", interestsObj.preferredRegions);
+      renderPills("#prefPlaces", interestsObj.places); // 혹은 destinations 등 실제 키
+      renderPills("#prefFacilities", interestsObj.needs); // 접근성/유아동 등
+      renderReviews(res.reviews);
+      //데이터 변경 필요
+      renderWishlist(sampleWishlist);
+      setActive("upcoming");
+      renderGathering(trips);
+      console.log(interestsObj.preferredRegions); // ["서울"]
+      console.log(interestsObj.preferredRegions[0]); // "서울"
+      // $('#location').text(res.location);
+    },
+    error: function (request, status, error) {
+      // console.log("Error:", error);
+      // console.log("Response:", request.responseText);
+    },
+    complete: function (jqXHR, textStatus) {},
+  });
+
+  $("#tour").on("click", function () {
+    const modal = document.getElementById("interestModal");
+    // 250917 모달 열기 전 초기화
+    $(".option-button").removeClass("selected");
+    selectedPlaceCount = 0;
+    userInterests = {};
+
+    modal.classList.add("is-open");
+    document.body.classList.add("modal-open");
+    modal.removeAttribute("aria-hidden");
+
+    // interests가 준비되어 있으면 선택 반영
+    if (interests) {
+      // 지역
+      if (interests.preferredRegions) {
+        interests.preferredRegions.forEach((region) => {
+          $(`#regionOptions .option-button[data-value="${region}"]`).addClass(
+            "selected"
+          );
         });
+      }
+
+      // 장소
+      if (interests.places) {
+        interests.places.forEach((place) => {
+          $(`#placeOptions .option-button[data-value="${place}"]`).addClass(
+            "selected"
+          );
+        });
+        selectedPlaceCount = interests.places.length;
+        updateSelectionCounter();
+      }
+
+      // 편의시설
+      if (interests.needs && interests.needs.length > 0) {
+        $(
+          `#needsOptions .option-button[data-value="${interests.needs[0]}"]`
+        ).addClass("selected");
+      }
     }
 
-    var emailData = $("#emailSpan").text().trim();
-    const data = {
-        email: emailData
-    };
-    console.log(emailData);
-    $.ajax({
-        url: "/profile/user",
-        type: 'post',
-        contentType: "application/json",
-        data: JSON.stringify(data),
-        success: function(res, textStatus, jqXHR) {
-            console.log(res);
-            $('#nickname').text(res.username);
-            $('#ageGroup').text(res.age);
-            $('#gender').text(res.gender);
-            $('#location').text(res.region);
-            const interestsObj = JSON.parse(res.interests);
-            interests = (typeof res.interests === "string")
-                        ? JSON.parse(res.interests)
-                        : (res.interests || {});
+    // 접근성: 포커스 이동
+    const firstBtn = modal.querySelector(".option-button, .btn");
+    if (firstBtn) firstBtn.focus();
+  });
 
-            renderPills('#prefRegions', interestsObj.preferredRegions);
-            renderPills('#prefPlaces',   interestsObj.places);         // 혹은 destinations 등 실제 키
-            renderPills('#prefFacilities', interestsObj.needs);        // 접근성/유아동 등
-            renderReviews(res.reviews);
-            //데이터 변경 필요
-            renderWishlist(sampleWishlist);
-            setActive('upcoming');
-            renderGathering(trips);
-            console.log(interestsObj.preferredRegions); // ["서울"]
-            console.log(interestsObj.preferredRegions[0]); // "서울"
-            // $('#location').text(res.location);
-        },
-        error: function(request, status, error) {
-            // console.log("Error:", error);
-            // console.log("Response:", request.responseText);
-        },
-        complete: function(jqXHR, textStatus) {
-            
-        }
-    });
+  // 이벤트 핸들러는 한 번만 등록 (이벤트 위임 사용)
 
-    $("#tour").on("click", function() {
-        const modal = document.getElementById('interestModal');
-        modal.classList.add('is-open');
-        document.body.classList.add('modal-open');
-        // interests가 준비되어 있으면 선택 반영
-        if (interests) {
-        // 섹션별 컨테이너 id에 맞춰 적용
-        applySelected('#regionOptions', interests.preferredRegions);
-        applySelected('#placeOptions',  interests.places);
-        applySelected('#needsOptions',  interests.needs);
-        }
-        // 접근성: 포커스 이동 (필요하면 첫 버튼으로)
-        const firstBtn = modal.querySelector('.option-button, .btn');
-        if (firstBtn) firstBtn.focus();
-    });
+  // 지역 선택 이벤트
+  $(document).on("click", "#regionOptions .option-button", function (e) {
+    // 모달이 열려있을 때만 작동
+    if (!$("#interestModal").hasClass("is-open")) return;
 
-    
+    e.preventDefault();
+    e.stopPropagation();
+    if ($(this).hasClass("selected")) {
+      $(this).removeClass("selected");
+      selectedPlaceCount--;
+    } else {
+      if (selectedPlaceCount >= MAX_PLACE_SELECTION) {
+        showToast("장소는 최대 6개까지 선택 가능합니다.", "warning");
+        return;
+      }
+      $(this).addClass("selected");
+      selectedPlaceCount++;
+    }
+
+    updateUserInterests();
+    updateSelectionCounter();
+  });
+
+  // 장소 선택 이벤트 (최대 6개)
+  $(document).on("click", "#placeOptions .option-button", function (e) {
+    // 모달이 열려있을 때만 작동
+    if (!$("#interestModal").hasClass("is-open")) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if ($(this).hasClass("selected")) {
+      $(this).removeClass("selected");
+      selectedPlaceCount--;
+    } else {
+      if (selectedPlaceCount >= MAX_PLACE_SELECTION) {
+        showToast("장소는 최대 6개까지 선택 가능합니다.", "warning");
+        return;
+      }
+      $(this).addClass("selected");
+      selectedPlaceCount++;
+    }
+
+    updateUserInterests();
+    updateSelectionCounter();
+  });
+
+  // 편의시설 선택 이벤트 (단일 선택)
+  $(document).on("click", "#needsOptions .option-button", function (e) {
+    // 모달이 열려있을 때만 작동
+    if (!$("#interestModal").hasClass("is-open")) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 다른 모든 버튼 선택 해제
+    $("#needsOptions .option-button").removeClass("selected");
+    // 현재 버튼 선택
+    $(this).addClass("selected");
+    updateUserInterests();
+  });
 
   // 오버레이(빈 영역) 클릭 시 닫기
-  document.addEventListener('click', function(e){
-    const modal = document.getElementById('interestModal');
-    if (!modal.classList.contains('is-open')) return;
-    const dialog = modal.querySelector('.modal__dialog');
-    if (e.target === modal) { // 오버레이 영역 직접 클릭
+  document.addEventListener("click", function (e) {
+    // const modal = document.getElementById("interestModal");
+    // if (!modal.classList.contains("is-open")) return;
+    // const dialog = modal.querySelector(".modal__dialog");
+    // if (e.target === modal) {
+    //   // 오버레이 영역 직접 클릭
+    //   closeInterestModal();
+    // }
+    // 250917 변경
+    const modal = document.getElementById("interestModal");
+    if (!modal || !modal.classList.contains("is-open")) return;
+
+    // 모달 바깥 영역 클릭 확인
+    if (e.target === modal) {
       closeInterestModal();
     }
   });
 
   // ESC로 닫기
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape') closeInterestModal();
+  document.addEventListener("keydown", function (e) {
+    //if (e.key === "Escape") closeInterestModal();
+    // 250917 변경
+    if (e.key === "Escape" && $("#interestModal").hasClass("is-open")) {
+      closeInterestModal();
+    }
   });
+
+  // 선택 개수 업데이트 함수 - 261번 줄 근처
+  function updateSelectionCounter() {
+    const placeOptions = document.querySelector("#placeOptions");
+    if (!placeOptions) return; // null 체크 추가
+
+    const subtitleElement = placeOptions
+      .closest(".question-section")
+      ?.querySelector(".question-subtitle");
+
+    if (subtitleElement) {
+      subtitleElement.textContent = `복수 선택 가능 (최대 6개, ${selectedPlaceCount}개 선택됨)`;
+    }
+  }
 
   // (선택) 옵션 버튼 토글 선택 효과 예시
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('.option-button');
-    if (!btn) return;
-    btn.classList.toggle('selected');
-  });
+  // document.addEventListener("click", function (e) {
+  //   const btn = e.target.closest(".option-button");
+  //   if (!btn) return;
+  //   btn.classList.toggle("selected");
+  // });
 
   // 모달 DOM이 없으면 생성
-  function ensureSettingsModal(){
-    let $m = $('#settingsModal');
-    if($m.length) return $m;
+  function ensureSettingsModal() {
+    let $m = $("#settingsModal");
+    if ($m.length) return $m;
 
     const html = `
       <div id="settingsModal" hidden>
@@ -171,61 +309,76 @@ $(document).ready(function() {
           </div>
         </div>
       </div>`;
-    $('body').append(html);
-    $m = $('#settingsModal');
+    $("body").append(html);
+    $m = $("#settingsModal");
     return $m;
   }
 
-  function openSettingsModal(){
+  function openSettingsModal() {
     const $m = ensureSettingsModal();
-    $m.removeAttr('hidden');
-    requestAnimationFrame(()=> $m.addClass('open')); // 애니메이션
-    $('body').css('overflow','hidden');              // 스크롤 잠금
+    $m.removeAttr("hidden");
+    requestAnimationFrame(() => $m.addClass("open")); // 애니메이션
+    $("body").css("overflow", "hidden"); // 스크롤 잠금
     // 포커스 이동
-    $m.find('.modal-panel').trigger('focus');
+    $m.find(".modal-panel").trigger("focus");
   }
 
-  function closeSettingsModal(){
-    const $m = $('#settingsModal');
-    $m.removeClass('open');
-    setTimeout(()=>{ $m.attr('hidden',''); $('body').css('overflow',''); }, 160);
+  function closeSettingsModal() {
+    const $m = $("#settingsModal");
+    $m.removeClass("open");
+    setTimeout(() => {
+      $m.attr("hidden", "");
+      $("body").css("overflow", "");
+    }, 160);
   }
 
   // 트리거: #settings 클릭 시 오픈
-  $('#settings').off('click.openSettings').on('click.openSettings', function(e){
-    e.preventDefault();
-    openSettingsModal();
-  });
+  $("#settings")
+    .off("click.openSettings")
+    .on("click.openSettings", function (e) {
+      e.preventDefault();
+      openSettingsModal();
+    });
 
   // 닫기(배경/버튼/ESC)
-  $(document).on('click', '#settingsModal .modal-close, #settingsModal .modal-backdrop', closeSettingsModal);
-  $(document).on('keydown', function(e){
-    if(e.key === 'Escape' && $('#settingsModal').is(':visible')) closeSettingsModal();
+  $(document).on(
+    "click",
+    "#settingsModal .modal-close, #settingsModal .modal-backdrop",
+    closeSettingsModal
+  );
+  $(document).on("keydown", function (e) {
+    if (e.key === "Escape" && $("#settingsModal").is(":visible"))
+      closeSettingsModal();
   });
 
   // 항목 클릭 핸들러(필요시 실제 화면/모달/페이지로 변경)
-  $(document).on('click', '#settingsModal .item', function(){
-    const action = $(this).data('action');
+  $(document).on("click", "#settingsModal .item", function () {
+    const action = $(this).data("action");
 
-    switch(action){
-      case 'avatar':
+    switch (action) {
+      case "avatar":
         // TODO: 프로필이미지 변경 모달/페이지 열기
         openAvatarSheet();
         break;
-      case 'profile':
+      case "profile":
         openNickRegionModal();
         break;
-      case 'password':
+      case "password":
         openPasswordModal();
         break;
-      case 'consents':
+      case "consents":
         openPolicyModal();
         break;
-      case 'withdraw':
+      case "withdraw":
         // 실제로는 확인 다이얼로그 -> 탈퇴 API 호출 흐름 권장
-        if (confirm('정말 서비스에서 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+        if (
+          confirm(
+            "정말 서비스에서 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+          )
+        ) {
           // fetch('/api/account/withdraw', { method:'POST' }) …
-          if (window.showToast) showToast('탈퇴 요청을 처리했습니다.', 'success');
+          if (window.showToast)
+            showToast("탈퇴 요청을 처리했습니다.", "success");
         }
         break;
     }
@@ -234,11 +387,11 @@ $(document).ready(function() {
   });
 
   // =================== 정책(약관) 모달 ===================
-(function(){
-  // 약관 전문 문자열(예시/샘플) — 필요 시 서버에서 불러와도 됨
-  // 약관 내용 정의 (기존과 동일)
-const termsContent = {
-    이용약관: `
+  (function () {
+    // 약관 전문 문자열(예시/샘플) — 필요 시 서버에서 불러와도 됨
+    // 약관 내용 정의 (기존과 동일)
+    const termsContent = {
+      이용약관: `
         <h5>제1조 (목적)</h5>
         <p>이 약관은 여기부터(이하 "회사")가 제공하는 여행 추천 서비스(이하 "서비스")의 이용에 관한 조건과 절차, 회사와 회원 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.</p>
         
@@ -250,7 +403,7 @@ const termsContent = {
         <p>1. 이 약관은 서비스 화면에 게시하거나 기타의 방법으로 회원에게 공지함으로써 효력을 발생합니다.</p>
         <p>2. 회사는 필요한 경우 이 약관을 변경할 수 있으며, 변경된 약관은 서비스 내에서 공지합니다.</p>
     `,
-    개인정보처리방침: `
+      개인정보처리방침: `
         <h5>1. 개인정보의 처리 목적</h5>
         <p>회사는 다음의 목적을 위하여 개인정보를 처리합니다:</p>
         <p>- 서비스 제공 및 계약 이행</p>
@@ -271,7 +424,7 @@ const termsContent = {
         <h5>4. 개인정보의 제3자 제공</h5>
         <p>회사는 개인정보를 제1조(개인정보의 처리 목적)에서 명시한 범위 내에서만 처리하며, 정보주체의 동의, 법률의 특별한 규정 등 개인정보보호법 제17조 및 제18조에 해당하는 경우에만 개인정보를 제3자에게 제공합니다.</p>
     `,
-    위치정보약관: `
+      위치정보약관: `
         <h5>제1조 (목적)</h5>
         <p>본 약관은 여기부터가 제공하는 위치정보서비스의 이용과 관련하여 회사와 개인위치정보주체와의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
         
@@ -286,7 +439,7 @@ const termsContent = {
         <p>- 주변 관광지 정보 제공</p>
         <p>- 교통정보 및 길찾기 서비스 제공</p>
     `,
-    마케팅정보: `
+      마케팅정보: `
         <h5>마케팅 정보 수신 동의</h5>
         <p>회사는 다음과 같은 마케팅 정보를 제공합니다:</p>
         <p>- 신규 서비스 및 상품 정보</p>
@@ -301,7 +454,7 @@ const termsContent = {
         <h5>동의 철회</h5>
         <p>마케팅 정보 수신에 대한 동의는 언제든지 철회할 수 있으며, 철회 시 해당 정보 제공이 중단됩니다.</p>
     `,
-    이벤트정보: `
+      이벤트정보: `
         <h5>이벤트 및 할인 혜택 알림 동의</h5>
         <p>회사는 다음과 같은 이벤트 정보를 제공합니다:</p>
         <p>- 기간 한정 할인 이벤트</p>
@@ -316,331 +469,377 @@ const termsContent = {
         
         <h5>동의 철회</h5>
         <p>이벤트 정보 수신 동의는 언제든지 철회 가능하며, 마이페이지에서 설정을 변경할 수 있습니다.</p>
-    `
-};
-const DOCS = termsContent;
-  // 모달 열기
-  window.openPolicyModal = async function openPolicyModal(){
-    // (선택) 설정 모달이 따로 있다면 닫기
-    if (typeof closeSettingsModal === 'function') closeSettingsModal();
-
-    const $m = $('#policyModal');
-    if (!$m.length) {
-      console.warn('#policyModal 을 찾을 수 없습니다.');
-      return;
-    }
-
-    const userData = {
-        username: (window.currentUser?.username || '').toLowerCase()
+    `,
     };
+    const DOCS = termsContent;
+    // 모달 열기
+    window.openPolicyModal = async function openPolicyModal() {
+      // (선택) 설정 모달이 따로 있다면 닫기
+      if (typeof closeSettingsModal === "function") closeSettingsModal();
 
-    const res = await fetch('/profile/agreement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(userData)
-    });
+      const $m = $("#policyModal");
+      if (!$m.length) {
+        console.warn("#policyModal 을 찾을 수 없습니다.");
+        return;
+      }
 
-    let data = {};
-    const txt = await res.text();
-    try { data = JSON.parse(txt); } catch { data = { success: res.ok, message: txt }; }
-    console.log(data);
-    if (!res.ok || data.success === false) {
-    toast(data.message || '동의 내역 불러오기에 실패했습니다.');
-    return;
-    }
-    
-    $('#p-terms4').prop('checked', data.marketing);
-    $('#p-terms5').prop('checked', data.event);
-
-    // 초기화: 체크/버튼 상태/본문박스 접기
-    // $m.find('input[type="checkbox"]').prop('checked', false);
-    $m.find('.policy-doc-inline').hide();
-    $m.find('.policy-link').text('전문 보기').data('orig', '전문 보기');
-
-    $m.attr('hidden', false);
-    document.body.style.overflow = 'hidden';
-  };
-
-  // 모달 닫기
-  function closePolicyModal(){
-    $('#policyModal').attr('hidden', true);
-    document.body.style.overflow = '';
-  }
-
-  // 닫기 트리거(✕ 버튼/백드롭/ESC)
-  $(document).on('click', '#policyModal .policy-close, #policyModal .policy-backdrop', closePolicyModal);
-  $(document).on('keydown', function(e){
-    if (e.key === 'Escape') closePolicyModal();
-  });
-$(document).off('click', '#policyModal .policy-link'); // 중복 방지
-  // “전문 보기” 링크: 해당 항목 아래에 본문 토글(접기/펼치기)
-  $(document).on('click', '#policyModal .policy-link', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const $link = $(this);
-    const key   = $link.data('doc') || '';
-    const html  = DOCS[key] || '내용이 준비되지 않았습니다.';
-
-    const $item = $link.closest('.policy-item');
-    let $doc    = $item.next('.policy-doc-inline');
-
-    if (!$doc.length) {
-      $doc = $('<div class="policy-doc-inline" aria-live="polite"></div>').insertAfter($item);
-    }
-
-    // ★ 핵심: HTML 그대로 렌더
-  $doc.html(html);
-
-  const willOpen = $doc.is(':hidden');
-  // 다른 열린 섹션 닫기 + 다른 링크 원복
-  $('.policy-doc-inline').not($doc).slideUp(150);
-  $('#policyModal .policy-link').not($link).text('전문 보기').attr('aria-expanded','false');
-
-
-  if (willOpen) {
-    $doc.hide().attr('hidden', false).slideDown(150, () => {
-      $doc[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
-    $link.text('접기').attr('aria-expanded', 'true');
-  } else {
-    $doc.stop(true, true).slideUp(150, () => $doc.attr('hidden', true));
-    $link.text('전문 보기').attr('aria-expanded', 'false');
-  }
-  });
-
-  // 저장(확인) — 필요 시 서버로 동의 이력 전송
-  $(document).on('click', '#policyConfirmBtn', async function(){
-    const $btn = $(this);
-    if ($btn.data('busy')) return;
-
-    const consents = {
-        age: true,
-        terms:    true,
-        privacy:  true,
-        location: true,
-        marketing:$('#p-terms4').is(':checked'),
-        event:   $('#p-terms5').is(':checked'),
+      const userData = {
+        username: (window.currentUser?.username || "").toLowerCase(),
       };
 
-    const userData = {
-        username: (window.currentUser?.username || '').toLowerCase(),
-        agreement: JSON.stringify(consents)
-    };
-
-    try {
-      $btn.data('busy', true).prop('disabled', true).text('저장 중…');
-
-      // 서버 저장이 필요 없으면 아래 fetch는 주석 처리하고 토스트만 띄우세요.
-      const res = await fetch('/profile/policy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(userData)
+      const res = await fetch("/profile/agreement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(userData),
       });
 
       let data = {};
       const txt = await res.text();
-      try { data = JSON.parse(txt); } catch { data = { success: res.ok, message: txt }; }
-
+      try {
+        data = JSON.parse(txt);
+      } catch {
+        data = { success: res.ok, message: txt };
+      }
+      console.log(data);
       if (!res.ok || data.success === false) {
-        toast(data.message || '동의 내역 저장에 실패했습니다.');
+        toast(data.message || "동의 내역 불러오기에 실패했습니다.");
         return;
       }
 
-      toast('동의 내역이 저장되었습니다.', 'success');
-      closePolicyModal();
-    } catch (err) {
-      console.error(err);
-      toast('요청 처리 중 오류가 발생했습니다.');
-    } finally {
-      $btn.data('busy', false).prop('disabled', false).text('저장');
+      $("#p-terms4").prop("checked", data.marketing);
+      $("#p-terms5").prop("checked", data.event);
+
+      // 초기화: 체크/버튼 상태/본문박스 접기
+      // $m.find('input[type="checkbox"]').prop('checked', false);
+      $m.find(".policy-doc-inline").hide();
+      $m.find(".policy-link").text("전문 보기").data("orig", "전문 보기");
+
+      $m.attr("hidden", false);
+      document.body.style.overflow = "hidden";
+    };
+
+    // 모달 닫기
+    function closePolicyModal() {
+      $("#policyModal").attr("hidden", true);
+      document.body.style.overflow = "";
     }
-  });
 
+    // 닫기 트리거(✕ 버튼/백드롭/ESC)
+    $(document).on(
+      "click",
+      "#policyModal .policy-close, #policyModal .policy-backdrop",
+      closePolicyModal
+    );
+    $(document).on("keydown", function (e) {
+      if (e.key === "Escape") closePolicyModal();
+    });
+    $(document).off("click", "#policyModal .policy-link"); // 중복 방지
+    // “전문 보기” 링크: 해당 항목 아래에 본문 토글(접기/펼치기)
+    $(document).on("click", "#policyModal .policy-link", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
 
-})();
+      const $link = $(this);
+      const key = $link.data("doc") || "";
+      const html = DOCS[key] || "내용이 준비되지 않았습니다.";
 
-  // ==== 비밀번호변경 열기/닫기 도우미 ====
-function openPasswordModal() {
-  closeSettingsModal();
-  const m = document.getElementById('pwModal');
-  m.hidden = false;
-  document.body.style.overflow = 'hidden';
-  $('#pwModal input').val('');         // 초기화
-  $('#pwCurrent').focus();
-}
+      const $item = $link.closest(".policy-item");
+      let $doc = $item.next(".policy-doc-inline");
 
-// 닫기
-$(document).on('click', '#pwModal .pw-close, #pwModal .pw-backdrop', function(){
-  $('#pwModal').attr('hidden', true);
-});
-// ESC로 닫기
-$(document).on('keydown', function(e){
-  if (e.key === 'Escape') $('#pwModal').attr('hidden', true);
-});
-// Enter로 제출
-$(document).on('keydown', '#pwModal input', function(e){
-  if (e.key === 'Enter') $('#pwModal .pw-submit').click();
-});
+      if (!$doc.length) {
+        $doc = $(
+          '<div class="policy-doc-inline" aria-live="polite"></div>'
+        ).insertAfter($item);
+      }
 
-// 저장
-$(document).on('click', '#pwModal .pw-submit', async function(){
-  const $btn = $(this);
-  if ($btn.data('busy')) return;
+      // ★ 핵심: HTML 그대로 렌더
+      $doc.html(html);
 
-  const cur  = $('#pwCurrent').val().trim();
-  const next = $('#pwNew').val().trim();
-  const next2= $('#pwNew2').val().trim();
-  const me   = (window.currentUser?.username || '').toLowerCase();
+      const willOpen = $doc.is(":hidden");
+      // 다른 열린 섹션 닫기 + 다른 링크 원복
+      $(".policy-doc-inline").not($doc).slideUp(150);
+      $("#policyModal .policy-link")
+        .not($link)
+        .text("전문 보기")
+        .attr("aria-expanded", "false");
 
-  // 검증
-  if (!cur)  return toast('현재 비밀번호를 입력해주세요.');
-  if (!next) return toast('새 비밀번호를 입력해주세요.');
-  if (next.length < 8 || next.length > 12) return toast('비밀번호는 8~12자입니다.');
-  if (!/[A-Za-z]/.test(next) || !/\d/.test(next)) return toast('영문과 숫자를 포함해야 합니다.');
-  if (next !== next2) return toast('새 비밀번호가 일치하지 않습니다.');
-
-  try {
-    $btn.data('busy', true).prop('disabled', true).text('변경 중...');
-    const res = await fetch('/profile/password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ username: me, rawPassword: cur, password: next })
+      if (willOpen) {
+        $doc
+          .hide()
+          .attr("hidden", false)
+          .slideDown(150, () => {
+            $doc[0].scrollIntoView({ behavior: "smooth", block: "nearest" });
+          });
+        $link.text("접기").attr("aria-expanded", "true");
+      } else {
+        $doc.stop(true, true).slideUp(150, () => $doc.attr("hidden", true));
+        $link.text("전문 보기").attr("aria-expanded", "false");
+      }
     });
 
-    // 응답이 text일 수도, json일 수도 있으니 안전 파싱
-    let data = {};
-    const txt = await res.text();
-    try { data = JSON.parse(txt); } catch { data = { success: res.ok, message: txt }; }
+    // 저장(확인) — 필요 시 서버로 동의 이력 전송
+    $(document).on("click", "#policyConfirmBtn", async function () {
+      const $btn = $(this);
+      if ($btn.data("busy")) return;
 
-    if (!res.ok || data.success === false) {
-      toast(data.message || '비밀번호 변경에 실패했습니다.');
-      return;
+      const consents = {
+        age: true,
+        terms: true,
+        privacy: true,
+        location: true,
+        marketing: $("#p-terms4").is(":checked"),
+        event: $("#p-terms5").is(":checked"),
+      };
+
+      const userData = {
+        username: (window.currentUser?.username || "").toLowerCase(),
+        agreement: JSON.stringify(consents),
+      };
+
+      try {
+        $btn.data("busy", true).prop("disabled", true).text("저장 중…");
+
+        // 서버 저장이 필요 없으면 아래 fetch는 주석 처리하고 토스트만 띄우세요.
+        const res = await fetch("/profile/policy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(userData),
+        });
+
+        let data = {};
+        const txt = await res.text();
+        try {
+          data = JSON.parse(txt);
+        } catch {
+          data = { success: res.ok, message: txt };
+        }
+
+        if (!res.ok || data.success === false) {
+          toast(data.message || "동의 내역 저장에 실패했습니다.");
+          return;
+        }
+
+        toast("동의 내역이 저장되었습니다.", "success");
+        closePolicyModal();
+      } catch (err) {
+        console.error(err);
+        toast("요청 처리 중 오류가 발생했습니다.");
+      } finally {
+        $btn.data("busy", false).prop("disabled", false).text("저장");
+      }
+    });
+  })();
+
+  // ==== 비밀번호변경 열기/닫기 도우미 ====
+  function openPasswordModal() {
+    closeSettingsModal();
+    const m = document.getElementById("pwModal");
+    m.hidden = false;
+    document.body.style.overflow = "hidden";
+    $("#pwModal input").val(""); // 초기화
+    $("#pwCurrent").focus();
+  }
+
+  // 닫기
+  $(document).on(
+    "click",
+    "#pwModal .pw-close, #pwModal .pw-backdrop",
+    function () {
+      $("#pwModal").attr("hidden", true);
+    }
+  );
+  // ESC로 닫기
+  $(document).on("keydown", function (e) {
+    if (e.key === "Escape") $("#pwModal").attr("hidden", true);
+  });
+  // Enter로 제출
+  $(document).on("keydown", "#pwModal input", function (e) {
+    if (e.key === "Enter") $("#pwModal .pw-submit").click();
+  });
+
+  // 저장
+  $(document).on("click", "#pwModal .pw-submit", async function () {
+    const $btn = $(this);
+    if ($btn.data("busy")) return;
+
+    const cur = $("#pwCurrent").val().trim();
+    const next = $("#pwNew").val().trim();
+    const next2 = $("#pwNew2").val().trim();
+    const me = (window.currentUser?.username || "").toLowerCase();
+
+    // 검증
+    if (!cur) return toast("현재 비밀번호를 입력해주세요.");
+    if (!next) return toast("새 비밀번호를 입력해주세요.");
+    if (next.length < 8 || next.length > 12)
+      return toast("비밀번호는 8~12자입니다.");
+    if (!/[A-Za-z]/.test(next) || !/\d/.test(next))
+      return toast("영문과 숫자를 포함해야 합니다.");
+    if (next !== next2) return toast("새 비밀번호가 일치하지 않습니다.");
+
+    try {
+      $btn.data("busy", true).prop("disabled", true).text("변경 중...");
+      const res = await fetch("/profile/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          username: me,
+          rawPassword: cur,
+          password: next,
+        }),
+      });
+
+      // 응답이 text일 수도, json일 수도 있으니 안전 파싱
+      let data = {};
+      const txt = await res.text();
+      try {
+        data = JSON.parse(txt);
+      } catch {
+        data = { success: res.ok, message: txt };
+      }
+
+      if (!res.ok || data.success === false) {
+        toast(data.message || "비밀번호 변경에 실패했습니다.");
+        return;
+      }
+
+      toast("비밀번호가 변경되었습니다.", "success");
+      $("#pwModal").attr("hidden", true);
+      // 필요시: location.href = '/logout';
+    } catch (err) {
+      console.error(err);
+      toast("요청 처리 중 오류가 발생했습니다.");
+    } finally {
+      $btn.data("busy", false).prop("disabled", false).text("완료");
     }
 
-    toast('비밀번호가 변경되었습니다.', 'success');
-    $('#pwModal').attr('hidden', true);
-    // 필요시: location.href = '/logout';
-  } catch (err) {
-    console.error(err);
-    toast('요청 처리 중 오류가 발생했습니다.');
-  } finally {
-    $btn.data('busy', false).prop('disabled', false).text('완료');
-  }
-
-  function toast(msg, type){
-    if (typeof showToast === 'function') showToast(msg, type || 'info');
-    else alert(msg);
-  }
-});
+    function toast(msg, type) {
+      if (typeof showToast === "function") showToast(msg, type || "info");
+      else alert(msg);
+    }
+  });
 
   // ==== 닉네임, 거주지 열기/닫기 도우미 ====
-function openNickRegionModal() {
-  closeSettingsModal();
-  const m = document.getElementById('nickRegionModal');
-  m.hidden = false;
-  document.body.style.overflow = 'hidden';
-  const targetText = $('#location').text().trim();
-  $('#nrRegion').val(targetText).trigger('change');
+  function openNickRegionModal() {
+    closeSettingsModal();
+    const m = document.getElementById("nickRegionModal");
+    m.hidden = false;
+    document.body.style.overflow = "hidden";
+    const targetText = $("#location").text().trim();
+    $("#nrRegion").val(targetText).trigger("change");
+  }
+  function closeNickRegionModal() {
+    const m = document.getElementById("nickRegionModal");
+    m.hidden = true;
+    document.body.style.overflow = "";
+  }
 
-}
-function closeNickRegionModal() {
-  const m = document.getElementById('nickRegionModal');
-  m.hidden = true;
-  document.body.style.overflow = '';
-}
+  // ==== 닉네임/거주지 변경 ====
+  // POST /profile/updateNR  body: { username, region } -> { username, region }
+  async function updateProfileBasic(payload) {
+    const res = await fetch("/profile/updateNR", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+  }
 
-// ==== 닉네임/거주지 변경 ====
-// POST /profile/updateNR  body: { username, region } -> { username, region }
-async function updateProfileBasic(payload) {
-  const res = await fetch('/profile/updateNR', {
-    method: 'POST',
-    headers: { 'Content-Type':'application/json' },
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return res.json();
-}
+  async function getUsernames() {
+    const res = await fetch("/profile/username", {
+      method: "GET",
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const list = await res.json();
+    return Array.isArray(list)
+      ? list.map((s) => String(s).trim()).filter(Boolean)
+      : [];
+  }
 
-async function getUsernames() {
-  const res = await fetch('/profile/username', {
-    method: 'GET'
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const list = await res.json();
-  return Array.isArray(list)
-    ? list.map(s => String(s).trim()).filter(Boolean)
-    : [];
-}
+  // 2) 닫기 버튼/백드롭
+  $(document).on(
+    "click",
+    "#nickRegionModal .nr-close, #nickRegionModal .nr-backdrop, #nickRegionModal .nr-cancel",
+    function () {
+      closeNickRegionModal();
+    }
+  );
 
-// 2) 닫기 버튼/백드롭
-$(document).on('click', '#nickRegionModal .nr-close, #nickRegionModal .nr-backdrop, #nickRegionModal .nr-cancel', function(){
-  closeNickRegionModal();
-});
+  // 3) 저장
+  $(document).on("click", "#nickRegionModal .nr-save", async function () {
+    const $btn = $(this);
+    if ($btn.data("busy")) return;
 
-// 3) 저장
-$(document).on('click', '#nickRegionModal .nr-save', async function(){
-  const $btn = $(this);
-  if ($btn.data('busy')) return;
+    const nickname = $("#nrNickname").val().trim();
+    const region = $("#nrRegion").val();
+    const me = (window.currentUser?.username || "").toLowerCase();
 
-  const nickname = $('#nrNickname').val().trim();
-  const region   = $('#nrRegion').val();
-  const me        = (window.currentUser?.username || '').toLowerCase();
-
-  if (!nickname) { showToast('닉네임을 입력해주세요.', 'warning'); return; }
-
-   try {
-    const usernames = await getUsernames();          
-    const lowerSet  = new Set(usernames.map(u => u.toLowerCase()));
-    console.log("username : " + me);
-    // 본인의 기존 닉네임은 통과, 그 외엔 중복 금지
-    const isDup = lowerSet.has(nickname.toLowerCase()) && nickname.toLowerCase() !== me;
-    if (isDup) {
-      showToast('이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해 주세요.', 'warning');
-      $('#nrNickname').focus();
+    if (!nickname) {
+      showToast("닉네임을 입력해주세요.", "warning");
       return;
     }
-  } catch (e) {
-    console.error('username 목록 조회 실패:', e);
-    showToast('닉네임 중복 확인에 실패했습니다. 잠시 후 다시 시도해주세요.', 'danger');
-    return;
-  }
 
-  $btn.data('busy', true).prop('disabled', true).text('저장 중...');
-
-  try {
-    const data = {
-      username: nickname,
-      region: region,
-      me: me
+    try {
+      const usernames = await getUsernames();
+      const lowerSet = new Set(usernames.map((u) => u.toLowerCase()));
+      console.log("username : " + me);
+      // 본인의 기존 닉네임은 통과, 그 외엔 중복 금지
+      const isDup =
+        lowerSet.has(nickname.toLowerCase()) && nickname.toLowerCase() !== me;
+      if (isDup) {
+        showToast(
+          "이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해 주세요.",
+          "warning"
+        );
+        $("#nrNickname").focus();
+        return;
+      }
+    } catch (e) {
+      console.error("username 목록 조회 실패:", e);
+      showToast(
+        "닉네임 중복 확인에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        "danger"
+      );
+      return;
     }
-    const saved = await updateProfileBasic(data);
-    // 화면 동기화 (있을 때만)
-    $('#nickname, .js-nickname').text(saved.nickname || nickname);
-    $('#location, .js-residence').text(saved.region || region);
-    window.currentUser.username = saved.nickname || nickname;
 
-    showToast('변경사항이 저장되었습니다.', 'success');
-    closeNickRegionModal();
-    // location.reload();
-  } catch(err) {
-    console.error('프로필 저장 실패:', err);
-    showToast('저장 중 오류가 발생했습니다.', 'danger');
-  } finally {
-    $btn.data('busy', false).prop('disabled', false).text('완료');
-  }
-});
+    $btn.data("busy", true).prop("disabled", true).text("저장 중...");
+
+    try {
+      const data = {
+        username: nickname,
+        region: region,
+        me: me,
+      };
+      const saved = await updateProfileBasic(data);
+      // 화면 동기화 (있을 때만)
+      $("#nickname, .js-nickname").text(saved.nickname || nickname);
+      $("#location, .js-residence").text(saved.region || region);
+      window.currentUser.username = saved.nickname || nickname;
+
+      showToast("변경사항이 저장되었습니다.", "success");
+      closeNickRegionModal();
+      // location.reload();
+    } catch (err) {
+      console.error("프로필 저장 실패:", err);
+      showToast("저장 중 오류가 발생했습니다.", "danger");
+    } finally {
+      $btn.data("busy", false).prop("disabled", false).text("완료");
+    }
+  });
 
   /** 아바타 변경 시트 열기 */
-function openAvatarSheet(){
-  const $modal = $('#settingsModal');
-  if ($('#avatarSheet').length) { $('#avatarSheet').remove(); }
+  function openAvatarSheet() {
+    const $modal = $("#settingsModal");
+    if ($("#avatarSheet").length) {
+      $("#avatarSheet").remove();
+    }
 
-  const curUrl = getCurrentAvatarUrl();
-  const sheet = $(`
+    const curUrl = getCurrentAvatarUrl();
+    const sheet = $(`
     <div id="avatarSheet" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.25); z-index:10001;">
       <div style="width:min(520px, 92vw); background:#fff; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.18); overflow:hidden;">
         <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid #eee;">
@@ -668,118 +867,167 @@ function openAvatarSheet(){
     </div>
   `);
 
-  $modal.append(sheet);
+    $modal.append(sheet);
 
-  // 파일 선택 → 미리보기
-  let pickedFile = null;
-  $('#avatarFile').on('change', function(e){
-    const f = (e.target.files||[])[0];
-    if (!f) return;
-    if (!f.type.startsWith('image/')) { toast('이미지 파일만 업로드할 수 있어요.','warning'); return; }
-    if (f.size > 10 * 1024 * 1024) { toast('최대 10MB까지 가능합니다.','warning'); return; }
+    // 파일 선택 → 미리보기
+    let pickedFile = null;
+    $("#avatarFile").on("change", function (e) {
+      const f = (e.target.files || [])[0];
+      if (!f) return;
+      if (!f.type.startsWith("image/")) {
+        toast("이미지 파일만 업로드할 수 있어요.", "warning");
+        return;
+      }
+      if (f.size > 10 * 1024 * 1024) {
+        toast("최대 10MB까지 가능합니다.", "warning");
+        return;
+      }
 
-    pickedFile = f;
-    const url = URL.createObjectURL(f);
-    $('#avatarPreview').attr('src', url);
-    sheet.find('.as-save').prop('disabled', false);
-  });
-
-  // 닫기
-  sheet.on('click', '.as-close, .as-cancel', function(){
-    sheet.remove();
-  });
-
-  // 저장(업로드)
-  sheet.on('click', '.as-save', function(){
-    if (!pickedFile) { toast('먼저 이미지를 선택해주세요.','warning'); return; }
-
-    const fd = new FormData();
-    console.log("username >>> " + $('#nickname').text().trim());
-    fd.append('username', $('#nickname').text().trim());
-    fd.append('file', pickedFile);
-
-    const $btn = $(this).prop('disabled', true).text('업로드 중…');
-    $.ajax({
-      url: '/profile/account/avatar',
-      method: 'POST',
-      data: fd, processData: false, contentType: false
-    }).done(function(resp){
-      // 서버가 avatarUrl 반환한다고 가정
-      const newUrl = (resp && resp.avatarUrl) ? (resp.avatarUrl + '?v=' + Date.now()) : getCurrentAvatarUrl(true);
-      applyAvatarToPage(newUrl);
-      toast('대표 사진이 변경되었습니다!','success');
-      sheet.remove();
-    }).fail(function(xhr){
-      console.error(xhr);
-      toast('업로드에 실패했습니다.','danger');
-      $btn.prop('disabled', false).text('저장');
+      pickedFile = f;
+      const url = URL.createObjectURL(f);
+      $("#avatarPreview").attr("src", url);
+      sheet.find(".as-save").prop("disabled", false);
     });
-  });
-}
 
-function getCurrentAvatarUrl(useBust){
-  // 페이지의 원형 아바타 이미지 셀렉터 맞춰서 사용
-  const $img = $('#profileAvatar, .profile-avatar img').eq(0);
-  const url = $img.attr('src');
-  return useBust ? (url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now()) : url;
-}
+    // 닫기
+    sheet.on("click", ".as-close, .as-cancel", function () {
+      sheet.remove();
+    });
 
-function applyAvatarToPage(url){
-  const $img = $('#profileAvatar, .profile-avatar img').eq(0);
-  if ($img.length) $img.attr('src', url);
-}
+    // 저장(업로드)
+    sheet.on("click", ".as-save", function () {
+      if (!pickedFile) {
+        toast("먼저 이미지를 선택해주세요.", "warning");
+        return;
+      }
 
-// 토스트 헬퍼(프로젝트의 showToast가 있으면 그걸 사용)
-function toast(msg, type){ if (window.showToast) showToast(msg, type||'info'); else alert(msg); }
+      const fd = new FormData();
+      console.log("username >>> " + $("#nickname").text().trim());
+      fd.append("username", $("#nickname").text().trim());
+      fd.append("file", pickedFile);
 
-// 설정 모달의 “대표 사진 변경” 항목 클릭 → 아바타 시트 열기
-// $(document).on('click', '#settingsModal .item[data-action="avatar"]', function(){
-//   openAvatarSheet();
-// });
+      const $btn = $(this).prop("disabled", true).text("업로드 중…");
+      $.ajax({
+        url: "/profile/account/avatar",
+        method: "POST",
+        data: fd,
+        processData: false,
+        contentType: false,
+      })
+        .done(function (resp) {
+          // 서버가 avatarUrl 반환한다고 가정
+          const newUrl =
+            resp && resp.avatarUrl
+              ? resp.avatarUrl + "?v=" + Date.now()
+              : getCurrentAvatarUrl(true);
+          applyAvatarToPage(newUrl);
+          toast("대표 사진이 변경되었습니다!", "success");
+          sheet.remove();
+        })
+        .fail(function (xhr) {
+          console.error(xhr);
+          toast("업로드에 실패했습니다.", "danger");
+          $btn.prop("disabled", false).text("저장");
+        });
+    });
+  }
+
+  function getCurrentAvatarUrl(useBust) {
+    // 페이지의 원형 아바타 이미지 셀렉터 맞춰서 사용
+    const $img = $("#profileAvatar, .profile-avatar img").eq(0);
+    const url = $img.attr("src");
+    return useBust
+      ? url + (url.includes("?") ? "&" : "?") + "v=" + Date.now()
+      : url;
+  }
+
+  function applyAvatarToPage(url) {
+    const $img = $("#profileAvatar, .profile-avatar img").eq(0);
+    if ($img.length) $img.attr("src", url);
+  }
+
+  // 토스트 헬퍼(프로젝트의 showToast가 있으면 그걸 사용)
+  function toast(msg, type) {
+    if (window.showToast) showToast(msg, type || "info");
+    else alert(msg);
+  }
+
+  // 설정 모달의 “대표 사진 변경” 항목 클릭 → 아바타 시트 열기
+  // $(document).on('click', '#settingsModal .item[data-action="avatar"]', function(){
+  //   openAvatarSheet();
+  // });
 });
 
 // 사용자 관심사 업데이트
 function updateUserInterests() {
-  const sections = {
-    regionOptions: "preferredRegions",
-    placeOptions: "places",
-    needsOptions: "needs",
+  // const sections = {
+  //   regionOptions: "preferredRegions",
+  //   placeOptions: "places",
+  //   needsOptions: "needs",
+  // };
+
+  // userInterests = {};
+  // Object.keys(sections).forEach((sectionId) => {
+  //   const section = document.getElementById(sectionId);
+  //   if (section) {
+  //     const selectedOptions = section.querySelectorAll(
+  //       ".option-button.selected"
+  //     );
+  //     const values = Array.from(selectedOptions).map(
+  //       (btn) => btn.dataset.value
+  //     );
+  //     userInterests[sections[sectionId]] = values;
+  //   }
+  // });
+  // 250917 변경
+  userInterests = {
+    preferredRegions: [],
+    places: [],
+    needs: [],
   };
 
-  userInterests = {};
-
-  Object.keys(sections).forEach((sectionId) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      const selectedOptions = section.querySelectorAll(".option-button.selected");
-      const values = Array.from(selectedOptions).map((btn) => btn.dataset.value);
-      userInterests[sections[sectionId]] = values;
-    }
+  // 지역 수집
+  $("#regionOptions .option-button.selected").each(function () {
+    userInterests.preferredRegions.push($(this).data("value"));
   });
+
+  // 장소 수집 - place-group 내의 모든 선택된 버튼
+  $(".place-group .option-button.selected").each(function () {
+    userInterests.places.push($(this).data("value"));
+  });
+
+  // 편의시설 수집
+  $("#needsOptions .option-button.selected").each(function () {
+    userInterests.needs.push($(this).data("value"));
+  });
+
+  console.log("Updated interests:", userInterests);
 }
 
-function escapeHtml(s='') {
+function escapeHtml(s = "") {
   return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-    .replace(/'/g,'&#039;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function setActive(filter) {
-  document.querySelectorAll('.pill').forEach(p => {
+  document.querySelectorAll(".pill").forEach((p) => {
     const isActive = p.dataset.filter === filter;
-    p.classList.toggle('active', isActive);
-    p.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    p.classList.toggle("active", isActive);
+    p.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
   // 현재 선택 pill에 포커스 주기(원치 않으면 이 줄은 빼세요)
   const current = document.querySelector(`.pill[data-filter="${filter}"]`);
   current?.focus();
 }
 
-document.addEventListener('keydown', (e) => {
-  const pill = e.target.closest('.pill');
+document.addEventListener("keydown", (e) => {
+  const pill = e.target.closest(".pill");
   if (!pill) return;
-  if (e.key === 'Enter' || e.key === ' ') {
+  if (e.key === "Enter" || e.key === " ") {
     e.preventDefault();
     const filter = pill.dataset.filter;
     if (!filterMap[filter]) return;
@@ -791,13 +1039,13 @@ document.addEventListener('keydown', (e) => {
 // 4) 필터 이벤트
 const filterMap = {
   upcoming: () => renderGathering(trips),
-  done:     () => renderGathering(doneTrips),
+  done: () => renderGathering(doneTrips),
 };
 
-document.addEventListener('click', (e) => {
-  const pill = e.target.closest('.pill');
+document.addEventListener("click", (e) => {
+  const pill = e.target.closest(".pill");
   if (!pill) return;
-  const filter = pill.dataset.filter;        // 'upcoming' | 'done'
+  const filter = pill.dataset.filter; // 'upcoming' | 'done'
   if (!filterMap[filter]) return;
   filterMap[filter]();
   setActive(filter);
@@ -831,14 +1079,16 @@ function renderGathering(items) {
     seeAllBtn.style.display = "inline-block";
     seeShortBtn.style.display = "none";
     seeAllBtn.onclick = () => {
-      listEl.querySelectorAll(".card").forEach(el => el.style.display = "block");
+      listEl
+        .querySelectorAll(".card")
+        .forEach((el) => (el.style.display = "block"));
       seeAllBtn.style.display = "none";
       seeShortBtn.style.display = "inline-block";
     };
     seeShortBtn.onclick = () => {
-      listEl.querySelectorAll(".card").forEach((el, i) =>
-        el.style.display = i < 3 ? "block" : "none"
-      );
+      listEl
+        .querySelectorAll(".card")
+        .forEach((el, i) => (el.style.display = i < 3 ? "block" : "none"));
       seeAllBtn.style.display = "inline-block";
       seeShortBtn.style.display = "none";
     };
@@ -873,14 +1123,16 @@ function renderWishlist(items) {
     seeAllBtn.style.display = "inline-block";
     seeShortBtn.style.display = "none";
     seeAllBtn.onclick = () => {
-      listEl.querySelectorAll(".card").forEach(el => el.style.display = "block");
+      listEl
+        .querySelectorAll(".card")
+        .forEach((el) => (el.style.display = "block"));
       seeAllBtn.style.display = "none";
       seeShortBtn.style.display = "inline-block";
     };
     seeShortBtn.onclick = () => {
-      listEl.querySelectorAll(".card").forEach((el, i) =>
-        el.style.display = i < 3 ? "block" : "none"
-      );
+      listEl
+        .querySelectorAll(".card")
+        .forEach((el, i) => (el.style.display = i < 3 ? "block" : "none"));
       seeAllBtn.style.display = "inline-block";
       seeShortBtn.style.display = "none";
     };
@@ -901,14 +1153,14 @@ function renderReviews(reviews) {
     const div = document.createElement("div");
     div.classList.add("review");
     div.innerHTML = `
-      <div class="stars">${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)} 
+      <div class="stars">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)} 
         <span class="date">${r.updatedAt}</span>
       </div>
       <div class="rev-title">${r.title}</div>
       <div class="rev-text">${r.reviewText}</div>
     `;
     // 처음 3개만 보이고, 나머지는 hidden
-    if (i >= 3){
+    if (i >= 3) {
       div.style.display = "none";
     }
     reviewList.appendChild(div);
@@ -920,26 +1172,25 @@ function renderReviews(reviews) {
     seeShortBtn.style.display = "none"; // 처음엔 안보임
 
     seeAllBtn.onclick = () => {
-      document.querySelectorAll("#reviewList .review").forEach(el => {
+      document.querySelectorAll("#reviewList .review").forEach((el) => {
         el.style.display = "block"; // 전부 보이기
       });
-      seeAllBtn.style.display = "none"; 
-      seeShortBtn.style.display = "block"; 
+      seeAllBtn.style.display = "none";
+      seeShortBtn.style.display = "block";
     };
 
     seeShortBtn.onclick = () => {
       document.querySelectorAll("#reviewList .review").forEach((el, i) => {
-        el.style.display = (i < 3) ? "block" : "none"; // 처음 3개만 보이기
+        el.style.display = i < 3 ? "block" : "none"; // 처음 3개만 보이기
       });
-      seeAllBtn.style.display = "block"; 
-      seeShortBtn.style.display = "none"; 
+      seeAllBtn.style.display = "block";
+      seeShortBtn.style.display = "none";
     };
   } else {
     // 리뷰가 3개 이하라면 버튼 숨기기
     seeAllBtn.style.display = "none";
     seeShortBtn.style.display = "none";
   }
-
 }
 
 // 온보딩 완료
@@ -947,7 +1198,10 @@ function completeOnboarding() {
   updateUserInterests();
 
   // 최소 하나의 관심사는 선택해야 함
-  const hasInterests = Object.values(userInterests).some((arr) => arr.length > 0);
+  const hasInterests = Object.values(userInterests).some(
+    (arr) => arr.length > 0
+  );
+
   if (!hasInterests) {
     alert("최소 하나의 관심사를 선택해주세요.");
     return;
@@ -956,31 +1210,46 @@ function completeOnboarding() {
   console.log("선택된 관심사:", userInterests);
 
   // 로딩 표시
-//   showLoading();
+  //   showLoading();
 
   // 관심사 정보 서버로 전송
   $.ajax({
     url: "/users/interests",
-    type: 'POST',
+    type: "POST",
     contentType: "application/json",
     data: JSON.stringify(userInterests),
-    success: function(response, textStatus, jqXHR) {
-        console.log("관심사 저장 성공");
-        closeInterestModal();
-        location.reload();
-      
+    success: function (response, textStatus, jqXHR) {
+      console.log("관심사 저장 성공");
+      closeInterestModal();
+      // location.reload();
+      // 250917 페이지 새로고침으로 변경사항 반영
+      setTimeout(() => location.reload(), 1000);
     },
-    error: function(request, status, error) {
-      
+    error: function (request, status, error) {
       console.error("관심사 저장 오류:", error);
-    }
+      alert("관심사 저장에 실패했습니다. 다시 시도해주세요.", "error");
+    },
   });
 }
 
 function closeInterestModal() {
-    const modal = document.getElementById('interestModal');
-    modal.classList.remove('is-open');
-    document.body.classList.remove('modal-open');
+  const modal = document.getElementById("interestModal");
+  modal.classList.remove("is-open");
+  document.body.classList.remove("modal-open");
+
+  // 250917 선택 초기화
+  $(".option-button").removeClass("selected");
+  selectedPlaceCount = 0;
+  userInterests = {};
+}
+// 250917 기존 함수들 유지
+function applySelected(containerSelector, values) {
+  const $scope = $(containerSelector);
+  $scope.find(".option-button").removeClass("selected");
+  if (!Array.isArray(values)) return;
+  values.forEach((v) => {
+    $scope.find(`.option-button[data-value="${v}"]`).addClass("selected");
+  });
 }
 
 // 선호 데이터 넣는 함수
@@ -995,7 +1264,7 @@ function renderPills(containerSelector, items) {
   }
 
   items.forEach((txt) => {
-    $wrap.append($('<span/>', { class: 'pill', text: txt }));
+    $wrap.append($("<span/>", { class: "pill", text: txt }));
   });
 }
 
