@@ -53,6 +53,12 @@ public class ProfileService {
         return profileDto;
     }
 
+    public UserEntity getProfileByUsername(String username){
+        UserEntity userEntity = userRepository.findByUsername(username).orElse(null);
+        
+        return userEntity;
+    }
+
     @Transactional
     public String saveAvatar(String username, MultipartFile file) throws IOException {
         log.info("username: >>>> {}", username);
