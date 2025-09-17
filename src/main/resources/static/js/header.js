@@ -132,15 +132,22 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ESC로 닫기 + 스크롤 내리면 닫기
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') popup?.classList.remove('active');
-  });
-  let lastY = window.scrollY;
-  window.addEventListener('scroll', () => {
-    const down = window.scrollY > lastY;
-    lastY = window.scrollY;
-    if (down) popup?.classList.remove('active');
-  });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const popup = document.querySelector('.font-popup');
+    if (popup) popup.classList.remove('active');
+  }
+});
+
+let lastY = window.scrollY;
+window.addEventListener('scroll', () => {
+  const down = window.scrollY > lastY;
+  lastY = window.scrollY;
+  if (down) {
+    const popup = document.querySelector('.font-popup');
+    if (popup) popup.classList.remove('active');
+  }
+});
 
 
   // ===================================
