@@ -81,12 +81,12 @@
     </section>
 
     <!-- 나의 리뷰 -->
-    <section class="reviews">
+    <!-- <section class="reviews">
         <h2 class="section-title">나의 리뷰</h2>
         <div id="reviewList"></div>
         <button id="seeAllBtn-r" class="see-all" style="display:none">전체 보기</button>
         <button id="seeShortBtn-r" class="see-short" style="display:none">축소</button>
-    </section>
+    </section> -->
 
   </main>
 
@@ -292,7 +292,66 @@
   </div>
 </div>
 
+<!-- 서비스 탈퇴 모달 -->
+<div id="withdrawModal" class="wd-modal" hidden>
+  <div class="wd-backdrop" data-close="true"></div>
 
+  <div class="wd-panel" role="dialog" aria-modal="true" aria-labelledby="wdTitle">
+    <button type="button" class="wd-close" aria-label="닫기" data-close="true">✕</button>
+
+    <h3 id="wdTitle" class="wd-title">서비스 탈퇴</h3>
+
+    <p class="wd-desc">
+      여기부터를 이용해 주셔서 감사합니다.<br>
+      아래 내용을 선택/작성해 주시면 더 좋은 서비스를 위해 반영하겠습니다.
+    </p>
+
+    <ul class="wd-reasons" role="radiogroup" aria-label="탈퇴 사유">
+      <li class="wd-reason">
+        <label>
+          <input type="radio" name="wdReason" value="RARE_VISIT">
+          사이트 방문을 자주 하지 않아요
+        </label>
+      </li>
+      <li class="wd-reason">
+        <label>
+          <input type="radio" name="wdReason" value="NO_INFO">
+          원하는 정보가 없어요
+        </label>
+      </li>
+      <li class="wd-reason">
+        <label>
+          <input type="radio" name="wdReason" value="TOO_MANY_NOTICES">
+          광고가 너무 많아요
+        </label>
+      </li>
+      <li class="wd-reason">
+        <label>
+          <input type="radio" name="wdReason" value="OTHER" id="other">
+          기타
+        </label>
+      </li>
+    </ul>
+
+    <div class="wd-feedback">
+      <div class="wd-input">
+        <!-- (선택) 귀여운 이모지/아이콘 넣고 싶으면 이 자리에 이미지 배치 -->
+        <!-- <img src="/images/mascot.png" alt="" class="wd-avatar"> -->
+        <textarea id="wdDetail" maxlength="300"
+          placeholder="불편했던 점이나 개선이 필요한 부분이 있다면 자유롭게 적어주세요. (최대 300자)" disabled></textarea>
+      </div>
+    </div>
+
+    <div class="wd-actions">
+      <button type="button" class="wd-btn ghost" data-close="true">취소</button>
+      <button type="button" id="wdSubmit" class="wd-btn primary" disabled>회원 탈퇴하기</button>
+    </div>
+
+    <div class="wd-notice">
+      탈퇴 시 작성한 게시물/댓글 등은 <strong>익명화</strong>될 수 있으며, 법령에 따라 일부 정보는 일정 기간 보관될 수 있습니다.
+    </div>
+  </div>
+</div>
 
     <!-- Footer -->
      <div th:replace="footer :: footer"></div>

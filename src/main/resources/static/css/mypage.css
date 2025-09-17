@@ -25,14 +25,22 @@
     .pill{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; background:var(--pill); border-radius:999px; font-size:12px}
 
     /* 카드 리스트 */
-    .grid-3{display:grid; grid-template-columns:repeat(3, 1fr); gap:18px}
-    .card{border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#fff}
+    .grid-3{display:grid; grid-template-columns:repeat(2, 1fr); gap:18px}
+    .card{border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#fff; cursor: pointer;}
+    .card:focus { outline: 2px solid #ff5900; outline-offset: 2px; }
     .thumb{height:120px; background:#eee}
     .card-body{padding:12px}
     .card-title{font-size:13px; font-weight:700; line-height:1.4; margin:0 0 8px}
     .meta{display:flex; flex-wrap:wrap; gap:8px; color:var(--muted); font-size:12px}
     .see-all{margin-top:12px; width:100%; background:var(--btn); border:0; padding:10px; border-radius:8px; color:#444; cursor:pointer}
     .see-short{margin-top:12px; width:100%; background:var(--btn); border:0; padding:10px; border-radius:8px; color:#444; cursor:pointer}
+
+    .jg-badge {
+  display:inline-block; font-size:13px; line-height:1;
+  padding:8px 10px; border-radius:999px; background:#f7f7f7; color:#374151; margin-bottom:10px;
+}
+
+.jg-stats { margin-top:10px; color:#4b5563; font-size:14px; }
 
     .pill {
       cursor: pointer;
@@ -474,3 +482,58 @@ body.modal-open { overflow: hidden; }
 }
 .policy-link.toggling{ pointer-events:none; opacity:.6; } /* 토글 중 클릭 방지(선택) */
 
+/* 모달 컨테이너 */
+.wd-modal[hidden]{ display:none; }
+.wd-modal{ position:fixed; inset:0; z-index:1000; }
+
+/* 배경 */
+.wd-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.45); }
+
+/* 패널 */
+.wd-panel{
+  position:relative; z-index:1;
+  margin:4.5rem auto; max-width:560px; width:calc(100% - 2rem);
+  background:#fff; border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,.25);
+  padding:20px 20px 16px;
+}
+
+/* 닫기 */
+.wd-close{
+  position:absolute; top:10px; right:12px;
+  border:0; background:transparent; cursor:pointer;
+  font-size:20px; color:#9aa0a6;
+}
+
+.wd-title{ margin:0 0 10px; font-size:20px; font-weight:700; }
+.wd-desc{ margin:0 0 14px; color:#374151; line-height:1.55; }
+
+.wd-reasons{ list-style:none; padding:0; margin:0 0 12px; }
+.wd-reason{ padding:10px 12px; border:1px solid #ececec; border-radius:10px; }
+.wd-reason + .wd-reason{ margin-top:8px; }
+.wd-reason input{ transform:translateY(1px); margin-right:8px; }
+
+.wd-feedback{ margin-top:10px; }
+.wd-input{
+  position:relative; border:1px solid #e5e7eb; border-radius:12px; background:#fafafa;
+  padding:12px;
+}
+.wd-input textarea{
+  width:100%; min-height:96px; border:0; background:transparent; outline:none;
+  resize:vertical; font-size:14px; line-height:1.6; color:#111827;
+}
+.wd-check input{ margin-right:6px; transform:translateY(1px); }
+.wd-count{ font-variant-numeric: tabular-nums; }
+
+.wd-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:14px; }
+.wd-btn{
+  padding:10px 14px; border:none; border-radius:10px; cursor:pointer; font-weight:600;
+}
+.wd-btn.primary{ background:#ff5900; color:#fff; }
+.wd-btn.primary:disabled{ opacity:.5; cursor:default; }
+.wd-btn.ghost{ background:#f3f4f6; color:#111827; }
+
+.wd-notice{
+  margin-top:10px; font-size:12px; color:#6b7280; line-height:1.5;
+}
+.wd-input.is-disabled { opacity:.6; }
+.wd-input.is-disabled textarea[disabled]{ cursor:not-allowed; }

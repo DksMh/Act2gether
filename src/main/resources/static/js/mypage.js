@@ -91,11 +91,11 @@ $(document).ready(function() {
             renderPills('#prefRegions', interestsObj.preferredRegions);
             renderPills('#prefPlaces',   interestsObj.places);         // 혹은 destinations 등 실제 키
             renderPills('#prefFacilities', interestsObj.needs);        // 접근성/유아동 등
-            renderReviews(res.reviews);
+            // renderReviews(res.reviews);
             //데이터 변경 필요
             renderWishlist(sampleWishlist);
             setActive('upcoming');
-            renderGathering(trips);
+            renderGathering();
             console.log(interestsObj.preferredRegions); // ["서울"]
             console.log(interestsObj.preferredRegions[0]); // "서울"
             // $('#location').text(res.location);
@@ -222,16 +222,124 @@ $(document).ready(function() {
         openPolicyModal();
         break;
       case 'withdraw':
-        // 실제로는 확인 다이얼로그 -> 탈퇴 API 호출 흐름 권장
-        if (confirm('정말 서비스에서 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-          // fetch('/api/account/withdraw', { method:'POST' }) …
-          if (window.showToast) showToast('탈퇴 요청을 처리했습니다.', 'success');
-        }
+        // // 실제로는 확인 다이얼로그 -> 탈퇴 API 호출 흐름 권장
+        // if (confirm('정말 서비스에서 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+        //   // fetch('/api/account/withdraw', { method:'POST' }) …
+        //   if (window.showToast) showToast('탈퇴 요청을 처리했습니다.', 'success');
+        // }
+        openWithdrawModal();
         break;
     }
     // 필요 시 모달을 닫고 다음 화면으로 전환
     // closeSettingsModal();
   });
+
+  function openWithdrawModal() {
+    closeSettingsModal();
+    const $m = $('#withdrawModal');
+    // 초기화
+    $m.find('input[name="wdReason"]').prop('checked', false);
+    $('#wdDetail').val('');
+    $('#wdCount').text('0');
+    $('#wdAgree').prop('checked', false);
+    $('#wdSubmit').prop('disabled', true).text('회원 탈퇴하기').data('busy', false);
+
+    $m.removeAttr('hidden');
+    document.body.style.overflow = 'hidden';
+    // 포커스 이동
+    setTimeout(()=> $m.find('input[name="wdReason"]').first().focus(), 0);
+  }
+
+  // 닫기(배경/✕/취소)
+  $(document).on('click', '#withdrawModal [data-close="true"]', closeWithdrawModal);
+  $(document).on('keydown', function(e){
+    if (e.key === 'Escape') closeWithdrawModal();
+  });
+  function closeWithdrawModal(){
+    $('#withdrawModal').attr('hidden', true);
+    document.body.style.overflow = '';
+  }
+
+  // 글자수 카운터
+  $(document).on('input', '#wdDetail', function(){
+    $('#wdCount').text(String($(this).val().length));
+    // updateSubmitState();
+  });
+
+  // 라디오/체크 변경 시 제출 가능 여부 갱신
+  $(document).on('change', 'input[name="wdReason"], #wdAgree', updateSubmitState);
+  function updateSubmitState(){
+    toggleDetailEnable();
+    const reasonChecked = $('input[name="wdReason"]:checked').length > 0;
+    // const agree = $('#wdAgree').is(':checked');
+    $('#wdSubmit').prop('disabled', !(reasonChecked));
+  }
+
+  // 핵심: 기타 선택 여부로 토글
+  function toggleDetailEnable(){
+    const isOther = $('input[name="wdReason"]:checked').val() === 'OTHER';
+    $('#wdDetail')
+      .prop('disabled', !isOther)
+      .attr('placeholder', isOther ? '불편했던 점을 자유롭게 적어주세요. (최대 300자)' 
+                                  : '‘기타’를 선택하면 입력할 수 있어요. (최대 300자)');
+    $('.wd-input').toggleClass('is-disabled', !isOther);
+
+    // 기타가 아니면 내용/카운트 리셋
+    if (!isOther) {
+      $('#wdDetail').val('');
+      $('#wdCount').text('0');
+    }
+  }
+
+  // 제출
+  $(document).on('click', '#wdSubmit', async function(){
+    const $btn = $(this);
+    if ($btn.data('busy')) return;
+
+    const reason = $('input[name="wdReason"]:checked').val();
+    const detail = $('#wdDetail').val().trim();
+    const username = (window.currentUser?.username || '').toLowerCase();
+
+    if (!reason) return toast('탈퇴 사유를 선택해주세요.');
+
+    // 2차 확인
+    if (!confirm('정말 탈퇴하시겠어요?\n계정과 데이터가 삭제되며 복구할 수 없습니다.')) return;
+
+    try {
+      $btn.data('busy', true).prop('disabled', true).text('처리 중…');
+
+      // TODO: 백엔드 엔드포인트 맞게 변경
+      const res = await fetch('/profile/withdraw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          username,           
+          reason,             // RARE_VISIT | NO_INFO | TOO_MANY_NOTICES | OTHER
+          detail //기타 내용
+        })
+      });
+
+      let data = {};
+      const txt = await res.text();
+      try { data = JSON.parse(txt); } catch { data = { success: res.ok, message: txt }; }
+
+      if (!res.ok || data.success === false) {
+        toast(data.message || '탈퇴 처리에 실패했습니다. 다시 시도해주세요.');
+        $btn.data('busy', false).prop('disabled', false).text('회원 탈퇴하기');
+        return;
+      }
+
+      toast('회원 탈퇴가 완료되었습니다.', 'success');
+      // 필요 시: 로그아웃/홈으로 이동
+      setTimeout(()=> window.location.href = '/', 800);
+    } catch (err) {
+      console.error(err);
+      toast('요청 처리 중 오류가 발생했습니다.');
+      $btn.data('busy', false).prop('disabled', false).text('회원 탈퇴하기');
+    }
+  });
+
 
   // =================== 정책(약관) 모달 ===================
 (function(){
@@ -790,8 +898,8 @@ document.addEventListener('keydown', (e) => {
 
 // 4) 필터 이벤트
 const filterMap = {
-  upcoming: () => renderGathering(trips),
-  done:     () => renderGathering(doneTrips),
+  upcoming: () => renderGathering(),
+  done:     () => renderGatheringDone(),
 };
 
 document.addEventListener('click', (e) => {
@@ -803,7 +911,46 @@ document.addEventListener('click', (e) => {
   setActive(filter);
 });
 
-function renderGathering(items) {
+const MS_PER_DAY = 86_400_000;
+
+// 입력을 "로컬 자정"으로 정규화
+function toMidnightLocal(input) {
+  if (input instanceof Date) {
+    return new Date(input.getFullYear(), input.getMonth(), input.getDate());
+  }
+  if (typeof input === 'string') {
+    // 'YYYY-MM-DD'면 타임존 흔들림을 피하려고 직접 생성
+    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+      const [y, m, d] = input.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    const d = new Date(input); // ISO 등
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  return new Date(NaN);
+}
+
+// today(기본: 지금)와 target 사이의 D-day (오늘이면 0, 내일이면 1, 어제면 -1)
+function dday1(target, today = new Date()) {
+  const t0 = toMidnightLocal(target);
+  const n0 = toMidnightLocal(today);
+  return Math.ceil((t0 - n0) / MS_PER_DAY);
+}
+
+async function renderGathering() {
+  const username = (window.currentUser?.username || '').toLowerCase();
+  const res = await fetch('/profile/gathering', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          username
+        })
+      });
+
+      const txt = await res.json();
+      console.log("txt>>>> " + JSON.stringify(txt));
+
   const listEl = document.getElementById("gathering");
   const seeAllBtn = document.getElementById("seeAllBtn-m");
   const seeShortBtn = document.getElementById("seeShortBtn-m");
@@ -811,23 +958,41 @@ function renderGathering(items) {
 
   listEl.innerHTML = "";
 
-  items.forEach((item, idx) => {
+  // 이동 함수
+  const goGroup = (id) => {
+    if (!id) return;
+    window.location.href = `/community?groupId=${encodeURIComponent(id)}`;
+  };
+
+  txt.forEach((item, idx) => {
+    const intro = JSON.parse(item.intro);
+    const dday = dday1(item.startDate);
+    let badgeText = `여행 시작까지 <strong style="color: #ff5900;">${dday}</strong>일 남았어요!`;
     const card = document.createElement("article");
+    card.dataset.groupId = item.groupId; 
     card.className = "card";
-    if (idx >= 3) card.style.display = "none";
+    if (idx >= 2) card.style.display = "none";
     card.innerHTML = `
-      <div class="thumb"></div>
       <div class="card-body">
-        <h3 class="card-title">${item.title}</h3>
+        <div class="jg-badge">⏱️ ${badgeText}</div>
+        <span style="float:right;"><strong style="color: #ff5900;">${intro.departureRegion} 출발</strong></span>
+        <h3 class="card-title">${intro.title}</h3>
         <div class="meta">
-              <span>${item.schedule}</span>
-              <span>${item.depart}</span>
+              <span>${item.startDate} ~ ${item.endDate}</span>
         </div>
+        <div class="jg-stats">👥 ${item.maxMembers}명 모집 (현재 ${item.currentMembers}명)</div>
       </div>`;
+      
+    // ✅ 클릭/Enter로 이동
+    card.addEventListener('click', () => goGroup(item.groupId));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') goGroup(item.groupId);
+    });
+
     listEl.appendChild(card);
   });
 
-  if (items.length > 3) {
+  if (txt.length > 2) {
     seeAllBtn.style.display = "inline-block";
     seeShortBtn.style.display = "none";
     seeAllBtn.onclick = () => {
@@ -837,7 +1002,7 @@ function renderGathering(items) {
     };
     seeShortBtn.onclick = () => {
       listEl.querySelectorAll(".card").forEach((el, i) =>
-        el.style.display = i < 3 ? "block" : "none"
+        el.style.display = i < 2 ? "block" : "none"
       );
       seeAllBtn.style.display = "inline-block";
       seeShortBtn.style.display = "none";
@@ -846,6 +1011,98 @@ function renderGathering(items) {
     seeAllBtn.style.display = "none";
     seeShortBtn.style.display = "none";
   }
+}
+
+async function renderGatheringDone() {
+  const username = (window.currentUser?.username || '').toLowerCase();
+  const res = await fetch('/profile/gathering', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          username
+        })
+      });
+
+      const txt = await res.json();
+
+  const listEl = document.getElementById("gathering");
+  const seeAllBtn = document.getElementById("seeAllBtn-m");
+  const seeShortBtn = document.getElementById("seeShortBtn-m");
+  if (!listEl) return;
+
+  listEl.innerHTML = "";
+  // 이동 함수
+  const goGroup = (id) => {
+    if (!id) return;
+    window.location.href = `/community?groupId=${encodeURIComponent(id)}`;
+  };
+
+  txt.forEach((item, idx) => {
+    let badgeText = `여행이 종료되었습니다!`;
+    const intro = JSON.parse(item.intro);
+    const card = document.createElement("article");
+    card.className = "card";
+    card.dataset.groupId = item.groupId; 
+    if (idx >= 2) card.style.display = "none";
+    card.innerHTML = `
+      <div class="card-body">
+        <div class="jg-badge">⏱️ ${badgeText}</div>
+        <span style="float:right;"><strong style="color: #ff5900;">${intro.departureRegion} 출발</strong></span>
+        <h3 class="card-title">${intro.title}</h3>
+        <div class="meta">
+              <span>${item.startDate} ~ ${item.endDate}</span>
+        </div>
+        <div class="jg-stats">👥 ${item.maxMembers}명 모집 (현재 ${item.currentMembers}명)</div>
+      </div>`;
+
+      // ✅ 클릭/Enter로 이동
+    card.addEventListener('click', () => goGroup(item.groupId));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') goGroup(item.groupId);
+    });
+    const end = parseEndDate(item.endDate);
+    const isPast = end && end.getTime() < Date.now();
+    if(isPast){
+      listEl.appendChild(card);
+    }
+  });
+
+  if (txt.length > 2) {
+    seeAllBtn.style.display = "inline-block";
+    seeShortBtn.style.display = "none";
+    seeAllBtn.onclick = () => {
+      listEl.querySelectorAll(".card").forEach(el => el.style.display = "block");
+      seeAllBtn.style.display = "none";
+      seeShortBtn.style.display = "inline-block";
+    };
+    seeShortBtn.onclick = () => {
+      listEl.querySelectorAll(".card").forEach((el, i) =>
+        el.style.display = i < 2 ? "block" : "none"
+      );
+      seeAllBtn.style.display = "inline-block";
+      seeShortBtn.style.display = "none";
+    };
+  } else {
+    seeAllBtn.style.display = "none";
+    seeShortBtn.style.display = "none";
+  }
+}
+
+// endDate 문자열을 Date로 안전 파싱
+function parseEndDate(v) {
+  if (!v) return null;
+
+  // 1) YYYY-MM-DD -> 로컬 "하루의 끝(23:59:59.999)"로 해석
+  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+    const [y, m, d] = v.split('-').map(Number);
+    return new Date(y, m - 1, d, 23, 59, 59, 999);
+  }
+
+  // 2) "YYYY-MM-DD HH:mm:ss" 같은 경우 -> ISO로 보정
+  const iso = v.includes(' ') ? v.replace(' ', 'T') : v;
+  const d = new Date(iso);
+  return isNaN(d) ? null : d;
 }
 
 function renderWishlist(items) {

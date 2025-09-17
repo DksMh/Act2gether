@@ -85,7 +85,7 @@ public class CommunityService {
 
         // (가능하면 userId + groupId 로 검증 권장)
         TravelGroupMembersEntity member = travelGroupMembersRepository
-                .findByUserId(user.getUserId()).orElse(null);
+                .findByGroupIdAndUserId(postDTO.getGroupId(), user.getUserId()).get(0);
         if (member == null) return false;
 
         // 2) 게시글 선 저장 → postId 확보
