@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface TravelGroupMembersRepository extends JpaRepository<TravelGroupMembersEntity, String>{
     List<TravelGroupMembersEntity> findByGroupId(String groupId);
-    Optional<TravelGroupMembersEntity> findByUserId(String userId);
+    List<TravelGroupMembersEntity> findByUserId(String userId);
     Optional<TravelGroupMembersEntity> findByMemberId(String memberId);
     List<TravelGroupMembersEntity> findByGroupIdAndUserId(String groupId, String userId);
     long countByGroupId(String groupId);  
