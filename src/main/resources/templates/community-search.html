@@ -13,310 +13,67 @@
     <!-- Header -->
     <div th:replace="header :: header"></div>
 
-    <main class="tour-explore-main">
-      <div class="container">
-        <!-- 페이지 헤더 -->
-        <div class="page-header">
-          <h1>국내여행 탐색</h1>
-          <p class="page-subtitle">아름다운 우리나라를 함께 여행해요</p>
-        </div>
+  <div class="container">
+    <br /><br />
+    <!-- 상단 타이틀 -->
+    <h2 class="h1">함께 여행을 떠날 인연을 맺어보세요 <small>🍀</small></h2>
+    <p class="subtle"><span id="userName" th:text="${username}"></span>님이 현재 가입중인 여행</p>
 
-        <!-- 검색 및 필터 -->
-        <div class="search-filter-section">
-          <div class="search-bar">
-            <input
-              type="text"
-              placeholder="가고 싶은 국내 지역이나 키워드를 입력하세요"
-              class="search-input"
-            />
-            <button class="search-btn">🔍</button>
-          </div>
+    <!-- 가입 중인 여행 가로 스크롤 카드 -->
+    <div id="enrolledScroller" class="scroller"></div>
 
-          <div class="filter-tabs">
-            <button class="filter-tab active" data-filter="all">전체</button>
-            <button class="filter-tab" data-filter="seoul">서울/경기</button>
-            <button class="filter-tab" data-filter="busan">부산/경남</button>
-            <button class="filter-tab" data-filter="jeju">제주도</button>
-            <button class="filter-tab" data-filter="gangwon">강원도</button>
-            <button class="filter-tab" data-filter="jeonla">전라도</button>
-            <button class="filter-tab" data-filter="chungcheong">충청도</button>
-            <button class="filter-tab" data-filter="gyeongsang">경상도</button>
-          </div>
-        </div>
-        <!-- 비로그인 시 회원가입 유도 섹션 -->
-        <section
-          class="signup-cta"
-          th:unless="${isAuthenticated}"
-          style="margin-bottom: 3rem"
-        >
-          <div class="cta-content">
-            <h2>나만의 여행을 시작해보세요!</h2>
-            <p>회원가입하고 더 많은 여행 모임에 참여하세요</p>
-            <div class="cta-buttons">
-              <a href="/signup" class="btn-primary large">회원가입</a>
-              <a href="/login" class="btn-secondary large">로그인</a>
-            </div>
-          </div>
-        </section>
+    <div class="hr"></div>
+    <br /><br />
+    <!-- 내 지역 출발 모임 -->
+    <h2 class="h1">내 지역 출발 모임</h2>
+    <p class="subtle"><span id="myCity" style="color:#ef4444;font-weight:800" >서울</span> 지역의 투어 모임을 추천해 드립니다.</p>
+    <div id="localGrid" class="grid"></div>
 
-        <!-- 내가 가입한 커뮤니티 섹션 -->
-        <section class="my-communities-section" th:if="${isAuthenticated}">
-          <div class="section-header">
-            <h2>내가 참여 중인 여행</h2>
-            <button class="view-all-btn">전체보기</button>
-          </div>
+    <div class="hr"></div>
 
-          <div class="community-grid">
-            <div class="community-card my-community">
-              <div class="card-image">
-                <img
-                  src="https://via.placeholder.com/300x200/007bff/ffffff?text=국내여행"
-                  alt="중년 여성끼리 소박하게 국내 여행 기록"
-                />
-                <div class="card-status">참여중</div>
-              </div>
-              <div class="card-content">
-                <div class="card-category">국내여행</div>
-                <h3 class="card-title">
-                  중년 여성끼리 소박하게 국내 여행 기록~
-                </h3>
-                <div class="card-meta">
-                  <span class="location">📍 서울</span>
-                  <span class="date">2024.11.30~2024.12.10</span>
-                </div>
-                <div class="card-stats">
-                  <span class="members">👥 16명</span>
-                  <span class="age">👤 50~60대</span>
-                  <span class="gender">👩 여성만</span>
-                </div>
-                <div class="card-description">
-                  친근하고 자유로운 분위기로 30대 중반부터 60대 중후반까지의
-                  다양한 연령대가 함께하는 모임입니다.
-                </div>
-              </div>
-            </div>
-
-            <div class="community-card my-community">
-              <div class="card-image">
-                <img
-                  src="https://via.placeholder.com/300x200/28a745/ffffff?text=국내여행"
-                  alt="같이 떠나는 배낭여행"
-                />
-                <div class="card-status">참여중</div>
-              </div>
-              <div class="card-content">
-                <div class="card-category">극내여행</div>
-                <h3 class="card-title">같이 떠나는 여행</h3>
-                <div class="card-meta">
-                  <span class="location">📍 순천</span>
-                  <span class="date">2024.12.15~2025.01.05</span>
-                </div>
-                <div class="card-stats">
-                  <span class="members">👥 8명</span>
-                  <span class="age">👤 59~61세</span>
-                  <span class="gender">👫 성별무관</span>
-                </div>
-                <div class="card-description">
-                  순천에서 아름다운 자연경관을 보러 떠나요
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 추천 커뮤니티 섹션 -->
-        <section class="recommended-section">
-          <div class="section-header">
-            <h2>
-              <span th:if="${isAuthenticated}">관심사 기반 추천 여행</span>
-              <span th:unless="${isAuthenticated}">인기 여행 모임</span>
-            </h2>
-            <div class="sort-options">
-              <button class="sort-btn active" data-sort="latest">최신순</button>
-              <button class="sort-btn" data-sort="deadline">마감임박</button>
-            </div>
-          </div>
-
-          <div class="community-grid" id="recommendedGrid">
-            <!-- 추천 커뮤니티 카드들 -->
-            <div
-              class="community-card"
-              data-category="domestic"
-              data-created="2025-08-15"
-              data-deadline="2025-08-25"
-            >
-              <div class="card-image">
-                <img
-                  src="https://via.placeholder.com/300x200/dc3545/ffffff?text=제주도"
-                  alt="제주도 힐링여행"
-                />
-                <div class="card-badge">인기</div>
-              </div>
-              <div class="card-content">
-                <div class="card-category">국내여행</div>
-                <h3 class="card-title">제주도 3박 4일 힐링 여행</h3>
-                <div class="card-meta">
-                  <span class="location">📍 제주도</span>
-                  <span class="date">🗓️ 2025.09.01~2025.09.04</span>
-                  <span class="deadline">⏰ 모집마감 2025.08.25</span>
-                </div>
-                <div class="card-stats">
-                  <span class="members">👥 12/20명</span>
-                  <span class="age">👤 50~56세</span>
-                  <span class="gender">👫 성별무관</span>
-                </div>
-                <div class="card-description">
-                  제주의 아름다운 자연과 함께하는 힐링 여행입니다. 올레길 걷기,
-                  카페 투어, 맛집 탐방을 함께해요.
-                </div>
-                <div class="card-footer">
-                  <button class="join-btn">함께하기</button>
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="community-card"
-              data-category="food"
-              data-created="2025-08-14"
-              data-deadline="2025-08-22"
-            >
-              <div class="card-image">
-                <img
-                  src="https://via.placeholder.com/300x200/17a2b8/ffffff?text=부산맛집"
-                  alt="부산 맛집투어"
-                />
-                <div class="card-badge">추천</div>
-              </div>
-              <div class="card-content">
-                <div class="card-category">맛집탐방</div>
-                <h3 class="card-title">부산 로컬 맛집 투어</h3>
-                <div class="card-meta">
-                  <span class="location">📍 부산</span>
-                  <span class="date">🗓️ 2025.08.25~2025.08.27</span>
-                  <span class="deadline urgent">⏰ 모집마감 2025.08.22</span>
-                </div>
-                <div class="card-stats">
-                  <span class="members">👥 8/12명</span>
-                  <span class="age">👤 50대</span>
-                  <span class="gender">👫 성별무관</span>
-                </div>
-                <div class="card-description">
-                  부산 현지인만 아는 숨은 맛집들을 찾아가는 미식 여행입니다.
-                  자갈치시장, 광안리, 해운대 일대를 탐방합니다.
-                </div>
-                <div class="card-footer">
-                  <button class="join-btn">함께하기</button>
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="community-card"
-              data-category="culture"
-              data-created="2025-08-13"
-              data-deadline="2025-08-20"
-            >
-              <div class="card-image">
-                <img
-                  src="https://via.placeholder.com/300x200/6f42c1/ffffff?text=경주"
-                  alt="경주 역사여행"
-                />
-                <div class="card-badge deadline">마감임박</div>
-              </div>
-              <div class="card-content">
-                <div class="card-category">문화체험</div>
-                <h3 class="card-title">경주 천년 역사 체험</h3>
-                <div class="card-meta">
-                  <span class="location">📍 경주</span>
-                  <span class="date">🗓️ 2025.08.25~2025.08.28</span>
-                  <span class="deadline urgent">⏰ 모집마감 2025.08.20</span>
-                </div>
-                <div class="card-stats">
-                  <span class="members">👥 18/20명</span>
-                  <span class="age">👤 51~55세</span>
-                  <span class="gender">👫 성별무관</span>
-                </div>
-                <div class="card-description">
-                  불국사, 석굴암, 첨성대 등 신라 천년의 역사와 문화를 체험하는
-                  교육적 여행입니다.
-                </div>
-                <div class="card-footer">
-                  <button class="join-btn urgent">함께하기</button>
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="community-card"
-              data-category="nature"
-              data-created="2025-08-12"
-              data-deadline="2025-09-20"
-            >
-              <div class="card-image">
-                <img
-                  src="https://via.placeholder.com/300x200/28a745/ffffff?text=설악산"
-                  alt="설악산 트레킹"
-                />
-              </div>
-              <div class="card-content">
-                <div class="card-category">자연여행</div>
-                <h3 class="card-title">설악산 단풍 트레킹</h3>
-                <div class="card-meta">
-                  <span class="location">📍 강원도 속초</span>
-                  <span class="date">🗓️ 2025.10.05~2025.10.07</span>
-                  <span class="deadline">⏰ 모집마감 2025.09.20</span>
-                </div>
-                <div class="card-stats">
-                  <span class="members">👥 10/16명</span>
-                  <span class="age">👤 61~64세</span>
-                  <span class="gender">👫 성별무관</span>
-                </div>
-                <div class="card-description">
-                  설악산의 아름다운 가을 풍경을 만끽하며 함께 트레킹하는 자연
-                  체험 여행입니다.
-                </div>
-                <div class="card-footer">
-                  <button class="join-btn">함께하기</button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 더보기 버튼 -->
-          <div class="load-more-section">
-            <button class="load-more-btn">더 많은 여행 보기</button>
-          </div>
-        </section>
+    <br /><br />
+    <!-- 모임 찾기 -->
+    <h2 class="h1">모임 찾기</h2>
+    <div class="filters">
+      <div class="select">
+        출발 지역
+        <select id="filterFrom"></select>
       </div>
-    </main>
-
-    <!-- Footer -->
-    <div th:replace="footer :: footer"></div>
-
-    <!-- 상세 정보 모달 -->
-    <div id="communityDetailModal" class="modal">
-      <div class="modal-content modal-large">
-        <div class="modal-header">
-          <h3 id="modalTitle">여행 상세 정보</h3>
-          <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body" id="modalBody">
-          <!-- 상세 정보가 동적으로 로드됩니다 -->
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="closeModal()">닫기</button>
-          <button class="btn btn-primary" id="joinModalBtn">함께하기</button>
-        </div>
+      <div class="select">
+        도착 지역
+        <select id="filterTo"></select>
+      </div>
+      <div class="date">
+        여행 시작일
+        <input id="filterStart" type="date"/>
+      </div>
+      <div class="date">
+        여행 종료일
+        <input id="filterEnd" type="date"/>
       </div>
     </div>
-
-    <!-- 알림 토스트 -->
-    <div id="toast" class="toast">
-      <div class="toast-content">
-        <i id="toastIcon" class="toast-icon"></i>
-        <span id="toastMessage"></span>
-      </div>
-    </div>
+    <div id="searchGrid" class="grid"></div>
+  </div>
   </body>
+  <script th:inline="javascript">
+    /* =========== init =========== */
+      window.currentUser = {
+    username: /*[[${username}]]*/ ""
+  };
+renderEnrolled();
+renderLocal();
+// renderLocal('서울');
+buildFilters();
+renderSearch();
+
+['change','input'].forEach(ev=>{
+  $('#filterFrom').addEventListener(ev, ()=>{ renderSearch(); renderLocal($('#filterFrom').value||'서울'); });
+  $('#filterTo').addEventListener(ev, renderSearch);
+  $('#filterStart').addEventListener(ev, renderSearch);
+  $('#filterEnd').addEventListener(ev, renderSearch);
+});
+
+// 사용자 이름 표기 (백엔드에서 window.currentUserName 주입한다고 가정)
+if (window.currentUserName) $('#userName').textContent = window.currentUserName;
+  </script>
 </html>

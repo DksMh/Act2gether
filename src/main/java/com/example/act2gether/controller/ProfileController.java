@@ -48,6 +48,12 @@ public class ProfileController {
         return ResponseEntity.status(HttpStatus.OK).body(profileDto);
     }
 
+     @PostMapping("/user/username")
+    public ResponseEntity<?> user(@RequestBody UserDTO userDTO) {
+        UserEntity user = profileService.getProfileByUsername(userDTO.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).body(user);
+    }
+
     // 업로드(대표 사진 변경)
     @PostMapping(path="/account/avatar", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadAvatar(

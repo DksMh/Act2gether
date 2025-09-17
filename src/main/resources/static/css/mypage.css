@@ -158,11 +158,11 @@ section {
 }
 
 /* 카드 리스트 */
-.grid-3 {
+/* .grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.125rem;
-}
+} */
 
 .grid-like {
   display: grid;
@@ -1133,9 +1133,13 @@ body.modal-open {
 
 /* 반응형 */
 @media (max-width: 1024px) {
-  .grid-3,
-  .grid-like {
+  .grid-3 {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 1024px) {
+  .grid-like {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
