@@ -5,19 +5,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.act2gether.dto.ProfileDTO;
+import com.example.act2gether.dto.TravelGroupCreateDTO;
 import com.example.act2gether.dto.UserDTO;
+import com.example.act2gether.dto.WithdrawDTO;
 import com.example.act2gether.entity.ReviewsEntity;
+import com.example.act2gether.entity.TravelGroupMembersEntity;
+import com.example.act2gether.entity.TravelGroupsEntity;
 import com.example.act2gether.entity.UserAvatarEntity;
 import com.example.act2gether.entity.UserEntity;
+import com.example.act2gether.entity.WithdrawEntity;
 import com.example.act2gether.repository.ReviewsRepository;
+import com.example.act2gether.repository.TravelGroupMembersRepository;
+import com.example.act2gether.repository.TravelGroupsRepository;
 import com.example.act2gether.repository.UserAvatarRepository;
 import com.example.act2gether.repository.UserRepository;
+import com.example.act2gether.repository.WithdrawRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +41,9 @@ public class ProfileService {
     private final ReviewsRepository reviewsRepository;
     private final UserAvatarRepository avatarRepository;
     private final PasswordEncoder passwordEncoder;
+    private final WithdrawRepository withdrawRepository;
+    private final TravelGroupsRepository travelGroupsRepository;
+     private final TravelGroupMembersRepository travelGroupMembersRepository;
 
     public ProfileDTO getProfile(String email){
         UserEntity userEntity = userRepository.findByEmail(email).orElse(null);
@@ -38,6 +51,12 @@ public class ProfileService {
         ProfileDTO profileDto = ProfileDTO.setData(userEntity, reviewsEntity);
         
         return profileDto;
+    }
+
+    public UserEntity getProfileByUsername(String username){
+        UserEntity userEntity = userRepository.findByUsername(username).orElse(null);
+        
+        return userEntity;
     }
 
     @Transactional
@@ -99,5 +118,20 @@ public class ProfileService {
     public String getAgreement(UserDTO userDTO) {
         UserEntity userEntity = userRepository.findByUsername(userDTO.getUsername()).orElse(null);
         return userEntity.getAgreement();
+    }
+
+    @Transactional
+    public void withdraw(WithdrawDTO withdrawDTO) {
+        UserEntity userEntity = userRepository.findByUsername(withdrawDTO.getUsername()).orElse(null);
+        userRepository.deleteById(userEntity.getUserId());
+        withdrawRepository.save(WithdrawEntity.of(withdrawDTO));
+        log.info("계정을 삭제했습니다.");
+    }
+
+    public List<TravelGroupsEntity> getTravelGroups(UserDTO userDTO) {
+        UserEntity userEntity = userRepository.findByUsername(userDTO.getUsername()).orElse(null);
+        List<TravelGroupMembersEntity> member = travelGroupMembersRepository.findByUserId(userEntity.getUserId());
+        List<TravelGroupsEntity> group = member.stream().map(m -> travelGroupsRepository.findById(m.getGroupId())).flatMap(Optional::stream).collect(Collectors.toList());
+        return group;
     }
 }

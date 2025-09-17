@@ -20,7 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.act2gether.dto.EmailDTO;
 import com.example.act2gether.dto.ProfileDTO;
+import com.example.act2gether.dto.TravelGroupCreateDTO;
 import com.example.act2gether.dto.UserDTO;
+import com.example.act2gether.dto.WithdrawDTO;
+import com.example.act2gether.entity.TravelGroupsEntity;
 import com.example.act2gether.entity.UserEntity;
 import com.example.act2gether.repository.UserRepository;
 import com.example.act2gether.service.ProfileService;
@@ -43,6 +46,12 @@ public class ProfileController {
         // UserEntity userEntity = profileService.getProfile(emailDto.getEmail());
         ProfileDTO profileDto = profileService.getProfile(emailDto.getEmail());
         return ResponseEntity.status(HttpStatus.OK).body(profileDto);
+    }
+
+     @PostMapping("/user/username")
+    public ResponseEntity<?> user(@RequestBody UserDTO userDTO) {
+        UserEntity user = profileService.getProfileByUsername(userDTO.getUsername());
+        return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
     // 업로드(대표 사진 변경)
@@ -117,6 +126,18 @@ public class ProfileController {
         String user = profileService.getAgreement(userDTO);
         
         return ResponseEntity.status(HttpStatus.OK).body(user);
+    }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<?> withdraw(@RequestBody WithdrawDTO withdrawDTO) {
+        profileService.withdraw(withdrawDTO);
+        return ResponseEntity.status(HttpStatus.OK).body("회원 탈퇴에 성공했습니다.");
+    }
+
+    @PostMapping("/gathering")
+    public ResponseEntity<?> withdraw(@RequestBody UserDTO userDTO) {
+        List<TravelGroupsEntity> travelgroups = profileService.getTravelGroups(userDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(travelgroups);
     }
 }
 
