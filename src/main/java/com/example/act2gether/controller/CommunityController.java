@@ -1,9 +1,12 @@
 package com.example.act2gether.controller;
 
+import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +23,7 @@ import com.example.act2gether.dto.GroupMetaResponse;
 import com.example.act2gether.dto.MembersDTO;
 import com.example.act2gether.dto.PostDTO;
 import com.example.act2gether.dto.ResetPasswordDTO;
+import com.example.act2gether.dto.TravelGroupDto;
 import com.example.act2gether.dto.TravelGroupMembersDTO;
 import com.example.act2gether.entity.PostsEntity;
 import com.example.act2gether.entity.TravelGroupsEntity;
@@ -44,12 +48,47 @@ public class CommunityController {
     @Autowired
     private CommunityService communityService;
 
+    // 가입 여부 확인
+    @GetMapping("/member/me")
+    public Map<String, Object> isMyMember(@RequestParam String groupId, Principal principal) {
+        String username = principal != null ? principal.getName() : null;
+        log.info("username : {}", username);
+        boolean member = (username != null) && communityService.existsByGroupIdAndUsername(groupId, username);
+        return Map.of("member", member);
+    }
+
+    @GetMapping("/search")
+    public List<TravelGroupDto> search(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end,
+            @RequestParam(required = false, defaultValue = "false") boolean all
+    ) {
+        if (all) {
+            return communityService.findAllRecent();
+        }
+        return communityService.search(from, to, start, end);
+    }
+
+    @GetMapping("/gathering/{region}")
+    public ResponseEntity<?> getMembers(@PathVariable("region") String region) {
+        List<TravelGroupsEntity> travelgroups = communityService.getGathering(region);
+        return ResponseEntity.ok(travelgroups);
+    }
+
     @PostMapping("/members")
     public ResponseEntity<?> getMembers(@RequestBody MembersDTO membersDTO) {
 
         List<TravelGroupMembersDTO> travelGroupMembersDTO = communityService.getMembers(membersDTO.getGroupId());
 
         return ResponseEntity.ok(travelGroupMembersDTO);
+    }
+
+    @PostMapping("/only/member/save")
+    public ResponseEntity<?> setOnlyMembers(@RequestBody MembersDTO membersDTO) {
+        communityService.saveOnlyMember(membersDTO);
+        return ResponseEntity.ok().body("커뮤니티 가입 성공했습니다");
     }
 
     @PostMapping("/member/save")
