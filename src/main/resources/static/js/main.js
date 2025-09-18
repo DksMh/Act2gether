@@ -298,11 +298,11 @@ $(document).ready(function () {
 
           if (!displayImage || displayImage.includes("no-image")) {
             const defaultImages = {
-              culture: "/images/default-culture.jpg",
-              healing: "/images/default-healing.jpg",
-              nature: "/images/default-nature.jpg",
-              experience: "/images/default-experience.jpg",
-              sports: "/images/default-sports.jpg",
+              culture: "/uploads/tour/default-culture.jpg",
+              healing: "/uploads/tour/default-healing.jpg",
+              nature: "/uploads/tour/default-nature.jpg",
+              experience: "/uploads/tour/default-experience.jpg",
+              sports: "/uploads/tour/default-sports.jpg",
             };
             displayImage =
               defaultImages[tourType] || "/uploads/tour/no-image.png";
@@ -362,12 +362,17 @@ $(document).ready(function () {
       .off("click")
       .on("click", function () {
         const tourId = $(this).closest(".tour-product-card").data("tour-id");
+        console.log("투어 상세보기 클릭 - tourId:", tourId); // 디버깅용
 
+        if (!tourId) {
+          alert("투어 정보를 찾을 수 없습니다.");
+          return;
+        }
         if (!currentUser || !currentUser.isAuthenticated) {
           alert("투어 상세 정보를 보시려면 로그인이 필요합니다.");
-          window.location.href = `/login?redirect=/tour-detail?tourId=${tourId}`;
+          window.location.href = `/login?redirect=/tour-detail?id=${tourId}`;
         } else {
-          window.location.href = `/tour-detail?tourId=${tourId}`;
+          window.location.href = `/tour-detail?id=${tourId}`;
         }
       });
   }
@@ -623,7 +628,7 @@ $(document).ready(function () {
 
     $cards.css({
       transform: `translateX(${translateX}px)`,
-      transition: "transform 0.3s ease",
+      transition: "transform 1s ease",
     });
 
     let $dots = $slider.siblings(".slider-dots");

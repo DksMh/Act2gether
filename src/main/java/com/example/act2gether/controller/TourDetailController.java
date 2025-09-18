@@ -60,13 +60,13 @@ import lombok.extern.slf4j.Slf4j;
 public class TourDetailController {
 
   @Autowired
-  private TourFilterService tourFilterService;
+  private TourFilterService tourFilterService; // ✅ 기본(좌표/이미지/카테고리)
 
   @Autowired
   private BarrierFreeService barrierFreeService;
 
   @Autowired
-  private SpotDetailService spotDetailService;
+  private SpotDetailService spotDetailService; // ✅ 부가(휴무/시간/주차/요금)
 
   // TourDetailController 클래스 상단에 Repository 주입 추가
   @Autowired
@@ -79,6 +79,8 @@ public class TourDetailController {
   // 새로 추가: 카카오맵 API 키
   @Value("${kakao.map.api.key}")
   private String kakaoMapApiKey;
+
+  // fallback 대응
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -129,229 +131,6 @@ public class TourDetailController {
     }
   }
 
-  private ResponseEntity<Map<String, Object>> getTourDetailByApi(String tourId, HttpSession session) {
-    try {
-      List<String> contentIds = parseTourId(tourId);
-      if (contentIds.isEmpty()) {
-        return ResponseEntity.badRequest().body(Map.of(
-            "success", false,
-            "message", "잘못된 투어 ID 형식입니다."));
-      }
-
-      // 세션에서 지역 정보 추출 시도
-      String primaryAreaCode = null;
-      String primarySigunguCode = null;
-      String primaryRegion = null;
-
-      // 세션 데이터에서 지역 정보 가져오기
-      String sessionKey = "tour_" + tourId;
-      String sessionData = (String) session.getAttribute(sessionKey);
-
-      if (sessionData != null) {
-        try {
-          JsonNode sessionJson = objectMapper.readTree(sessionData);
-
-          // 세션의 spots 배열에서 첫 번째 관광지의 지역 정보 추출
-          JsonNode spots = sessionJson.path("spots");
-          if (spots.isArray() && spots.size() > 0) {
-            JsonNode firstSpot = spots.get(0);
-            primaryAreaCode = firstSpot.path("areacode").asText();
-            primarySigunguCode = firstSpot.path("sigungucode").asText();
-          }
-
-          // 세션의 region 정보도 사용
-          String sessionRegion = sessionJson.path("region").asText();
-          if (!sessionRegion.isEmpty()) {
-            primaryRegion = sessionRegion;
-
-            // region 이름으로 areaCode 매핑 (primaryAreaCode가 없을 경우)
-            if (primaryAreaCode == null || primaryAreaCode.isEmpty()) {
-              primaryAreaCode = getAreaCodeByRegionName(sessionRegion);
-            }
-          }
-
-          log.info("세션에서 지역 정보 추출: region={}, areaCode={}, sigunguCode={}",
-              primaryRegion, primaryAreaCode, primarySigunguCode);
-        } catch (Exception e) {
-          log.warn("세션 데이터 파싱 실패: {}", e.getMessage());
-        }
-      }
-
-      // 2단계: 각 관광지 상세정보 조회
-      List<Map<String, Object>> tourSpots = new ArrayList<>();
-      boolean foundValidAreaCode = false;
-
-      for (int i = 0; i < contentIds.size(); i++) {
-        String contentId = contentIds.get(i);
-        Map<String, Object> spot = new HashMap<>();
-
-        try {
-          Map<String, Object> spotDetail = tourFilterService.getTourDetail(contentId);
-
-          if (spotDetail != null && (Boolean) spotDetail.get("success")) {
-            JsonNode spotData = (JsonNode) spotDetail.get("data");
-
-            // 첫 번째 성공한 관광지에서 지역 정보 추출 (세션에 없을 경우)
-            if (!foundValidAreaCode && primaryAreaCode == null) {
-              String areaCode = spotData.path("areacode").asText();
-              if (!areaCode.isEmpty()) {
-                primaryAreaCode = areaCode;
-                primarySigunguCode = spotData.path("sigungucode").asText();
-                primaryRegion = getRegionNameByAreaCode(primaryAreaCode);
-                foundValidAreaCode = true;
-              }
-            }
-
-            // API 데이터로 spot 구성
-            spot.put("order", i + 1);
-            spot.put("contentid", contentId);
-            spot.put("title", spotData.path("title").asText("관광지 정보 없음"));
-            spot.put("addr1", spotData.path("addr1").asText("주소 정보 없음"));
-            spot.put("addr2", spotData.path("addr2").asText(""));
-            spot.put("tel", spotData.path("tel").asText(""));
-            spot.put("homepage", spotData.path("homepage").asText(""));
-            spot.put("overview", spotData.path("overview").asText(""));
-            spot.put("firstimage", spotData.path("firstimage").asText("/uploads/tour/no-image.png"));
-            spot.put("firstimage2", spotData.path("firstimage2").asText(""));
-            spot.put("mapx", spotData.path("mapx").asText("0"));
-            spot.put("mapy", spotData.path("mapy").asText("0"));
-            spot.put("cat1", spotData.path("cat1").asText(""));
-            spot.put("cat2", spotData.path("cat2").asText(""));
-            spot.put("cat3", spotData.path("cat3").asText(""));
-            spot.put("areacode", spotData.path("areacode").asText(primaryAreaCode));
-            spot.put("sigungucode", spotData.path("sigungucode").asText(primarySigunguCode));
-
-            String optimizedImage = optimizeImageUrl(spotData.path("firstimage").asText());
-            spot.put("optimizedImage", optimizedImage);
-
-            log.info("{}번째 관광지 정보 수집 완료: {}", i + 1, spot.get("title"));
-          } else {
-            throw new Exception("API 조회 실패");
-          }
-        } catch (Exception e) {
-          log.warn("관광지 정보 조회 실패: contentId={}, 기본값 사용", contentId);
-
-          // 실패 시 세션의 지역 정보 사용한 기본 데이터 생성
-          spot.put("order", i + 1);
-          spot.put("contentid", contentId);
-          spot.put("title", "관광지 정보 없음");
-          spot.put("addr1", "주소 정보 없음");
-          spot.put("addr2", "");
-          spot.put("tel", "");
-          spot.put("homepage", "");
-          spot.put("overview", "");
-          spot.put("firstimage", "/uploads/tour/no-image.png");
-          spot.put("firstimage2", "");
-          spot.put("mapx", "0");
-          spot.put("mapy", "0");
-          spot.put("cat1", "");
-          spot.put("cat2", "");
-          spot.put("cat3", "");
-          spot.put("areacode", primaryAreaCode != null ? primaryAreaCode : "");
-          spot.put("sigungucode", primarySigunguCode != null ? primarySigunguCode : "");
-          spot.put("optimizedImage", "/uploads/tour/no-image.png");
-          spot.put("hasBarrierFreeInfo", false);
-          spot.put("accessibilityScore", 0);
-        }
-
-        tourSpots.add(spot);
-      }
-
-      // primaryAreaCode가 여전히 null이면 빈 문자열로 설정
-      if (primaryAreaCode == null)
-        primaryAreaCode = "";
-      if (primarySigunguCode == null)
-        primarySigunguCode = "";
-      if (primaryRegion == null)
-        primaryRegion = "전국";
-
-      // 3단계: 무장애여행 정보 통합 (실패해도 계속)
-      List<Map<String, Object>> finalSpots = new ArrayList<>(tourSpots);
-      try {
-        List<JsonNode> spotsAsJsonNodes = convertToJsonNodes(tourSpots);
-        List<JsonNode> enrichedSpots = barrierFreeService.enrichWithBarrierFreeInfo(
-            spotsAsJsonNodes, primaryAreaCode, primarySigunguCode);
-        finalSpots = convertFromJsonNodes(enrichedSpots, tourSpots);
-      } catch (Exception e) {
-        log.warn("무장애 정보 통합 실패, 기본 데이터 사용: {}", e.getMessage());
-      }
-
-      // 4단계: 투어 메타데이터 생성
-      Map<String, Object> tourMetadata = generateTourMetadata(
-          finalSpots,
-          primaryRegion,
-          primaryAreaCode,
-          primarySigunguCode,
-          tourId);
-
-      // 5단계: 맛집 정보 조회 (실패해도 계속)
-      final Map<String, List<Map<String, Object>>> groupedRestaurants = new HashMap<>();
-      try {
-        List<Map<String, Object>> validSpots = finalSpots.stream()
-            .filter(spot -> {
-              String mapx = (String) spot.get("mapx");
-              String mapy = (String) spot.get("mapy");
-              return mapx != null && !mapx.equals("0") && !mapx.isEmpty() &&
-                  mapy != null && !mapy.equals("0") && !mapy.isEmpty();
-            })
-            .collect(Collectors.toList());
-
-        if (!validSpots.isEmpty()) {
-          log.info("유효한 좌표가 있는 관광지로 맛집 검색: {}개", validSpots.size());
-          Map<String, List<Map<String, Object>>> tempRestaurants = tourFilterService
-              .getRestaurantsAroundMultipleSpots(validSpots);
-          groupedRestaurants.putAll(tempRestaurants);
-        } else if (!primaryAreaCode.isEmpty()) {
-          log.warn("유효한 좌표 없음, 지역 기반 맛집 검색으로 fallback");
-          Map<String, List<Map<String, Object>>> tempRestaurants = getRestaurantInfoGrouped(primaryAreaCode);
-          groupedRestaurants.putAll(tempRestaurants);
-        }
-      } catch (Exception e) {
-        log.warn("맛집 정보 조회 실패: {}", e.getMessage());
-        // 빈 카테고리 맵 생성
-        Map<String, String> foodCategories = Map.of(
-            "A05020100", "한식",
-            "A05020200", "서양식",
-            "A05020300", "일식",
-            "A05020400", "중식",
-            "A05020700", "이색음식점",
-            "A05020900", "카페/전통찻집");
-        foodCategories.values().forEach(category -> groupedRestaurants.put(category, new ArrayList<>()));
-      }
-
-      // 6단계: 최종 응답 구성
-      Map<String, Object> response = new HashMap<>();
-      response.put("success", true);
-      response.put("tourId", tourId);
-      response.put("tour", tourMetadata);
-      response.put("spots", finalSpots);
-      response.put("restaurants", groupedRestaurants);
-      response.put("kakaoMapApiKey", kakaoMapApiKey);
-      response.put("version", "v3.0-api-fallback");
-
-      log.info("투어 상세정보 조회 완료: 총 {}개 관광지 (요청: {}개), 지역: {}",
-          finalSpots.size(), contentIds.size(), primaryRegion);
-
-      return ResponseEntity.ok(response);
-
-    } catch (Exception e) {
-      log.error("API fallback 실패: tourId={}, error={}", tourId, e.getMessage(), e);
-
-      // 완전 실패 시에도 기본 구조 반환
-      Map<String, Object> response = new HashMap<>();
-      response.put("success", true);
-      response.put("message", "일부 정보를 불러올 수 없습니다");
-      response.put("tourId", tourId);
-      response.put("tour", generateBasicTourMetadata(parseTourId(tourId), tourId));
-      response.put("spots", new ArrayList<>());
-      response.put("restaurants", new HashMap<>());
-      response.put("kakaoMapApiKey", kakaoMapApiKey);
-      response.put("version", "v3.0-error-fallback");
-
-      return ResponseEntity.ok(response);
-    }
-  }
-
   // 지역명을 areaCode로 변환하는 헬퍼 메서드 추가
   private String getAreaCodeByRegionName(String regionName) {
     Map<String, String> regionToCode = Map.of(
@@ -390,8 +169,14 @@ public class TourDetailController {
   @GetMapping("/{tourId}/fallback")
   public ResponseEntity<Map<String, Object>> getTourDetailFallback(
       @PathVariable String tourId,
+      @RequestParam(required = false) String selectedNeedsType, // 파라미터 추가
       HttpServletRequest request) {
 
+    HttpSession session = request.getSession(true);
+    // 테스트용: 1분 세션 타임아웃
+    session.setMaxInactiveInterval(60);
+
+    log.info("📌 테스트모드: 세션 타임아웃 10분 설정 - tourId: {}", tourId);
     log.info("투어 상세페이지 fallback 요청 - tourId: {}", tourId);
 
     try {
@@ -447,7 +232,11 @@ public class TourDetailController {
 
               log.info("{}번 관광지 조회 성공: {}", order, spot.get("title"));
             } else {
-              throw new Exception("API 조회 실패");
+              log.error("API 응답 실패 상세: contentId={}, success=false, message={}, 전체응답={}",
+                  contentId,
+                  spotDetail != null ? spotDetail.get("message") : "null response",
+                  spotDetail);
+              throw new Exception("API 조회 실패: " + (spotDetail != null ? spotDetail.get("message") : "응답 없음"));
             }
           } catch (Exception e) {
             log.warn("{}번 contentId {} 조회 실패: {}", order, contentId, e.getMessage());
@@ -470,6 +259,8 @@ public class TourDetailController {
             spot.put("sigungucode", "");
             spot.put("optimizedImage", "/uploads/tour/no-image.png");
             spot.put("categoryName", "기타");
+            // 스택 트레이스도 로그에 출력 (디버깅용)
+            log.error("상세 에러 스택:", e);
           }
           return spot;
         });
@@ -623,13 +414,53 @@ public class TourDetailController {
       response.put("restaurants", restaurants);
       response.put("kakaoMapApiKey", kakaoMapApiKey);
       response.put("version", "v3.0-consistent");
+      if (selectedNeedsType != null && !selectedNeedsType.isEmpty()) {
+        // accessibilityInfo 객체 생성
+        Map<String, Object> accessibilityInfo = new HashMap<>();
+        accessibilityInfo.put("selectedNeedsType", selectedNeedsType);
+        accessibilityInfo.put("hasAccessibilityFilter", true);
 
+        // 해당 편의시설을 가진 관광지 수 계산
+        Map<String, String[]> needsMap = Map.of(
+            "주차 편의", new String[] { "parking", "publictransport" },
+            "접근 편의", new String[] { "route", "exit" },
+            "시설 편의", new String[] { "restroom", "elevator" });
+
+        String[] fields = needsMap.get(selectedNeedsType);
+        int validCount = 0;
+
+        if (fields != null) {
+          for (Map<String, Object> spot : tourSpots) {
+            String barrierFreeJson = (String) spot.get("barrierFreeInfo");
+            if (barrierFreeJson != null && !barrierFreeJson.equals("{}")) {
+              try {
+                JsonNode bfInfo = objectMapper.readTree(barrierFreeJson);
+                for (String field : fields) {
+                  if (bfInfo.has(field) && !bfInfo.get(field).asText("").isEmpty()) {
+                    validCount++;
+                    break;
+                  }
+                }
+              } catch (Exception e) {
+                // 무시
+              }
+            }
+          }
+        }
+
+        accessibilityInfo.put("validCount", validCount);
+        accessibilityInfo.put("totalCount", tourSpots.size());
+
+        response.put("accessibilityInfo", accessibilityInfo);
+      }
       log.info("fallback 완료: {}개 관광지 → 무장애 {}개, 맛집 {}개 카테고리",
           tourSpots.size(), totalBarrierFreeSpots, restaurants.size());
 
       return ResponseEntity.ok(response);
 
-    } catch (Exception e) {
+    } catch (
+
+    Exception e) {
       log.error("fallback 전체 실패: tourId={}, error={}", tourId, e.getMessage(), e);
 
       // 완전 실패 시에도 기본 구조 반환
@@ -645,6 +476,42 @@ public class TourDetailController {
 
       return ResponseEntity.ok(response);
     }
+  }
+
+  // 편의시설 필터링 헬퍼 메서드
+  private List<Map<String, Object>> filterSpotsByAccessibility(
+      List<Map<String, Object>> spots, String needsType) {
+
+    Map<String, String[]> ACCESSIBILITY_GROUPS = Map.of(
+        "주차 편의", new String[] { "parking", "publictransport" },
+        "접근 편의", new String[] { "route", "exit" },
+        "시설 편의", new String[] { "restroom", "elevator" });
+
+    String[] requiredFields = ACCESSIBILITY_GROUPS.get(needsType);
+    if (requiredFields == null)
+      return spots;
+
+    return spots.stream()
+        .filter(spot -> {
+          String barrierFreeJson = (String) spot.get("barrierFreeInfo");
+          if (barrierFreeJson == null || "{}".equals(barrierFreeJson)) {
+            return false;
+          }
+
+          try {
+            JsonNode barrierFreeInfo = objectMapper.readTree(barrierFreeJson);
+            for (String field : requiredFields) {
+              if (barrierFreeInfo.has(field) &&
+                  !barrierFreeInfo.get(field).asText("").isEmpty()) {
+                return true; // 하나라도 있으면 통과
+              }
+            }
+          } catch (Exception e) {
+            log.warn("barrierFreeInfo 파싱 실패: {}", e.getMessage());
+          }
+          return false;
+        })
+        .collect(Collectors.toList());
   }
 
   /**

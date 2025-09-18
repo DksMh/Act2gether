@@ -241,11 +241,17 @@ window.tourDetail = {
   },
 
   /**
-   * 🆕 API를 통한 데이터 로드 (fallback)
+   *  API를 통한 데이터 로드 (fallback)
    */
   async loadFromApi(tourId) {
     try {
+      // URL에서 필터 파라미터 확인 (예: ?needs=주차편의)
+      const urlParams = new URLSearchParams(window.location.search);
+      const selectedNeedsType = urlParams.get("needs");
       const response = await fetch(`/tour-detail/${tourId}/fallback`);
+      if (selectedNeedsType) {
+        url += `?selectedNeedsType=${encodeURIComponent(selectedNeedsType)}`;
+      }
       const result = await response.json();
 
       console.log("📦 API 응답:", result);
