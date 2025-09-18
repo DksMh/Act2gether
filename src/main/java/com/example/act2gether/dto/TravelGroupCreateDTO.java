@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class TravelGroupCreateDTO {
+  private String spot; //여행 지역
   private String groupId;
   private String tourId; // 투어 ID (필수)
   private String groupName; // 모임 이름/제목 (필수, 10자 이상)

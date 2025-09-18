@@ -83,6 +83,9 @@ public class ProfileService {
 
     public UserAvatarEntity getAvatarByUserId(String username) {
         UserEntity userEntity = userRepository.findByUsername(username).orElse(null);
+        log.info("username >>> {}, userID : {}", username, userEntity.getUserId());
+        UserAvatarEntity a = avatarRepository.findFirstByUserIdOrderByCreatedAtDesc(userEntity.getUserId()).orElse(null);
+        log.info("image id >> {}", a.getImageId());
         return avatarRepository.findFirstByUserIdOrderByCreatedAtDesc(userEntity.getUserId()).orElse(null);
     }
 
