@@ -32,4 +32,23 @@ public interface TravelGroupsRepository extends JpaRepository<TravelGroupsEntity
    */
   @Query("SELECT COUNT(t) FROM TravelGroupsEntity t WHERE t.tourId = :tourId AND t.status IN ('recruiting', 'open') AND t.currentMembers < t.maxMembers")
   long countAvailableGroupsByTourId(@Param("tourId") String tourId);
+
+  /**
+   * 메인페이지에서 활용 : 최신 모집중인 그룹 3개 조회
+   */
+  @Query(value = "SELECT * FROM travel_groups " +
+      "WHERE status IN ('recruiting', 'open', 'active') " +
+      "AND hidden_after_trip = 0 " +
+      "ORDER BY created_at DESC " +
+      "LIMIT 3", nativeQuery = true)
+  List<TravelGroupsEntity> findLatestRecruitingGroups();
+
+  /**
+   * 메인페이지에서 활용 : 상태 무관 최신 그룹 3개 조회 (백업용)
+   */
+  @Query(value = "SELECT * FROM travel_groups " +
+      "WHERE hidden_after_trip = 0 " +
+      "ORDER BY created_at DESC " +
+      "LIMIT 3", nativeQuery = true)
+  List<TravelGroupsEntity> findLatestGroups();
 }

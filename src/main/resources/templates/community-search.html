@@ -13,67 +13,78 @@
     <!-- Header -->
     <div th:replace="header :: header"></div>
 
-  <div class="container">
-    <br /><br />
-    <!-- 상단 타이틀 -->
-    <h2 class="h1">함께 여행을 떠날 인연을 맺어보세요 <small>🍀</small></h2>
-    <p class="subtle"><span id="userName" th:text="${username}"></span>님이 현재 가입중인 여행</p>
+    <div class="container">
+      <br /><br />
+      <!-- 상단 타이틀 -->
+      <h2 class="h1">함께 여행을 떠날 인연을 맺어보세요 <small>🍀</small></h2>
+      <p class="subtle">
+        <span id="userName" th:text="${username}"></span>님이 현재 가입중인 여행
+      </p>
 
-    <!-- 가입 중인 여행 가로 스크롤 카드 -->
-    <div id="enrolledScroller" class="scroller"></div>
+      <!-- 가입 중인 여행 가로 스크롤 카드 -->
+      <div id="enrolledScroller" class="scroller"></div>
 
-    <div class="hr"></div>
-    <br /><br />
-    <!-- 내 지역 출발 모임 -->
-    <h2 class="h1">내 지역 출발 모임</h2>
-    <p class="subtle"><span id="myCity" style="color:#ef4444;font-weight:800" >서울</span> 지역의 투어 모임을 추천해 드립니다.</p>
-    <div id="localGrid" class="grid"></div>
+      <div class="hr"></div>
+      <br /><br />
+      <!-- 내 지역 출발 모임 -->
+      <h2 class="h1">내 지역 출발 모임</h2>
+      <p class="subtle">
+        <span id="myCity" style="color: #ef4444; font-weight: 800">서울</span>
+        지역의 투어 모임을 추천해 드립니다.
+      </p>
+      <div id="localGrid" class="grid"></div>
 
-    <div class="hr"></div>
+      <div class="hr"></div>
 
-    <br /><br />
-    <!-- 모임 찾기 -->
-    <h2 class="h1">모임 찾기</h2>
-    <div class="filters">
-      <div class="select">
-        출발 지역
-        <select id="filterFrom"></select>
+      <br /><br />
+      <!-- 모임 찾기 -->
+      <h2 class="h1">모임 찾기</h2>
+      <div class="filters">
+        <div class="select">
+          출발 지역
+          <select id="filterFrom"></select>
+        </div>
+        <div class="select">
+          도착 지역
+          <select id="filterTo"></select>
+        </div>
+        <div class="date">
+          여행 시작일
+          <input id="filterStart" type="date" />
+        </div>
+        <div class="date">
+          여행 종료일
+          <input id="filterEnd" type="date" />
+        </div>
       </div>
-      <div class="select">
-        도착 지역
-        <select id="filterTo"></select>
-      </div>
-      <div class="date">
-        여행 시작일
-        <input id="filterStart" type="date"/>
-      </div>
-      <div class="date">
-        여행 종료일
-        <input id="filterEnd" type="date"/>
-      </div>
+      <div id="searchGrid" class="grid"></div>
     </div>
-    <div id="searchGrid" class="grid"></div>
-  </div>
+    <!-- Footer -->
+    <div th:replace="footer :: footer"></div>
   </body>
   <script th:inline="javascript">
     /* =========== init =========== */
-      window.currentUser = {
-    username: /*[[${username}]]*/ ""
-  };
-renderEnrolled();
-renderLocal();
-// renderLocal('서울');
-buildFilters();
-renderSearch();
+    window.currentUser = {
+      username: /*[[${username}]]*/ "",
+    };
+    renderEnrolled();
+    renderLocal();
+    // renderLocal('서울');
+    buildFilters();
+    renderSearch();
 
-['change','input'].forEach(ev=>{
-  $('#filterFrom').addEventListener(ev, ()=>{ renderSearch(); renderLocal($('#filterFrom').value||'서울'); });
-  $('#filterTo').addEventListener(ev, renderSearch);
-  $('#filterStart').addEventListener(ev, renderSearch);
-  $('#filterEnd').addEventListener(ev, renderSearch);
-});
+    ["change", "input"].forEach((ev) => {
+      $("#filterFrom").addEventListener(ev, () => {
+        renderSearch();
+        renderLocal($("#filterFrom").value || "서울");
+      });
+      $("#filterTo").addEventListener(ev, renderSearch);
+      $("#filterStart").addEventListener(ev, renderSearch);
+      $("#filterEnd").addEventListener(ev, renderSearch);
+    });
 
-// 사용자 이름 표기 (백엔드에서 window.currentUserName 주입한다고 가정)
-if (window.currentUserName) $('#userName').textContent = window.currentUserName;
+    // 사용자 이름 표기 (백엔드에서 window.currentUserName 주입한다고 가정)
+    if (window.currentUserName)
+      $("#userName").textContent = window.currentUserName;
   </script>
 </html>

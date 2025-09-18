@@ -21,9 +21,9 @@ window.tourDetail = {
   // 카카오 지도
   currentInfoWindow: null,
   // 카카오 지도 의료시설 관련 추가
-  medicalMarkers: [],  // 병원/약국 마커 저장 배열
-  showMedical: false,  // 의료시설 표시 상태
-  ps: null,  // 카카오 장소 검색 객체
+  medicalMarkers: [], // 병원/약국 마커 저장 배열
+  showMedical: false, // 의료시설 표시 상태
+  ps: null, // 카카오 장소 검색 객체
 
   // 갤러리 상태
   currentImageIndex: 0,
@@ -54,7 +54,7 @@ window.tourDetail = {
         // 백엔드에서 추가 데이터 (맛집, API 키) 가져오기
         await this.loadAdditionalData(tourId);
 
-        this.showSuccess("투어 정보를 빠르게 불러왔습니다! (세션 활용)");
+        this.showSuccess("투어 정보를 불러왔습니다! (세션 활용)");
       } else {
         console.log("❌ 세션 데이터 없음 - API 호출 시도");
 
@@ -263,7 +263,7 @@ window.tourDetail = {
         this.renderImageGallery();
         this.renderRestaurants();
         this.setupEventListeners();
-        
+
         // 지역 특색 정보 로드
         this.loadRegionTips();
 
@@ -389,9 +389,12 @@ window.tourDetail = {
         await this.waitForKakaoMap();
 
         if (window.kakaoMapLoaded && typeof kakao !== "undefined") {
-          this.createKakaoMap(mapContainer);
-          mapPlaceholder.style.display = "none";
-          console.log("✅ 카카오맵 초기화 완료");
+          // requestAnimationFrame으로 렌더링 최적화
+          requestAnimationFrame(() => {
+            this.createKakaoMap(mapContainer);
+            mapPlaceholder.style.display = "none";
+            console.log("✅ 카카오맵 초기화 완료");
+          });
         } else {
           throw new Error("카카오맵 SDK 로드 실패");
         }
@@ -432,53 +435,6 @@ window.tourDetail = {
   },
 
   /**
-   * 실제 카카오맵 생성수정 - 경로 라인 추가)
-   */
-  // createKakaoMap(container) {
-  //   if (!this.currentSpots.length) return;
-
-  //   try {
-  //     const firstSpot = this.currentSpots[0];
-  //     const centerLat = parseFloat(firstSpot.mapy);
-  //     const centerLng = parseFloat(firstSpot.mapx);
-
-  //     if (isNaN(centerLat) || isNaN(centerLng)) {
-  //       throw new Error("유효하지 않은 좌표 정보");
-  //     }
-
-  //     const mapOption = {
-  //       center: new kakao.maps.LatLng(centerLat, centerLng),
-  //       level: this.currentSpots.length > 3 ? 9 : 7, // 관광지 수에 때라 줌레벨 조정
-  //     };
-
-  //     this.kakaoMap = new kakao.maps.Map(container, mapOption);
-
-  //     // 지도 클릭시 인포윈도우 닫기
-  //     kakao.maps.event.addListener(this.kakaoMap, "click", () => {
-  //       this.closeInfoWindow();
-  //     });
-
-  //     // 관광지별 마커 생성
-  //     this.currentSpots.forEach((spot, index) => {
-  //       this.createSpotMarker(spot, index + 1);
-  //     });
-
-  //     // 투어 경로 라인 그리기
-  //     this.createTourPath();
-
-  //     // 지도 영역 자동 조정
-  //     this.fitMapBounds();
-
-  //     console.log(
-  //       "카카오맵 생성 완료:",
-  //       this.currentSpots.length + "개 마커 + 경로 라인"
-  //     );
-  //   } catch (error) {
-  //     console.error("카카오맵 생성 실패:", error);
-  //     throw error;
-  //   }
-  // },
-  /**
    * 실제 카카오맵 생성 (수정된 버전)
    */
   createKakaoMap(container) {
@@ -496,6 +452,12 @@ window.tourDetail = {
       const mapOption = {
         center: new kakao.maps.LatLng(centerLat, centerLng),
         level: this.currentSpots.length > 3 ? 9 : 7,
+        draggable: true,
+        scrollwheel: true,
+        disableDoubleClick: false,
+        disableDoubleClickZoom: false,
+        // 터치 이벤트 최적화
+        keyboardShortcuts: false,
       };
 
       this.kakaoMap = new kakao.maps.Map(container, mapOption);
@@ -522,7 +484,10 @@ window.tourDetail = {
       // 의료시설 토글 버튼 추가
       this.addMedicalToggleButton();
 
-      console.log("카카오맵 생성 완료:", this.currentSpots.length + "개 마커 + 경로 라인");
+      console.log(
+        "카카오맵 생성 완료:",
+        this.currentSpots.length + "개 마커 + 경로 라인"
+      );
     } catch (error) {
       console.error("카카오맵 생성 실패:", error);
       throw error;
@@ -533,26 +498,28 @@ window.tourDetail = {
    * 의료시설 토글 버튼 추가
    */
   addMedicalToggleButton() {
-    const mapContainer = document.getElementById('tour-kakao-map');
+    const mapContainer = document.getElementById("tour-kakao-map");
     if (!mapContainer) return;
 
     // 기존 버튼이 있으면 제거
-    const existingButton = document.getElementById('medicalToggleBtn');
+    const existingButton = document.getElementById("medicalToggleBtn");
     if (existingButton) {
       existingButton.remove();
     }
 
     // 토글 버튼 생성
-    const toggleBtn = document.createElement('div');
-    toggleBtn.id = 'medicalToggleBtn';
-    toggleBtn.className = 'medical-toggle-btn';
+    const toggleBtn = document.createElement("div");
+    toggleBtn.id = "medicalToggleBtn";
+    toggleBtn.className = "medical-toggle-btn";
     toggleBtn.innerHTML = `
       <button onclick="tourDetail.toggleMedicalFacilities()" class="toggle-medical">
         <span class="medical-icon">🏥</span>
-        <span class="toggle-text">병원/약국 ${this.showMedical ? 'OFF' : 'ON'}</span>
+        <span class="toggle-text">병원/약국 ${
+          this.showMedical ? "OFF" : "ON"
+        }</span>
       </button>
     `;
-    
+
     mapContainer.appendChild(toggleBtn);
   },
 
@@ -561,10 +528,12 @@ window.tourDetail = {
    */
   toggleMedicalFacilities() {
     this.showMedical = !this.showMedical;
-    
-    const toggleBtn = document.querySelector('.medical-toggle-btn .toggle-text');
+
+    const toggleBtn = document.querySelector(
+      ".medical-toggle-btn .toggle-text"
+    );
     if (toggleBtn) {
-      toggleBtn.textContent = `병원/약국 ${this.showMedical ? 'OFF' : 'ON'}`;
+      toggleBtn.textContent = `병원/약국 ${this.showMedical ? "OFF" : "ON"}`;
     }
 
     if (this.showMedical) {
@@ -584,35 +553,43 @@ window.tourDetail = {
     this.currentSpots.forEach((spot) => {
       const lat = parseFloat(spot.mapy);
       const lng = parseFloat(spot.mapx);
-      
+
       if (!isNaN(lat) && !isNaN(lng)) {
         const position = new kakao.maps.LatLng(lat, lng);
-        
+
         // 병원 검색
-        this.ps.categorySearch('HP8', (data, status) => {
-          if (status === kakao.maps.services.Status.OK) {
-            data.forEach(place => {
-              this.createMedicalMarker(place, 'hospital');
-            });
+        this.ps.categorySearch(
+          "HP8",
+          (data, status) => {
+            if (status === kakao.maps.services.Status.OK) {
+              data.forEach((place) => {
+                this.createMedicalMarker(place, "hospital");
+              });
+            }
+          },
+          {
+            location: position,
+            radius: 2000, // 2km 반경
+            size: 5, // 최대 5개
           }
-        }, {
-          location: position,
-          radius: 2000, // 2km 반경
-          size: 5 // 최대 5개
-        });
+        );
 
         // 약국 검색
-        this.ps.categorySearch('PM9', (data, status) => {
-          if (status === kakao.maps.services.Status.OK) {
-            data.forEach(place => {
-              this.createMedicalMarker(place, 'pharmacy');
-            });
+        this.ps.categorySearch(
+          "PM9",
+          (data, status) => {
+            if (status === kakao.maps.services.Status.OK) {
+              data.forEach((place) => {
+                this.createMedicalMarker(place, "pharmacy");
+              });
+            }
+          },
+          {
+            location: position,
+            radius: 1000, // 1km 반경
+            size: 3, // 최대 3개
           }
-        }, {
-          location: position,
-          radius: 1000, // 1km 반경
-          size: 3 // 최대 3개
-        });
+        );
       }
     });
   },
@@ -622,18 +599,19 @@ window.tourDetail = {
    */
   createMedicalMarker(place, type) {
     const position = new kakao.maps.LatLng(place.y, place.x);
-    
+
     // 마커 이미지 설정
-    const imageSrc = type === 'hospital' 
-      ? this.createMedicalMarkerImage('🏥', '#FF6B6B')
-      : this.createMedicalMarkerImage('💊', '#4ECDC4');
+    const imageSrc =
+      type === "hospital"
+        ? this.createMedicalMarkerImage("🏥", "#FF6B6B")
+        : this.createMedicalMarkerImage("💊", "#4ECDC4");
     const imageSize = new kakao.maps.Size(25, 25);
     const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
 
     const marker = new kakao.maps.Marker({
       position: position,
       image: markerImage,
-      title: place.place_name
+      title: place.place_name,
     });
 
     marker.setMap(this.kakaoMap);
@@ -645,15 +623,17 @@ window.tourDetail = {
         <div class="medical-infowindow">
           <strong>${place.place_name}</strong>
           <p>${place.road_address_name || place.address_name}</p>
-          ${place.phone ? `<p>📞 ${place.phone}</p>` : ''}
-          <p class="medical-distance">거리: ${place.distance ? place.distance + 'm' : '정보없음'}</p>
+          ${place.phone ? `<p>📞 ${place.phone}</p>` : ""}
+          <p class="medical-distance">거리: ${
+            place.distance ? place.distance + "m" : "정보없음"
+          }</p>
         </div>
       `,
-      removable: true
+      removable: true,
     });
 
     // 마커 클릭 이벤트
-    kakao.maps.event.addListener(marker, 'click', () => {
+    kakao.maps.event.addListener(marker, "click", () => {
       if (this.currentInfoWindow) {
         this.currentInfoWindow.close();
       }
@@ -666,10 +646,10 @@ window.tourDetail = {
    * 의료시설 마커 이미지 생성
    */
   createMedicalMarkerImage(emoji, bgColor) {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 25;
     canvas.height = 25;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
 
     // 원형 배경
     ctx.fillStyle = bgColor;
@@ -678,14 +658,14 @@ window.tourDetail = {
     ctx.fill();
 
     // 테두리
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = "#fff";
     ctx.lineWidth = 2;
     ctx.stroke();
 
     // 이모지
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.font = "12px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     ctx.fillText(emoji, 12.5, 12.5);
 
     return canvas.toDataURL();
@@ -695,7 +675,7 @@ window.tourDetail = {
    * 의료시설 마커 제거
    */
   clearMedicalMarkers() {
-    this.medicalMarkers.forEach(marker => {
+    this.medicalMarkers.forEach((marker) => {
       marker.setMap(null);
     });
     this.medicalMarkers = [];
@@ -1863,48 +1843,56 @@ window.tourDetail = {
    * 지역별 여행 꿀정보 로드
    */
   async loadRegionTips() {
-      const tipsSection = document.getElementById('tourTipsSection');
-      if (!tipsSection || !this.currentTour) return;
-      
-      try {
-          // 현재 투어의 지역 코드 가져오기
-          const areaCode = this.currentTour.areaCode || '1';
-          // 시군구 코드도 가져오기
-          const sigunguCode = this.currentTour.sigunguCode || '';
-          // 시군구 코드가 있으면 함께 전송
-           const url = `/tour-detail/region-tips/${areaCode}${sigunguCode ? '?sigunguCode=' + sigunguCode : ''}`;
-        
-          console.log('🌟 지역 팁 조회: areaCode=' + areaCode + ', region=' + this.currentTour.region);
-        
-          const response = await fetch(url);
-          const result = await response.json();
-          
-          if (result.success && result.hasData && result.data) {
-              // 데이터가 있을 때
-              this.renderRegionTips(result.data);
-          } else {
-              // 데이터가 없을 때 - 준비 중 표시
-              // regionName이 없으면 currentTour의 region 사용
-              const regionName = result.regionName || this.currentTour.region || '해당 지역';
-              this.renderPreparingTips(regionName);
-              //this.renderPreparingTips(result.regionName || this.currentTour.region);
-          }
-      } catch (error) {
-          console.error('지역 팁 로드 실패:', error);
-          // this.renderPreparingTips(this.currentTour.region);
-          // 에러 시 현재 투어의 지역명  사용
-          this.renderPreparingTips(this.currentTour.region || '해당 지역');
+    const tipsSection = document.getElementById("tourTipsSection");
+    if (!tipsSection || !this.currentTour) return;
+
+    try {
+      // 현재 투어의 지역 코드 가져오기
+      const areaCode = this.currentTour.areaCode || "1";
+      // 시군구 코드도 가져오기
+      const sigunguCode = this.currentTour.sigunguCode || "";
+      // 시군구 코드가 있으면 함께 전송
+      const url = `/tour-detail/region-tips/${areaCode}${
+        sigunguCode ? "?sigunguCode=" + sigunguCode : ""
+      }`;
+
+      console.log(
+        "🌟 지역 팁 조회: areaCode=" +
+          areaCode +
+          ", region=" +
+          this.currentTour.region
+      );
+
+      const response = await fetch(url);
+      const result = await response.json();
+
+      if (result.success && result.hasData && result.data) {
+        // 데이터가 있을 때
+        this.renderRegionTips(result.data);
+      } else {
+        // 데이터가 없을 때 - 준비 중 표시
+        // regionName이 없으면 currentTour의 region 사용
+        const regionName =
+          result.regionName || this.currentTour.region || "해당 지역";
+        this.renderPreparingTips(regionName);
+        //this.renderPreparingTips(result.regionName || this.currentTour.region);
       }
+    } catch (error) {
+      console.error("지역 팁 로드 실패:", error);
+      // this.renderPreparingTips(this.currentTour.region);
+      // 에러 시 현재 투어의 지역명  사용
+      this.renderPreparingTips(this.currentTour.region || "해당 지역");
+    }
   },
 
   /**
    * 준비 중 표시
    */
   renderPreparingTips(regionName) {
-      const tipsSection = document.getElementById('tourTipsSection');
-      if (!tipsSection) return;
-      
-      const html = `
+    const tipsSection = document.getElementById("tourTipsSection");
+    if (!tipsSection) return;
+
+    const html = `
           <h2 class="section-title">💡 여행 꿀정보</h2>
           <div class="tips-placeholder preparing">
               <div class="placeholder-icon">🚧</div>
@@ -1913,56 +1901,64 @@ window.tourDetail = {
               <p class="coming-soon">곧 업데이트 예정입니다!</p>
           </div>
       `;
-      
-      tipsSection.innerHTML = html;
+
+    tipsSection.innerHTML = html;
   },
 
   /**
    * 지역 특색 정보 렌더링 (데이터가 있을 때)
    */
   renderRegionTips(tipData) {
-      const tipsSection = document.getElementById('tourTipsSection');
-      if (!tipsSection) return;
-      
-      // 배열인 경우 (여러 투어)
-      if (Array.isArray(tipData)) {
-          let html = `
+    const tipsSection = document.getElementById("tourTipsSection");
+    if (!tipsSection) return;
+
+    // 배열인 경우 (여러 투어)
+    if (Array.isArray(tipData)) {
+      let html = `
               <h2 class="section-title">💡 ${tipData[0].region} 여행 꿀정보</h2>
               <div class="tips-content">
           `;
-          
-          tipData.forEach((tip, index) => {
-              const url = tip.url || '#';
-              html += `
-                  <a href="${url}" target="_blank" class="region-special-tour-link" ${!tip.url ? 'style="pointer-events: none;"' : ''}>
+
+      tipData.forEach((tip, index) => {
+        const url = tip.url || "#";
+        html += `
+                  <a href="${url}" target="_blank" class="region-special-tour-link" ${
+          !tip.url ? 'style="pointer-events: none;"' : ""
+        }>
                       <div class="region-special-tour">
                           <div class="special-tour-header">
-                              <h3>${tip.title || '지역 특색 체험'}</h3>
+                              <h3>${tip.title || "지역 특색 체험"}</h3>
                           </div>
-                          <p class="special-description">${tip.description || ''}</p>
+                          <p class="special-description">${
+                            tip.description || ""
+                          }</p>
                           <span class="special-link-arrow">
                               자세히 보기 <span class="arrow">→</span>
                           </span>
                       </div>
                   </a>
               `;
-          });
-          
-          html += '</div>';
-          tipsSection.innerHTML = html;
-      }
-      // 단일 객체인 경우 (기존 코드 호환)
-      else {
-          const url = tipData.url || '#';
-          let html = `
+      });
+
+      html += "</div>";
+      tipsSection.innerHTML = html;
+    }
+    // 단일 객체인 경우 (기존 코드 호환)
+    else {
+      const url = tipData.url || "#";
+      let html = `
               <h2 class="section-title">💡 ${tipData.region} 여행 꿀정보</h2>
               <div class="tips-content">
-                  <a href="${url}" target="_blank" class="region-special-tour-link" ${!tipData.url ? 'style="pointer-events: none;"' : ''}>
+                  <a href="${url}" target="_blank" class="region-special-tour-link" ${
+        !tipData.url ? 'style="pointer-events: none;"' : ""
+      }>
                       <div class="region-special-tour">
                           <div class="special-tour-header">
-                              <h3>${tipData.title || '지역 특색 체험'}</h3>
+                              <h3>${tipData.title || "지역 특색 체험"}</h3>
                           </div>
-                          <p class="special-description">${tipData.description || ''}</p>
+                          <p class="special-description">${
+                            tipData.description || ""
+                          }</p>
                           <span class="special-link-arrow">
                               자세히 보기 <span class="arrow">→</span>
                           </span>
@@ -1970,10 +1966,9 @@ window.tourDetail = {
                   </a>
               </div>
           `;
-          tipsSection.innerHTML = html;
-      }
+      tipsSection.innerHTML = html;
+    }
   },
-
 
   /**
    * ❤️ 찜하기 기능 (AJAX)
@@ -2384,7 +2379,7 @@ window.tourDetail = {
 
     // 폼 데이터 수집
     const noAgeLimit = document.getElementById("noAgeLimit").checked;
-    var groupId =crypto.randomUUID();
+    var groupId = crypto.randomUUID();
     const groupData = {
       groupId: groupId,
       tourId: this.currentTour.tourId,
@@ -2410,50 +2405,55 @@ window.tourDetail = {
 
     try {
       // API 호출
-const response = await fetch("/api/travel-groups/create", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(groupData),
-  credentials: "include", // 세션 쿠키 포함
-});
+      const response = await fetch("/api/travel-groups/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(groupData),
+        credentials: "include", // 세션 쿠키 포함
+      });
 
-const result = await response.json();
+      const result = await response.json();
 
-if (result.success) {
-  this.showToast("여행 그룹이 성공적으로 생성되었습니다!", "success");
+      if (result.success) {
+        this.showToast("여행 그룹이 성공적으로 생성되었습니다!", "success");
 
-  // 멤버 추가 payload
-  const data = {
-    groupId: groupId,
-    tourId: this.currentTour.tourId,
-    userId: this.currentUser,
-    memberType: "owner",
-  };
+        // 멤버 추가 payload
+        const data = {
+          groupId: groupId,
+          tourId: this.currentTour.tourId,
+          userId: this.currentUser,
+          memberType: "owner",
+        };
 
-  try {
-    const resJoin = await fetch("/community/member/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-      credentials: "include",
-    });
-      // 실패해도 커뮤니티로 보내고 싶으면 에러만 로그
-      if (!resJoin.ok) throw new Error("HTTP " + resJoin.status);
-      // 필요하면 const joinResult = await resJoin.json();
-      console.log("투어 커뮤니티 생성/참여 성공");
-    } catch (err) {
-      console.warn("투어 그룹 참여 실패(무시하고 이동):", err);
-      this.showToast("이미 참여 중일 수 있어요. 커뮤니티로 이동합니다.", "error");
-    }
+        try {
+          const resJoin = await fetch("/community/member/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+            credentials: "include",
+          });
+          // 실패해도 커뮤니티로 보내고 싶으면 에러만 로그
+          if (!resJoin.ok) throw new Error("HTTP " + resJoin.status);
+          // 필요하면 const joinResult = await resJoin.json();
+          console.log("투어 커뮤니티 생성/참여 성공");
+        } catch (err) {
+          console.warn("투어 그룹 참여 실패(무시하고 이동):", err);
+          this.showToast(
+            "이미 참여 중일 수 있어요. 커뮤니티로 이동합니다.",
+            "error"
+          );
+        }
 
-    this.closeTravelModal();
-    setTimeout(() => {
-      // 서버가 groupId를 반환해야 함
-      window.location.href = `/community?groupId=${encodeURIComponent(result.groupId)}`;
-    }, 800);
-  } else {
-    this.showToast(result.message || "그룹 생성에 실패했습니다.", "error");
-  }
+        this.closeTravelModal();
+        setTimeout(() => {
+          // 서버가 groupId를 반환해야 함
+          window.location.href = `/community?groupId=${encodeURIComponent(
+            result.groupId
+          )}`;
+        }, 800);
+      } else {
+        this.showToast(result.message || "그룹 생성에 실패했습니다.", "error");
+      }
     } catch (error) {
       console.error("여행 그룹 생성 오류:", error);
       this.showToast("그룹 생성 중 오류가 발생했습니다.", "error");

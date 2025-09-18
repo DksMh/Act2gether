@@ -3,9 +3,15 @@
 /* ===================================
    글자 크기 클래스 (전역 적용)
    =================================== */
-html.font-size-normal { font-size: 16px; }
-html.font-size-large { font-size: 17.28px; }
-html.font-size-xlarge { font-size: 18.56px; }
+html.font-size-normal {
+  font-size: 16px;
+}
+html.font-size-large {
+  font-size: 17.28px;
+}
+html.font-size-xlarge {
+  font-size: 18.56px;
+}
 
 /* ===================================
    헤더 기본 스타일
@@ -14,7 +20,7 @@ header {
   background: var(--color-white);
   border-bottom: 1px solid var(--color-gray-200);
   position: relative;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .header-wrapper {
@@ -32,7 +38,7 @@ header {
   display: flex;
   align-items: center;
   gap: 2rem;
-} 
+}
 
 .logo {
   font-weight: var(--weight-bold);
@@ -41,7 +47,12 @@ header {
   white-space: nowrap;
 }
 
-.logo a{display:inline-block; font-weight:800; font-size:1.2rem; color:#ff5a00;}
+.logo a {
+  display: inline-block;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #ff5a00;
+}
 
 /* .logo a {
   color: inherit;
@@ -138,7 +149,15 @@ header {
   gap: 0.5rem;
 }
 
-.auth-buttons a,
+.auth-buttons a {
+  font-size: var(--font-p);
+  font-weight: var(--weight-medium);
+  color: #fff;
+  transition: color 0.3s ease;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+}
+
 .user-buttons a:not(.btn) {
   font-size: var(--font-p);
   font-weight: var(--weight-medium);
@@ -185,7 +204,7 @@ header {
    =================================== */
 .font-size-controls {
   position: fixed;
-  top: 6.25rem;
+  top: 12.25rem;
   right: 1.25rem;
   background: var(--color-white);
   padding: 0.75rem;
@@ -203,7 +222,7 @@ header {
   color: var(--color-gray-500);
   text-align: center;
   font-weight: var(--weight-semibold);
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
 }
 
 .font-btn {
@@ -215,7 +234,7 @@ header {
   cursor: pointer;
   font-size: var(--font-p);
   font-weight: var(--weight-medium);
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
   transition: all 0.2s;
 }
 
@@ -232,7 +251,7 @@ header {
 
 /* ===================================
    모바일 메뉴 스타일
-   =================================== */   
+   =================================== */
 .mobile-menu-toggle {
   display: none;
   width: 3rem;
@@ -261,9 +280,15 @@ header {
   transform: translateX(-50%);
 }
 
-.mobile-menu-toggle span:nth-child(1) { top: 0.875rem; }
-.mobile-menu-toggle span:nth-child(2) { top: 1.375rem; }
-.mobile-menu-toggle span:nth-child(3) { top: 1.875rem; }
+.mobile-menu-toggle span:nth-child(1) {
+  top: 0.875rem;
+}
+.mobile-menu-toggle span:nth-child(2) {
+  top: 1.375rem;
+}
+.mobile-menu-toggle span:nth-child(3) {
+  top: 1.875rem;
+}
 
 .mobile-menu-toggle.active span:nth-child(1) {
   top: 1.375rem;
@@ -336,7 +361,7 @@ header {
   font-size: 1.5rem;
   color: var(--color-gray-500);
   transition: all 0.2s;
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
 }
 
 .mobile-menu-close:hover {
@@ -423,8 +448,8 @@ header {
 
 /* 모바일 글자 크기 조절 */
 .font-size-controls-mobile {
-    display: none;
-  }
+  display: none;
+}
 .mobile-font-controls {
   padding: 1.25rem;
   background: var(--color-gray-050);
@@ -449,13 +474,11 @@ header {
   font-size: var(--font-p);
 }
 
-
-
 /* ===================================
    반응형 - 1024px)
    =================================== */
 /* @media (max-width: 48rem) { */
-@media (max-width: 64rem) {  
+@media (max-width: 64rem) {
   .header-wrapper {
     padding: 1rem;
   }
@@ -471,7 +494,7 @@ header {
   .mobile-menu-overlay {
     display: block;
   }
-  
+
   /* 모바일 글자 크기 조절 버튼 표시 */
   /* ======= Mobile Font FAB (floating) ======= */
   .font-size-controls-mobile {
@@ -482,30 +505,64 @@ header {
     display: block;
   }
 
-  .font-toggle-btn{
-    display:inline-flex; align-items:center; gap:.5rem;
-    height:3rem; padding:0 1rem; border:0; border-radius:999px;
-    background:var(--color-main); color:#fff; box-shadow:0 .5rem 1.25rem rgba(0,0,0,.15);
+  .font-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 3rem;
+    padding: 0 1rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-main);
+    color: #fff;
+    box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.15);
   }
-  .font-toggle-btn .icon{ font-weight:800; }
-  .font-toggle-btn .label{ font-weight:700; font-size:.95rem; }
+  .font-toggle-btn .icon {
+    font-weight: 800;
+  }
+  .font-toggle-btn .label {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
 
   /* speed-dial popup */
-  .font-popup{
-    position:absolute; right:0; bottom:3.5rem;
-    display:grid; gap:.5rem; padding:.5rem;
-    background:rgba(255,255,255,.95); backdrop-filter:blur(6px);
-    border:1px solid var(--color-gray-200); border-radius:.75rem;
-    box-shadow:0 .5rem 1.25rem rgba(0,0,0,.12);
-    transform:translateY(.5rem); opacity:0; pointer-events:none; transition:.18s ease;
+  .font-popup {
+    position: absolute;
+    right: 0;
+    bottom: 3.5rem;
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--color-gray-200);
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.12);
+    transform: translateY(0.5rem);
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.18s ease;
   }
-  .font-popup.active{ transform:translateY(0); opacity:1; pointer-events:auto; }
+  .font-popup.active {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
 
-  .font-btn-mobile{
-    min-width:7rem; padding:.6rem .8rem; border-radius:.5rem;
-    border:1px solid var(--color-gray-200); background:#fff; color:#111; font-weight:600;
+  .font-btn-mobile {
+    min-width: 7rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-gray-200);
+    background: #fff;
+    color: #111;
+    font-weight: 600;
   }
-  .font-btn-mobile.active{ border-color:var(--color-main); background:var(--color-main); color:#fff; }
+  .font-btn-mobile.active {
+    border-color: var(--color-main);
+    background: var(--color-main);
+    color: #fff;
+  }
 
   .logo {
     font-size: 1.25rem;

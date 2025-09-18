@@ -1432,14 +1432,14 @@ let tourSearchManager = {
         ) {
           const userDisplayName =
             this.currentUser.nickname || this.currentUser.name;
-          titleHtml = `🎯 ${userDisplayName}님을 위한 맞춤 투어 상품`;
+          titleHtml = `${userDisplayName}님을 위한 맞춤 투어 상품`;
         } else {
-          titleHtml = `🎯 검색하신 조건의 투어 상품`;
+          titleHtml = `검색하신 조건의 투어 상품`;
         }
 
         // 편의시설 정보 추가
         if (searchResult?.barrierFreeCount > 0) {
-          titleHtml += ` <span class="accessibility-badge">♿ 편의시설 ${searchResult.barrierFreeCount}개</span>`;
+          titleHtml += ` <span class="accessibility-badge">편의시설 ${searchResult.barrierFreeCount}개</span>`;
         }
 
         titleElement.innerHTML = titleHtml;
@@ -2085,7 +2085,7 @@ let tourSearchManager = {
     recommendedContainer.innerHTML = `
       <div class="recommendation-placeholder">
         <div class="placeholder-icon">🔍</div>
-        <h3>v3.0 투어 상품 생성을 시작해보세요!</h3>
+        <h3>투어 상품 생성을 시작해보세요!</h3>
         <p>가고싶은 장소만 선택하면 맞춤 투어 상품을 만들어드려요.<br>
            필터를 설정한 후 <strong>🔍 투어 찾기</strong> 버튼을 눌러주세요!</p>
         <div class="search-hint">
@@ -2095,15 +2095,15 @@ let tourSearchManager = {
           </div>
           <div class="hint-item">
             <span class="hint-number">2</span>
-            <span class="hint-text">가고싶은 장소 최대 6개 선택 (7개 그룹)</span>
+            <span class="hint-text">가고싶은 장소 최대 6개 선택</span>
           </div>
           <div class="hint-item">
             <span class="hint-number">3</span>
-            <span class="hint-text">♿ 편의시설 필터로 안전한 관광지 검색</span>
+            <span class="hint-text">편의시설 필터로 나에게 편한 여행지 찾기</span>
           </div>
           <div class="hint-item">
             <span class="hint-number">4</span>
-            <span class="hint-text">🔍 투어 찾기 버튼으로 1개 투어 상품 생성</span>
+            <span class="hint-text">🔍 투어 찾기 버튼으로 투어 생성</span>
           </div>
         </div>
       </div>

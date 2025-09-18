@@ -2,368 +2,370 @@
 
 /* 탭 메뉴 스타일 */
 .tab-menu {
-    display: flex;
-    border-bottom: 2px solid var(--color-gray-200);
-    margin-bottom: 2rem;
+  display: flex;
+  border-bottom: 2px solid var(--color-gray-200);
+  margin-bottom: 2rem;
 }
 
 .tab-btn {
-    flex: 1;
-    padding: 1rem 1.25rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: var(--font-h6);
-    font-weight: var(--weight-medium);
-    color: var(--color-gray-500);
-    border-bottom: 3px solid transparent;
-    transition: all 0.3s ease;
-    font-family: 'Pretendard', sans-serif;
+  flex: 1;
+  padding: 1rem 1.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-h6);
+  font-weight: var(--weight-medium);
+  color: var(--color-gray-500);
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  font-family: "Pretendard", sans-serif;
 }
 
 .tab-btn.active {
-    color: var(--color-main);
-    border-bottom-color: var(--color-main);
+  color: var(--color-main);
+  border-bottom-color: var(--color-main);
 }
 
 .tab-btn:hover {
-    color: var(--color-main);
-    background-color: var(--color-gray-050);
+  color: var(--color-main);
+  background-color: var(--color-gray-050);
 }
 
 /* 탭 콘텐츠 */
 .tab-content {
-    display: none;
+  display: none;
 }
 
 .tab-content.active {
-    display: block;
+  display: block;
 }
 
 .tab-header {
-    text-align: center;
-    margin-bottom: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .tab-header h3 {
-    margin-bottom: 0.5rem;
-    color: var(--color-black);
-    font-size: var(--font-h4);
-    font-weight: var(--weight-semibold);
+  margin-bottom: 0.5rem;
+  color: var(--color-black);
+  font-size: var(--font-h4);
+  font-weight: var(--weight-semibold);
 }
 
 .tab-header p {
-    color: var(--color-gray-500);
-    font-size: var(--font-p);
+  color: var(--color-gray-500);
+  font-size: var(--font-p);
 }
 
 /* 이메일 찾기 결과 스타일 */
 .find-result {
-    text-align: center;
-    padding: 2.5rem 1rem;
+  text-align: center;
+  padding: 2.5rem 1rem;
 }
 
 .result-icon {
-    font-size: 3rem;
-    margin-bottom: 1.5rem;
-    color: var(--color-main);
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-main);
 }
 
 .find-result h3 {
-    margin-bottom: 1rem;
-    color: var(--color-black);
-    font-size: var(--font-h4);
-    font-weight: var(--weight-semibold);
+  margin-bottom: 1rem;
+  color: var(--color-black);
+  font-size: var(--font-h4);
+  font-weight: var(--weight-semibold);
 }
 
 .email-result {
-    background-color: var(--color-gray-050);
-    border: 1px solid var(--color-gray-200);
-    border-radius: 0.5rem;
-    padding: 1.25rem;
-    margin: 1.5rem 0;
-    font-size: var(--font-h5);
-    font-weight: var(--weight-medium);
-    color: var(--color-black);
+  background-color: var(--color-gray-050);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+  font-size: var(--font-h5);
+  font-weight: var(--weight-medium);
+  color: var(--color-black);
 }
 
 .result-actions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    margin-top: 2rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2rem;
 }
 
 .secondary-btn {
-    padding: 0.875rem 1.75rem;
-    background-color: var(--color-gray-500);
-    color: var(--color-white);
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    font-size: var(--font-h6);
-    font-weight: var(--weight-medium);
-    text-decoration: none;
-    transition: all 0.3s ease;
-    font-family: 'Pretendard', sans-serif;
+  padding: 1rem;
+  background-color: var(--color-gray-500) !important;
+  color: var(--color-white);
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: var(--font-h6);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-family: "Pretendard", sans-serif;
 }
 
 .secondary-btn:hover {
-    background-color: var(--color-gray-400);
-    transform: translateY(-2px);
+  background-color: var(--color-gray-400);
+  transform: translateY(-2px);
 }
 
 /* 기존 스타일들 */
 .reset-step {
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .verification-input-container {
-    width: 100%;
+  width: 100%;
 }
 
 .verification-input-group {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 .verification-input-group input {
-    flex: 1;
+  flex: 1;
 }
 
 .verification-info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
 }
 
 .resend-btn {
-    padding: 0.5rem 1rem;
-    background-color: var(--color-main);
-    border: 2px solid var(--color-main);
-    border-radius: 0.5rem;
-    cursor: pointer;
-    font-size: var(--font-p);
-    color: var(--color-white);
-    white-space: nowrap;
-    transition: all 0.3s ease;
-    font-family: 'Pretendard', sans-serif;
-    font-weight: var(--weight-medium);
+  padding: 0.5rem 1rem;
+  background-color: var(--color-main);
+  border: 2px solid var(--color-main);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: var(--font-p);
+  color: var(--color-white);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  font-family: "Pretendard", sans-serif;
+  font-weight: var(--weight-medium);
 }
 
 .resend-btn:hover {
-    background-color: var(--color-alarm);
-    border-color: var(--color-alarm);
+  background-color: var(--color-alarm);
+  border-color: var(--color-alarm);
 }
 
 .resend-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background-color: var(--color-gray-400);
-    border-color: var(--color-gray-400);
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-gray-400);
+  border-color: var(--color-gray-400);
 }
 
 .timer-info {
-    font-size: var(--font-h6);
-    color: var(--color-alarm);
-    margin: 0;
-    font-weight: var(--weight-semibold);
+  font-size: var(--font-h6);
+  color: var(--color-alarm);
+  margin: 0;
+  font-weight: var(--weight-semibold);
 }
 
 .btn-loading {
-    display: none;
+  display: none;
 }
 
 .success-container {
-    text-align: center;
-    padding: 3rem 1.5rem;
+  text-align: center;
+  padding: 3rem 1.5rem;
 }
 
 .success-icon {
-    width: 4rem;
-    height: 4rem;
-    background-color: #16A34A;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
-    font-size: 2rem;
-    color: var(--color-white);
+  width: 4rem;
+  height: 4rem;
+  background-color: #16a34a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 2rem;
+  color: var(--color-white);
 }
 
 .success-container h3 {
-    margin-bottom: 0.75rem;
-    color: var(--color-black);
-    font-size: var(--font-h4);
-    font-weight: var(--weight-semibold);
+  margin-bottom: 0.75rem;
+  color: var(--color-black);
+  font-size: var(--font-h4);
+  font-weight: var(--weight-semibold);
 }
 
 .success-container p {
-    color: var(--color-gray-500);
-    margin-bottom: 2rem;
-    font-size: var(--font-h6);
+  color: var(--color-gray-500);
+  margin-bottom: 2rem;
+  font-size: var(--font-h6);
 }
 
 .back-to-login {
-    text-align: center;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--color-gray-100);
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-gray-100);
 }
 
 .back-to-login a {
-    color: var(--color-gray-500);
-    text-decoration: none;
-    font-size: var(--font-p);
-    font-weight: var(--weight-medium);
+  color: var(--color-gray-500);
+  text-decoration: none;
+  font-size: var(--font-p);
+  font-weight: var(--weight-medium);
 }
 
 .back-to-login a:hover {
-    color: var(--color-main);
-    text-decoration: underline;
+  color: var(--color-main);
+  text-decoration: underline;
 }
 
 .verification-status {
-    margin-top: 0.5rem;
-    font-size: 0.8125rem;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
 }
 
 .verification-status.error {
-    color: var(--color-alarm);
+  color: var(--color-alarm);
 }
 
 .verification-status.success {
-    color: #16A34A;
+  color: #16a34a;
 }
 
 .verification-status.info {
-    color: #3B82F6;
+  color: #3b82f6;
 }
 
-.error-message, .success-message, .info-message {
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1.5rem;
+.error-message,
+.success-message,
+.info-message {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .error-message {
-    background-color: #FEF2F2;
-    border: 1px solid var(--color-alarm);
-    color: var(--color-alarm);
+  background-color: #fef2f2;
+  border: 1px solid var(--color-alarm);
+  color: var(--color-alarm);
 }
 
 .error-message p {
-    margin: 0;
-    font-weight: var(--weight-medium);
-    font-size: var(--font-p);
+  margin: 0;
+  font-weight: var(--weight-medium);
+  font-size: var(--font-p);
 }
 
 .success-message {
-    background-color: #F0FDF4;
-    border: 1px solid #16A34A;
-    color: #16A34A;
+  background-color: #f0fdf4;
+  border: 1px solid #16a34a;
+  color: #16a34a;
 }
 
 .success-message p {
-    margin: 0;
-    font-weight: var(--weight-medium);
-    font-size: var(--font-p);
+  margin: 0;
+  font-weight: var(--weight-medium);
+  font-size: var(--font-p);
 }
 
 .info-message {
-    background-color: #EFF6FF;
-    border: 1px solid #3B82F6;
-    color: #3B82F6;
+  background-color: #eff6ff;
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
 }
 
 .info-message p {
-    margin: 0;
-    font-weight: var(--weight-medium);
-    font-size: var(--font-p);
+  margin: 0;
+  font-weight: var(--weight-medium);
+  font-size: var(--font-p);
 }
 
 /* login.css에서 상속받는 login-btn 스타일 오버라이드 */
 .login-container .login-btn {
-    background: var(--color-main);
+  background: var(--color-main);
 }
 
 .login-container .login-btn:hover {
-    background: var(--color-alarm);
-    box-shadow: 0 0.5rem 1.5rem rgba(255, 89, 0, 0.25);
+  background: var(--color-alarm);
+  box-shadow: 0 0.5rem 1.5rem rgba(255, 89, 0, 0.25);
 }
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {
-    .tab-btn {
-        font-size: 0.9375rem;
-        padding: 0.875rem 1rem;
-    }
-    
-    .tab-header h3 {
-        font-size: 1.25rem;
-    }
-    
-    .find-result {
-        padding: 2rem 0.75rem;
-    }
-    
-    .result-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .result-actions .login-btn,
-    .secondary-btn {
-        width: 100%;
-    }
-    
-    .verification-info-row {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    
-    .resend-btn {
-        width: 100%;
-    }
+  .tab-btn {
+    font-size: 0.9375rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .tab-header h3 {
+    font-size: 1.25rem;
+  }
+
+  .find-result {
+    padding: 2rem 0.75rem;
+  }
+
+  .result-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .result-actions .login-btn,
+  .secondary-btn {
+    width: 100%;
+  }
+
+  .verification-info-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .resend-btn {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
-    .tab-menu {
-        margin-bottom: 1.5rem;
-    }
-    
-    .tab-btn {
-        font-size: 0.875rem;
-        padding: 0.75rem 0.5rem;
-    }
-    
-    .tab-header {
-        margin-bottom: 1.5rem;
-    }
-    
-    .tab-header h3 {
-        font-size: 1.125rem;
-    }
-    
-    .tab-header p {
-        font-size: 0.875rem;
-    }
-    
-    .email-result {
-        font-size: 1rem;
-        padding: 1rem;
-    }
-    
-    .success-container {
-        padding: 2rem 1rem;
-    }
-    
-    .success-icon {
-        width: 3rem;
-        height: 3rem;
-        font-size: 1.5rem;
-    }
+  .tab-menu {
+    margin-bottom: 1.5rem;
+  }
+
+  .tab-btn {
+    font-size: 0.875rem;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .tab-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .tab-header h3 {
+    font-size: 1.125rem;
+  }
+
+  .tab-header p {
+    font-size: 0.875rem;
+  }
+
+  .email-result {
+    font-size: 1rem;
+    padding: 1rem;
+  }
+
+  .success-container {
+    padding: 2rem 1rem;
+  }
+
+  .success-icon {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.5rem;
+  }
 }

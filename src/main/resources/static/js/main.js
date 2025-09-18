@@ -137,18 +137,28 @@ $(document).ready(function () {
       }
     });
 
-    // 더보기 버튼
+    // 더보기 버튼 - community-search 페이지로 이동
     $(".more-button").on("click", function () {
       window.location.href = "/community-search";
     });
 
     // 동행 모임 둘러보기 버튼
+    // $(document).on(
+    //   "click",
+    //   ".companion-recommend-section .btn-primary",
+    //   function () {
+    //     const groupId = $(this).closest(".product-card").data("group-id");
+    //     window.location.href = `/community-search?groupId=${groupId}`;
+    //   }
+    // );
     $(document).on(
       "click",
-      ".companion-recommend-section .btn-primary",
+      ".companion-recommend-section .product-card",
       function () {
-        const groupId = $(this).closest(".product-card").data("group-id");
-        window.location.href = `/community-search?groupId=${groupId}`;
+        const groupId = $(this).data("group-id");
+        if (groupId) {
+          window.location.href = `/community?groupId=${groupId}`;
+        }
       }
     );
   }

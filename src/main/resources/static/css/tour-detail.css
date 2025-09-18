@@ -12,12 +12,12 @@
 }
 
 body {
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
   font-size: 0.875rem; /* p: 14px */
   font-weight: 400;
   line-height: 1.6;
   color: #141414;
-  background-color: #F5F5F5;
+  background-color: #f5f5f5;
 }
 
 /* ========================================
@@ -47,16 +47,20 @@ body {
 .spinner {
   width: 3rem;
   height: 3rem;
-  border: 0.25rem solid #E0E0E0;
-  border-top: 0.25rem solid #FF5900;
+  border: 0.25rem solid #e0e0e0;
+  border-top: 0.25rem solid #ff5900;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .spinner-content p {
@@ -68,10 +72,10 @@ body {
    투어 헤더
    ======================================== */
 .tour-header {
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 1.25rem 1.5rem;
   box-shadow: 0 0.125rem 0.5rem rgba(20, 20, 20, 0.1);
-  border-bottom: 0.0625rem solid #E0E0E0;
+  border-bottom: 0.0625rem solid #e0e0e0;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -86,9 +90,9 @@ body {
   position: fixed;
   bottom: 5rem;
   right: 1.25rem;
-  background: #FFFFFF;
-  border: 0.125rem solid #FF5900;
-  color: #FF5900;
+  background: #ffffff;
+  border: 0.125rem solid #ff5900;
+  color: #ff5900;
   padding: 0.75rem 1.25rem;
   border-radius: 1.5625rem;
   font-size: 1rem; /* H6: 16px */
@@ -100,8 +104,8 @@ body {
 }
 
 .back-button:hover {
-  background: #FF5900;
-  color: #FFFFFF;
+  background: #ff5900;
+  color: #ffffff;
   transform: translateY(-0.125rem);
   box-shadow: 0 0.375rem 1rem rgba(20, 20, 20, 0.2);
 }
@@ -133,30 +137,30 @@ body {
 .accessibility-badge,
 .region-badge,
 .spots-count {
-  background: #F5F5F5;
+  background: #f5f5f5;
   padding: 0.25rem 0.75rem;
   border-radius: 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
-  border: 0.0625rem solid #E0E0E0;
+  border: 0.0625rem solid #e0e0e0;
 }
 
 .accessibility-badge {
-  background: #E3F2FD;
-  color: #FF5900;
-  border-color: #FF5900;
+  background: #e3f2fd;
+  color: #ff5900;
+  /* border-color: #ff5900; */
 }
 
 .region-badge {
-  background: #FFF3E0;
-  color: #FF5900;
-  border-color: #FF5900;
+  background: #fff3e0;
+  color: #ff5900;
+  border-color: #ff5900;
 }
 
 .spots-count {
-  background: #FFF3E0;
-  color: #FF5900;
-  border-color: #FF5900;
+  background: #fff3e0;
+  color: #ff5900;
+  border-color: #ff5900;
 }
 
 /* 액션 버튼 */
@@ -177,7 +181,7 @@ body {
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
   min-height: 3rem;
@@ -186,39 +190,39 @@ body {
 
 /* 찜하기 버튼 */
 .wishlist-button {
-  background: #FF383C;
-  color: #FFFFFF;
-  border: 0.125rem solid #FF383C;
+  background: #ff383c;
+  color: #ffffff;
+  border: 0.125rem solid #ff383c;
 }
 
 .wishlist-button:hover {
-  background: #D32F2F;
-  border-color: #D32F2F;
+  background: #d32f2f;
+  border-color: #d32f2f;
   transform: translateY(-0.0625rem);
 }
 
 .wishlist-button.active {
-  background: #C62828;
-  border-color: #C62828;
+  background: #c62828;
+  border-color: #c62828;
 }
 
 /* 여행만들기 버튼 */
 .travel-create-button {
-  background: #FF5900;
-  color: #FFFFFF;
-  border: 0.125rem solid #FF5900;
+  background: #ff5900;
+  color: #ffffff;
+  border: 0.125rem solid #ff5900;
 }
 
 .travel-create-button:hover {
-  background: #F57C00;
-  border-color: #F57C00;
+  background: #f57c00;
+  border-color: #f57c00;
   transform: translateY(-0.0625rem);
 }
 
 /* 여행참여 버튼 */
 .travel-join-button {
   background: #999999;
-  color: #FFFFFF;
+  color: #ffffff;
   border: 0.125rem solid #999999;
   cursor: not-allowed;
   opacity: 0.7;
@@ -241,7 +245,7 @@ body {
 
 /* 공통 섹션 스타일 */
 section {
-  background: #FFFFFF;
+  background: #ffffff;
   margin-bottom: 1.5rem;
   padding: 1.5rem;
   border-radius: 0.5rem;
@@ -254,7 +258,7 @@ section {
   color: #141414;
   margin-bottom: 1.25rem;
   padding-bottom: 0.5rem;
-  border-bottom: 0.125rem solid #FF5900;
+  border-bottom: 0.125rem solid #ff5900;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -273,18 +277,32 @@ section {
   height: 25rem;
   border-radius: 0.5rem;
   overflow: hidden;
-  border: 0.0625rem solid #E0E0E0;
+  border: 0.0625rem solid #e0e0e0;
 }
 
 .kakao-map {
   width: 100%;
   height: 100%;
 }
+/* 카카오맵 컨테이너 성능 최적화 */
+#tour-kakao-map {
+  will-change: transform;
+  transform: translateZ(0); /* GPU 가속 활성화 */
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* 맵 로딩 중 스타일 */
+#tour-kakao-map.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
 
 .map-placeholder {
   width: 100%;
   height: 100%;
-  background: #F5F5F5;
+  background: #f5f5f5;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -317,15 +335,15 @@ section {
   padding: 0.5rem;
   min-width: 12.5rem;
   position: relative;
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
 }
 
 .kakao-infowindow-close {
   position: absolute;
   top: 0.25rem;
   right: 0.25rem;
-  background: #FF383C;
-  color: #FFFFFF;
+  background: #ff383c;
+  color: #ffffff;
   border: none;
   border-radius: 50%;
   width: 1.25rem;
@@ -339,7 +357,7 @@ section {
 }
 
 .kakao-infowindow-close:hover {
-  background: #D32F2F;
+  background: #d32f2f;
 }
 
 .kakao-infowindow-title {
@@ -367,7 +385,7 @@ section {
   position: absolute;
   top: 0.625rem;
   right: 0.625rem;
-  z-index: 100;
+  z-index: 99;
 }
 
 .toggle-medical {
@@ -444,22 +462,22 @@ section {
 }
 
 .spot-accordion {
-  border: 0.125rem solid #E0E0E0;
+  border: 0.125rem solid #e0e0e0;
   border-radius: 0.75rem;
-  background: #FFFFFF;
+  background: #ffffff;
   box-shadow: 0 0.125rem 0.5rem rgba(20, 20, 20, 0.1);
   transition: all 0.3s ease;
   overflow: hidden;
 }
 
 .spot-accordion:hover {
-  border-color: #FF5900;
+  border-color: #ff5900;
   box-shadow: 0 0.25rem 0.75rem rgba(20, 20, 20, 0.15);
 }
 
 .spot-accordion.active {
-  border-color: #FF5900;
-  background: #FFF8F5;
+  border-color: #ff5900;
+  background: #fff8f5;
 }
 
 .accordion-header {
@@ -478,7 +496,7 @@ section {
 
 .spot-accordion.active .accordion-header {
   background-color: rgba(255, 89, 0, 0.1);
-  border-bottom: 0.0625rem solid #E0E0E0;
+  border-bottom: 0.0625rem solid #e0e0e0;
 }
 
 .spot-number {
@@ -487,8 +505,8 @@ section {
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  background: #FF5900;
-  color: #FFFFFF;
+  background: #ff5900;
+  color: #ffffff;
   border-radius: 50%;
   font-weight: 700;
   font-size: 1.125rem;
@@ -497,7 +515,7 @@ section {
 }
 
 .spot-accordion.active .spot-number {
-  background: #F57C00;
+  background: #f57c00;
 }
 
 .spot-header-content {
@@ -513,7 +531,7 @@ section {
   height: 3.75rem;
   object-fit: cover;
   border-radius: 0.5rem;
-  border: 0.0625rem solid #E0E0E0;
+  border: 0.0625rem solid #e0e0e0;
   flex-shrink: 0;
 }
 
@@ -542,7 +560,7 @@ section {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #FF5900;
+  color: #ff5900;
   font-weight: 600;
   margin-left: 1rem;
   flex-shrink: 0;
@@ -578,8 +596,8 @@ section {
 }
 
 .detail-section {
-  background: #FFFFFF;
-  border: 0.0625rem solid #E0E0E0;
+  background: #ffffff;
+  border: 0.0625rem solid #e0e0e0;
   border-radius: 0.5rem;
   padding: 1rem;
 }
@@ -587,10 +605,10 @@ section {
 .detail-title {
   font-size: 1rem; /* H6: 16px */
   font-weight: 500;
-  color: #FF5900;
+  color: #ff5900;
   margin: 0 0 0.75rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 0.125rem solid #F5F5F5;
+  border-bottom: 0.125rem solid #f5f5f5;
 }
 
 .detail-content p {
@@ -612,7 +630,7 @@ section {
 }
 
 .detail-content a {
-  color: #FF5900;
+  color: #ff5900;
   text-decoration: none;
   font-weight: 500;
 }
@@ -623,7 +641,7 @@ section {
 
 .overview-section {
   grid-column: 1 / -1;
-  background: #FAFFFE;
+  background: #fafffe;
 }
 
 .overview-text {
@@ -637,22 +655,22 @@ section {
 .spot-accessibility-info {
   margin-top: 0.75rem;
   padding: 0.75rem;
-  background: #F5F5F5;
+  background: #f5f5f5;
   border-radius: 0.5rem;
 }
 
 .primary-facilities {
   padding: 0.75rem;
-  background: #E3F2FD;
-  border: 0.125rem solid #FF5900;
+  background: #eee;
+  border: 0.125rem solid #ff5900;
   border-radius: 0.5rem;
   margin-bottom: 0.5rem;
 }
 
 .primary-facilities-label {
   display: inline-block;
-  background: #FF5900;
-  color: #FFFFFF;
+  background: #ff5900;
+  color: #ffffff;
   padding: 0.125rem 0.5rem;
   border-radius: 0.25rem;
   font-size: 0.75rem;
@@ -663,7 +681,7 @@ section {
 .primary-facilities-items {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #FF5900;
+  color: #ff5900;
   line-height: 1.6;
 }
 
@@ -682,9 +700,9 @@ section {
 
 .secondary-facilities {
   padding: 0.5rem 0.75rem;
-  background: #F5F5F5;
+  background: #f5f5f5;
   border-radius: 0.5rem;
-  border: 0.0625rem solid #E0E0E0;
+  border: 0.0625rem solid #e0e0e0;
 }
 
 .secondary-facilities-label {
@@ -703,8 +721,8 @@ section {
 
 .no-primary-facilities {
   padding: 0.75rem;
-  background: #FFF3CD;
-  border: 0.0625rem solid #FF5900;
+  background: #fff3cd;
+  border: 0.0625rem solid #ff5900;
   border-radius: 0.5rem;
   color: #141414;
   font-size: 1rem;
@@ -729,8 +747,8 @@ section {
 .loading-spinner-small {
   width: 1.5rem;
   height: 1.5rem;
-  border: 0.1875rem solid #E0E0E0;
-  border-top: 0.1875rem solid #FF5900;
+  border: 0.1875rem solid #e0e0e0;
+  border-top: 0.1875rem solid #ff5900;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 0.75rem;
@@ -759,19 +777,19 @@ section {
 }
 
 .retry-button {
-  background: #FF5900;
-  color: #FFFFFF;
+  background: #ff5900;
+  color: #ffffff;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   cursor: pointer;
   font-size: 0.875rem;
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
   transition: background-color 0.2s ease;
 }
 
 .retry-button:hover {
-  background: #F57C00;
+  background: #f57c00;
 }
 
 /* ========================================
@@ -787,8 +805,8 @@ section {
   font-size: 1rem;
   line-height: 1.6;
   color: #141414;
-  background: #F5F5F5;
-  border: 0.0625rem solid #E0E0E0;
+  background: #f5f5f5;
+  border: 0.0625rem solid #e0e0e0;
   border-radius: 0.5rem;
   text-align: left;
 }
@@ -826,7 +844,7 @@ section {
 
 .carousel-btn {
   background: rgba(0, 0, 0, 0.6);
-  color: #FFFFFF;
+  color: #ffffff;
   border: none;
   width: 2.5rem;
   height: 2.5rem;
@@ -852,13 +870,13 @@ section {
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 50%;
-  background: #E0E0E0;
+  background: #e0e0e0;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .indicator.active {
-  background: #FF5900;
+  background: #ff5900;
 }
 
 /* 이미지 전체화면 모달 */
@@ -918,12 +936,12 @@ section {
 }
 
 .fullscreen-close:hover {
-  background: #FFFFFF;
+  background: #ffffff;
   transform: scale(1.1);
 }
 
 .fullscreen-title {
-  color: #FFFFFF;
+  color: #ffffff;
   margin-top: 1rem;
   text-align: center;
   font-size: 1rem;
@@ -942,9 +960,9 @@ section {
 .spot-restaurants-section {
   margin-bottom: 2.5rem;
   padding: 1.25rem;
-  background: #F5F5F5;
+  background: #f5f5f5;
   border-radius: 0.75rem;
-  border: 0.0625rem solid #E0E0E0;
+  border: 0.0625rem solid #e0e0e0;
 }
 
 .spot-restaurant-header {
@@ -953,14 +971,14 @@ section {
   gap: 0.9375rem;
   margin-bottom: 1.25rem;
   padding-bottom: 0.9375rem;
-  border-bottom: 0.125rem solid #FF5900;
+  border-bottom: 0.125rem solid #ff5900;
 }
 
 .spot-number-badge {
   width: 2.5rem;
   height: 2.5rem;
-  background: #FF5900;
-  color: #FFFFFF;
+  background: #ff5900;
+  color: #ffffff;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -984,16 +1002,16 @@ section {
 }
 
 .category-card {
-  background: #FFFFFF;
-  border: 0.0625rem solid #E0E0E0;
+  background: #ffffff;
+  border: 0.0625rem solid #e0e0e0;
   border-radius: 0.5rem;
   overflow: hidden;
 }
 
 .category-card-header {
-  background: #F5F5F5;
+  background: #f5f5f5;
   padding: 0.75rem;
-  border-bottom: 0.0625rem solid #E0E0E0;
+  border-bottom: 0.0625rem solid #e0e0e0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -1011,8 +1029,8 @@ section {
 }
 
 .category-count {
-  background: #FF5900;
-  color: #FFFFFF;
+  background: #ff5900;
+  color: #ffffff;
   padding: 0.125rem 0.5rem;
   border-radius: 0.75rem;
   font-size: 0.75rem;
@@ -1027,7 +1045,7 @@ section {
 
 .restaurant-compact-item {
   padding: 0.5rem 0;
-  border-bottom: 0.0625rem solid #F5F5F5;
+  border-bottom: 0.0625rem solid #f5f5f5;
 }
 
 .restaurant-compact-item:last-child {
@@ -1049,7 +1067,7 @@ section {
 
 .restaurant-tel {
   font-size: 0.75rem;
-  color: #FF5900;
+  color: #ff5900;
 }
 
 .no-restaurant {
@@ -1063,9 +1081,9 @@ section {
   text-align: center;
   margin-top: 1rem;
   padding: 1rem;
-  background: #F5F5F5;
+  background: #f5f5f5;
   border-radius: 0.5rem;
-  border: 0.0625rem solid #E0E0E0;
+  border: 0.0625rem solid #e0e0e0;
 }
 
 .restaurants-notice p {
@@ -1137,7 +1155,6 @@ section {
   transform: translateY(-2px);
 }
 
-
 /* 개별 투어 카드 */
 .region-special-tour {
   background: var(--color-white);
@@ -1152,7 +1169,7 @@ section {
 .region-special-tour-link:hover .region-special-tour {
   border-color: var(--color-main);
   box-shadow: 0 4px 12px rgba(255, 89, 0, 0.2);
-  background: #FFF8F5;
+  background: #fff8f5;
 }
 
 /* 투어 헤더 */
@@ -1200,7 +1217,7 @@ section {
 }
 
 .special-link::after {
-  content: '→';
+  content: "→";
   margin-left: 0.25rem;
   transition: transform 0.2s ease;
 }
@@ -1216,11 +1233,19 @@ section {
 
 /* 애니메이션 */
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
-
 
 /* ========================================
    Placeholder 섹션
@@ -1231,7 +1256,8 @@ section {
   padding: 2.5rem 1.25rem;
 }
 
-.reviews-placeholder .placeholder-icon, .placeholder-icon,
+.reviews-placeholder .placeholder-icon,
+.placeholder-icon,
 .related-tours-placeholder .placeholder-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
@@ -1254,12 +1280,12 @@ section {
 
 .write-review-btn {
   background: #999999;
-  color: #FFFFFF;
+  color: #ffffff;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
   cursor: not-allowed;
 }
 
@@ -1275,10 +1301,10 @@ section {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #F5F5F5;
+  background: #f5f5f5;
   padding: 0.75rem 1rem;
   border-radius: 1.25rem;
-  border: 0.0625rem solid #E0E0E0;
+  border: 0.0625rem solid #e0e0e0;
 }
 
 .preview-icon {
@@ -1307,7 +1333,7 @@ section {
 }
 
 .travel-modal-content {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   margin: 2% auto;
   padding: 0;
   border-radius: 0.75rem;
@@ -1318,8 +1344,8 @@ section {
 
 .travel-modal-header {
   padding: 1.25rem 1.875rem;
-  background: linear-gradient(135deg, #FF5900 0%, #FF383C 100%);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, #ff5900 0%, #ff383c 100%);
+  color: #ffffff;
   border-radius: 0.75rem 0.75rem 0 0;
   display: flex;
   justify-content: space-between;
@@ -1333,7 +1359,7 @@ section {
 }
 
 .modal-close {
-  color: #FFFFFF;
+  color: #ffffff;
   font-size: 1.75rem;
   font-weight: 700;
   background: none;
@@ -1383,10 +1409,10 @@ section {
   width: 100%;
   padding: 0.75rem;
   font-size: 1rem;
-  font-family: 'Pretendard', sans-serif;
-  border: 0.125rem solid #E0E0E0;
+  font-family: "Pretendard", sans-serif;
+  border: 0.125rem solid #e0e0e0;
   border-radius: 0.5rem;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   transition: border-color 0.3s;
 }
 
@@ -1394,7 +1420,7 @@ section {
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #FF5900;
+  border-color: #ff5900;
 }
 
 .form-group select {
@@ -1403,7 +1429,7 @@ section {
 }
 
 .form-group select:disabled {
-  background-color: #F5F5F5;
+  background-color: #f5f5f5;
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -1431,13 +1457,13 @@ section {
 
 .error-msg {
   display: none;
-  color: #FF383C;
+  color: #ff383c;
   font-size: 0.8125rem;
   margin-top: 0.3125rem;
 }
 
 .required {
-  color: #FF383C;
+  color: #ff383c;
 }
 
 #birthYearStart,
@@ -1447,7 +1473,7 @@ section {
 
 .travel-modal-footer {
   padding: 1.25rem 1.875rem;
-  background-color: #F5F5F5;
+  background-color: #f5f5f5;
   border-radius: 0 0 0.75rem 0.75rem;
   display: flex;
   justify-content: flex-end;
@@ -1459,7 +1485,7 @@ section {
   padding: 0.875rem 1.75rem;
   font-size: 1rem;
   font-weight: 600;
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
   border-radius: 0.5rem;
   border: none;
   cursor: pointer;
@@ -1467,8 +1493,8 @@ section {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #FF5900 0%, #FF383C 100%);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, #ff5900 0%, #ff383c 100%);
+  color: #ffffff;
 }
 
 .btn-primary:hover {
@@ -1478,7 +1504,7 @@ section {
 
 .btn-cancel {
   background-color: #646464;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .btn-cancel:hover {
@@ -1500,7 +1526,7 @@ section {
 
 .toast {
   background: #141414;
-  color: #FFFFFF;
+  color: #ffffff;
   padding: 0.75rem 1.25rem;
   border-radius: 0.5rem;
   box-shadow: 0 0.125rem 0.5rem rgba(20, 20, 20, 0.1);
@@ -1511,24 +1537,24 @@ section {
 }
 
 .toast.success {
-  background: #FFFFFF;
+  background: #ffffff;
   color: #646464;
-  border: 0.125rem solid #FF5900;
+  border: 0.125rem solid #ff5900;
 }
 
 .toast.error {
-  background: #FF383C;
-  color: #FFFFFF;
+  background: #ff383c;
+  color: #ffffff;
 }
 
 .toast.warning {
-  background: #FF5900;
-  color: #FFFFFF;
+  background: #ff5900;
+  color: #ffffff;
 }
 
 .toast.info {
   background: #646464;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 @keyframes toastSlideIn {
@@ -1587,15 +1613,18 @@ section {
 
 /* 찜하기 버튼 활성화 애니메이션 */
 .wishlist-button.active .heart-icon {
-  color: #FFEB3B;
+  color: #ffeb3b;
   animation: heartBeat 0.5s ease-in-out;
 }
 
 @keyframes heartBeat {
-  0%, 50%, 100% {
+  0%,
+  50%,
+  100% {
     transform: scale(1);
   }
-  25%, 75% {
+  25%,
+  75% {
     transform: scale(1.1);
   }
 }
@@ -1623,13 +1652,13 @@ section {
 
 /* 성공/에러 상태 */
 .success-state {
-  border-color: #FF5900 !important;
-  background-color: #FFF8F5 !important;
+  border-color: #ff5900 !important;
+  background-color: #fff8f5 !important;
 }
 
 .error-state {
-  border-color: #FF383C !important;
-  background-color: #FFEBEE !important;
+  border-color: #ff383c !important;
+  background-color: #ffebee !important;
 }
 
 /* 스크롤 진행 표시 */
@@ -1639,7 +1668,7 @@ section {
   left: 0;
   width: 0%;
   height: 0.1875rem;
-  background: linear-gradient(90deg, #FF5900, #FF383C);
+  background: linear-gradient(90deg, #ff5900, #ff383c);
   z-index: 9999;
   transition: width 0.1s ease;
 }
@@ -1648,7 +1677,7 @@ section {
 button:focus-visible,
 .carousel-btn:focus-visible,
 .indicator:focus-visible {
-  outline: 0.1875rem solid #FF5900;
+  outline: 0.1875rem solid #ff5900;
   outline-offset: 0.125rem;
 }
 
@@ -1659,11 +1688,11 @@ button:focus-visible,
   .region-special-tour {
     padding: 1.5rem;
   }
-  
+
   .special-tour-header h3 {
     font-size: 1.125rem; /* 조금 더 큰 글씨 */
   }
-  
+
   .special-description {
     font-size: 0.9375rem; /* 15px - 읽기 편한 크기 */
   }
@@ -1780,17 +1809,17 @@ button:focus-visible,
     max-width: 95vw;
     max-height: 95vh;
   }
-  
+
   .medical-toggle-btn {
     top: 3.75rem;
     right: 0.625rem;
   }
-  
+
   .toggle-medical {
     padding: 0.375rem 0.75rem;
     font-size: 0.75rem;
   }
-  
+
   .medical-icon {
     font-size: 1rem;
   }
@@ -1798,7 +1827,7 @@ button:focus-visible,
   .tips-placeholder.preparing {
     padding: 3rem 1.5rem;
   }
-  
+
   .region-special-tour {
     padding: 1.5rem;
   }
@@ -1806,11 +1835,11 @@ button:focus-visible,
   .tips-content {
     gap: 0.75rem;
   }
-  
+
   .region-special-tour {
     padding: 1rem;
   }
-    
+
   .special-description,
   .special-link {
     margin-left: 2rem;
@@ -1837,7 +1866,7 @@ button:focus-visible,
     width: 50%;
     justify-content: center;
   }
-/* 
+  /* 
   .tour-action-buttons {
     display: none;
   } */
@@ -1846,7 +1875,6 @@ button:focus-visible,
     display: flex;
   } */
 
-  
   .wishlist-button,
   .travel-create-button,
   .travel-join-button {
@@ -1860,28 +1888,27 @@ button:focus-visible,
     border-radius: 0.5rem;
     font-size: 0.75rem;
     font-weight: 600;
-    font-family: 'Pretendard', sans-serif;
+    font-family: "Pretendard", sans-serif;
     cursor: pointer;
     transition: all 0.2s ease;
   }
 
   .wishlist-button {
-    background: #FF383C;
-    color: #FFFFFF;
+    background: #ff383c;
+    color: #ffffff;
   }
 
   .travel-create-button {
-    background: #FF5900;
-    color: #FFFFFF;
+    background: #ff5900;
+    color: #ffffff;
   }
 
   .travel-join-button {
     background: #999999;
-    color: #FFFFFF;
+    color: #ffffff;
     cursor: not-allowed;
     opacity: 0.7;
   }
-
 
   .map-container {
     height: 15.625rem;
@@ -1932,19 +1959,19 @@ button:focus-visible,
   .tips-placeholder.preparing {
     padding: 1.5rem 1rem;
   }
-  
+
   .region-special-tour {
     padding: 0.875rem;
   }
-  
+
   .special-tour-header {
     gap: 0.5rem;
   }
-    
+
   .special-tour-header h3 {
     font-size: 0.9375rem;
   }
-  
+
   .special-description,
   .special-link {
     margin-left: 0;
@@ -1987,11 +2014,11 @@ button:focus-visible,
 @media (prefers-contrast: high) {
   .primary-facilities {
     border-width: 0.1875rem;
-    background: #CFE8FC;
+    background: #cfe8fc;
   }
 
   .primary-facilities-items {
-    color: #003D82;
+    color: #003d82;
     font-weight: 700;
   }
 
@@ -2004,17 +2031,17 @@ button:focus-visible,
 /* 다크 모드 */
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #1E1E1E;
-    color: #FFFFFF;
+    background-color: #1e1e1e;
+    color: #ffffff;
   }
 
   .tour-header,
   section {
-    background: #2D2D2D;
+    background: #2d2d2d;
   }
 
   .map-placeholder {
-    background: #1E1E1E;
+    background: #1e1e1e;
   }
 
   .loading-spinner {
@@ -2022,20 +2049,20 @@ button:focus-visible,
   }
 
   .region-special-tour {
-    background: #2D2D2D;
+    background: #2d2d2d;
     border-color: #444;
   }
-  
+
   .region-special-tour:hover {
     border-color: var(--color-main);
     box-shadow: 0 2px 8px rgba(255, 89, 0, 0.25);
   }
-  
+
   .special-tour-header h3 {
     color: var(--color-white);
   }
-  
+
   .special-description {
-    color: #B0B0B0;
+    color: #b0b0b0;
   }
 }

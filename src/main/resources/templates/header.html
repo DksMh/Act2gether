@@ -2,10 +2,10 @@
 <div th:fragment="header">
   <header>
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    
+
     <!-- style.css를 먼저 로드 (CSS 변수 정의) -->
-    <link rel="stylesheet" href="/css/style.css">
-    
+    <link rel="stylesheet" href="/css/style.css" />
+
     <!-- Critical CSS (레이아웃 깨짐 방지 + 기본 스타일) -->
     <style>
       /* 긴급 기본값 (style.css 로드 전) */
@@ -24,12 +24,12 @@
         --weight-medium: 500;
         --grid-width: 72rem;
       }
-      
+
       header {
         background: #ffffff;
         border-bottom: 1px solid #e0e0e0;
       }
-      
+
       .header-wrapper {
         display: flex;
         justify-content: space-between;
@@ -38,24 +38,24 @@
         margin: 0 auto;
         padding: 1rem 2rem;
       }
-      
+
       .header-left {
         display: flex;
         align-items: center;
         gap: 2rem;
       }
-      
+
       .logo {
         font-weight: 700;
         font-size: 1.5rem;
         color: #ff5900;
       }
-      
+
       .logo a {
         color: inherit;
         text-decoration: none;
       }
-      
+
       .main-menu {
         display: flex;
         gap: 2rem;
@@ -63,25 +63,25 @@
         margin: 0;
         padding: 0;
       }
-      
+
       .main-menu a {
         color: #141414;
         text-decoration: none;
         font-size: 1rem;
       }
-      
+
       .mobile-menu-toggle,
       .mobile-menu,
       .mobile-menu-overlay,
       .mobile-font-controls {
         display: none;
       }
-      
+
       .font-size-controls {
         display: none;
       }
-      
-      @media(max-width: 768px) {
+
+      @media (max-width: 768px) {
         .header-left nav,
         .header-right .header-actions {
           display: none !important;
@@ -106,42 +106,77 @@
           transform: translateX(-50%);
           transition: all 0.3s;
         }
-        .mobile-menu-toggle span:nth-child(1) { top: 14px; }
-        .mobile-menu-toggle span:nth-child(2) { top: 22px; }
-        .mobile-menu-toggle span:nth-child(3) { top: 30px; }
+        .mobile-menu-toggle span:nth-child(1) {
+          top: 14px;
+        }
+        .mobile-menu-toggle span:nth-child(2) {
+          top: 22px;
+        }
+        .mobile-menu-toggle span:nth-child(3) {
+          top: 30px;
+        }
       }
     </style>
 
     <!-- header.css 로드 -->
-    <link rel="stylesheet" href="/css/header.css">
-    
+    <link rel="stylesheet" href="/css/header.css" />
+
     <!-- 글자 크기 조절 컨트롤 (전체 디바이스) -->
     <div class="font-size-controls" id="globalFontControls">
       <div class="font-label">글자크기</div>
-      <button class="font-btn active" data-size="normal" aria-label="기본 크기">기본</button>
-      <button class="font-btn" data-size="large" aria-label="조금 크게">크게</button>
-      <button class="font-btn" data-size="xlarge" aria-label="크게">더 크게</button>
+      <button class="font-btn active" data-size="normal" aria-label="기본 크기">
+        기본
+      </button>
+      <button class="font-btn" data-size="large" aria-label="조금 크게">
+        크게
+      </button>
+      <button class="font-btn" data-size="xlarge" aria-label="크게">
+        더 크게
+      </button>
     </div>
-    
+
     <!-- 모바일 전용 간단 버전 -->
-    <div class="font-size-controls-mobile" role="region" aria-label="글자 크기 조절">
-      <button type="button" class="font-toggle-btn" aria-expanded="false" aria-controls="font-popup">
+    <div
+      class="font-size-controls-mobile"
+      role="region"
+      aria-label="글자 크기 조절"
+    >
+      <button
+        type="button"
+        class="font-toggle-btn"
+        aria-expanded="false"
+        aria-controls="font-popup"
+      >
         <span class="icon" aria-hidden="true">가</span>
         <span class="label">글자 크기</span>
       </button>
 
-      <div id="font-popup" class="font-popup" role="menu" aria-label="글자 크기 옵션">
-        <button class="font-btn-mobile" data-font-size="normal" role="menuitem">기본</button>
-        <button class="font-btn-mobile" data-font-size="large" role="menuitem">크게</button>
-        <button class="font-btn-mobile" data-font-size="xlarge" role="menuitem">더 크게</button>
+      <div
+        id="font-popup"
+        class="font-popup"
+        role="menu"
+        aria-label="글자 크기 옵션"
+      >
+        <button class="font-btn-mobile" data-font-size="normal" role="menuitem">
+          기본
+        </button>
+        <button class="font-btn-mobile" data-font-size="large" role="menuitem">
+          크게
+        </button>
+        <button class="font-btn-mobile" data-font-size="xlarge" role="menuitem">
+          더 크게
+        </button>
       </div>
     </div>
 
     <div class="header-wrapper">
       <div class="header-left">
         <!-- 로고 -->
-        <div class="logo"><a href="/">여기부터</a></div>
-
+        <div class="logo">
+          <a href="/">
+            <img src="/uploads/logo/logo.png" alt="여기부터" />
+          </a>
+        </div>
         <!-- 데스크톱 네비게이션 -->
         <nav>
           <ul class="main-menu">
@@ -171,19 +206,24 @@
 
           <!-- 로그인 시 -->
           <div class="user-buttons" th:if="${isAuthenticated}">
-            <span class="user-welcome" th:text="${username != null ? username + '님' : '사용자님'}">사용자님</span>
+            <span
+              class="user-welcome"
+              th:text="${username != null ? username + '님' : '사용자님'}"
+              >사용자님</span
+            >
             <a href="/admin" th:if="${isAdmin}" class="admin-link">관리자</a>
             <a href="/mypage#wishlist">찜 목록</a>
             <a href="/mypage" class="btn btn-secondary">내 정보</a>
             <a href="/users/logout" class="btn-logout">로그아웃</a>
           </div>
-
-          <!-- 검색 아이콘 -->
-          <button class="search-icon" aria-label="검색">🔍</button>
         </div>
 
         <!-- 모바일 햄버거 메뉴 버튼 -->
-        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="메뉴 열기">
+        <button
+          class="mobile-menu-toggle"
+          id="mobileMenuToggle"
+          aria-label="메뉴 열기"
+        >
           <span></span>
           <span></span>
           <span></span>
@@ -198,7 +238,13 @@
     <div class="mobile-menu" id="mobileMenu">
       <div class="mobile-menu-header">
         <div class="logo"><a href="/">여기부터</a></div>
-        <button class="mobile-menu-close" id="mobileMenuClose" aria-label="메뉴 닫기">×</button>
+        <button
+          class="mobile-menu-close"
+          id="mobileMenuClose"
+          aria-label="메뉴 닫기"
+        >
+          ×
+        </button>
       </div>
 
       <!-- 모바일 글자 크기 조절 (메뉴 내부에서 제거) -->
@@ -229,11 +275,16 @@
         <!-- 로그인 시 -->
         <div th:if="${isAuthenticated}">
           <div class="user-info">
-            <span th:text="${username != null ? username + '님 환영합니다' : '환영합니다'}">환영합니다</span>
+            <span
+              th:text="${username != null ? username + '님 환영합니다' : '환영합니다'}"
+              >환영합니다</span
+            >
           </div>
           <a href="/mypage" class="btn btn-primary">내 정보</a>
           <a href="/mypage#wishlist" class="btn btn-secondary">찜 목록</a>
-          <a href="/admin" th:if="${isAdmin}" class="btn btn-secondary">관리자</a>
+          <a href="/admin" th:if="${isAdmin}" class="btn btn-secondary"
+            >관리자</a
+          >
           <a href="/users/logout" class="btn btn-outline">로그아웃</a>
         </div>
       </div>

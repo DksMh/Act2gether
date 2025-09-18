@@ -2,11 +2,14 @@ package com.example.act2gether.controller;
 
 import com.example.act2gether.dto.TourDTO;
 import com.example.act2gether.dto.ExperienceDTO;
+import com.example.act2gether.entity.TravelGroupsEntity;
 import com.example.act2gether.entity.UserEntity;
+import com.example.act2gether.repository.TravelGroupsRepository;
 import com.example.act2gether.repository.UserRepository;
 import com.example.act2gether.service.TourCacheService;
 import com.example.act2gether.service.TourFilterService;
 import com.example.act2gether.service.ToursService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -34,6 +37,7 @@ public class MainController {
   private final TourFilterService tourFilterService;
   private final UserRepository userRepository;
   private final ObjectMapper objectMapper;
+  private final TravelGroupsRepository travelGroupsRepository;
 
   @Autowired
   private TourCacheService cacheService;
@@ -43,7 +47,7 @@ public class MainController {
 
   @GetMapping("/")
   public String mainPage(Model model, HttpSession session, Authentication authentication) {
-    log.info("🔍 메인 페이지 접속");
+    log.info("메인 페이지 접속");
 
     // PageController와 동일한 방식으로 인증 정보 처리
     boolean isAuthenticated = authentication != null &&
@@ -440,7 +444,7 @@ public class MainController {
         JsonNode tours = (JsonNode) result.get("data");
         List<TourDTO> tourList = convertToTourDTOs(tours);
         model.addAttribute("recommendedTours", tourList);
-        log.info("✅ 맞춤 추천 로드 성공: {}개", tourList.size());
+        log.info("맞춤 추천 로드 성공: {}개", tourList.size());
       } else {
         loadDefaultRecommendations(model);
       }
@@ -459,7 +463,7 @@ public class MainController {
         JsonNode tours = (JsonNode) result.get("data");
         List<TourDTO> tourList = convertToTourDTOs(tours);
         model.addAttribute("recommendedTours", tourList);
-        log.info("✅ 기본 추천 로드 성공: {}개", tourList.size());
+        log.info("기본 추천 로드 성공: {}개", tourList.size());
       } else {
         model.addAttribute("recommendedTours", new ArrayList<>());
       }
@@ -618,7 +622,7 @@ public class MainController {
       }
 
       model.addAttribute("seasonTours", seasonalTours);
-      log.info("✅ {} 테마 투어 로드 완료: {}개", season, seasonalTours.size());
+      log.info("{} 테마 투어 로드 완료: {}개", season, seasonalTours.size());
 
     } catch (Exception e) {
       log.error("계절별 추천 로드 실패: {}", e.getMessage(), e);
@@ -696,33 +700,99 @@ public class MainController {
   }
 
   private void loadCompanionGroups(Model model) {
-    List<Map<String, Object>> groups = new ArrayList<>();
+    try {
+      // DB에서 최신 모집중인 모임 3개 조회
+      List<TravelGroupsEntity> latestGroups = travelGroupsRepository.findLatestRecruitingGroups();
 
-    Map<String, Object> group1 = new HashMap<>();
-    group1.put("id", 1);
-    group1.put("title", "중년 여성끼리 소박하게 국내 여행 가요~");
-    group1.put("description", "50대 이상 / 힐링 여행 / 여성 전용");
-    groups.add(group1);
+      // 모집중인 그룹이 없으면 전체에서 최신 3개
+      if (latestGroups.isEmpty()) {
+        log.info("모집중인 그룹이 없어 전체 최신 그룹 조회");
+        latestGroups = travelGroupsRepository.findLatestGroups();
+      }
 
-    Map<String, Object> group2 = new HashMap<>();
-    group2.put("id", 2);
-    group2.put("title", "청춘 배낭 여행 동아리");
-    group2.put("description", "20-30대 / 배낭여행 / 성별무관");
-    groups.add(group2);
+      List<Map<String, Object>> groups = new ArrayList<>();
 
-    Map<String, Object> group3 = new HashMap<>();
-    group3.put("id", 3);
-    group3.put("title", "가족과 함께하는 캠핑 모임");
-    group3.put("description", "가족 단위 / 캠핑 / 아이 동반 가능");
-    groups.add(group3);
+      for (TravelGroupsEntity group : latestGroups) {
+        Map<String, Object> groupMap = new HashMap<>();
+        groupMap.put("id", group.getGroupId());
 
-    Map<String, Object> group4 = new HashMap<>();
-    group4.put("id", 4);
-    group4.put("title", "전국 맛집 탐방 모임");
-    group4.put("description", "전연령 / 맛집 투어 / 미식가 환영");
-    groups.add(group4);
+        // intro JSON 파싱
+        try {
+          String introJson = group.getIntro();
+          if (introJson != null && !introJson.trim().isEmpty()) {
+            Map<String, Object> intro = objectMapper.readValue(
+                introJson,
+                new TypeReference<Map<String, Object>>() {
+                });
 
-    model.addAttribute("companionGroups", groups);
+            // 제목
+            String title = (String) intro.getOrDefault("title", "새로운 여행 모임");
+
+            // 설명 구성 요소들
+            List<String> descParts = new ArrayList<>();
+
+            // 날짜 정보
+            if (group.getStartDate() != null && group.getEndDate() != null) {
+              String dateInfo = group.getStartDate().replace("-", ".") + " ~ " +
+                  group.getEndDate().substring(5).replace("-", ".");
+              descParts.add(dateInfo);
+            }
+
+            // 출발 지역
+            String departureRegion = (String) intro.get("departureRegion");
+            if (departureRegion != null && !departureRegion.isEmpty()) {
+              descParts.add(departureRegion + " 출발");
+            }
+
+            // 성별/연령 정책
+            String genderPolicy = (String) intro.getOrDefault("genderPolicy", "성별무관");
+            Boolean noLimit = (Boolean) intro.getOrDefault("noLimit", true);
+
+            if (!noLimit) {
+              Object fromAge = intro.get("fromAge");
+              Object toAge = intro.get("toAge");
+              if (fromAge != null && toAge != null) {
+                genderPolicy += String.format(" (%s대~%s대)", fromAge, toAge);
+              }
+            }
+            descParts.add(genderPolicy);
+
+            // 인원 정보
+            descParts.add(String.format("%d/%d명",
+                group.getCurrentMembers(),
+                group.getMaxMembers()));
+
+            groupMap.put("title", title);
+            groupMap.put("description", String.join(" / ", descParts));
+
+          } else {
+            // intro가 없는 경우 기본값
+            groupMap.put("title", "여행 모임");
+            groupMap.put("description", String.format("%d/%d명 모집중",
+                group.getCurrentMembers(), group.getMaxMembers()));
+          }
+
+        } catch (Exception e) {
+          log.error("모임 intro 파싱 실패: groupId={}, error={}",
+              group.getGroupId(), e.getMessage());
+
+          // 파싱 실패시 기본값
+          groupMap.put("title", "여행 모임");
+          groupMap.put("description", String.format("%d/%d명 모집중",
+              group.getCurrentMembers(), group.getMaxMembers()));
+        }
+
+        groups.add(groupMap);
+      }
+
+      model.addAttribute("companionGroups", groups);
+      log.info("최신 모임 {}개 로드 완료", groups.size());
+
+    } catch (Exception e) {
+      log.error("동행 모임 로드 실패: {}", e.getMessage(), e);
+      // 실패시 빈 리스트
+      model.addAttribute("companionGroups", new ArrayList<>());
+    }
   }
 
   // JsonNode를 TourDTO로 변환
