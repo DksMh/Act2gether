@@ -458,3 +458,132 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     border-width: 2px;
   }
 }
+
+/* 컨테이너 */
+#enrolledScroller.enrolled-scroller { position: relative; }
+
+/* 뷰포트/트랙 */
+#enrolledScroller .sc-viewport {
+  overflow-x: auto; overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+#enrolledScroller .sc-track {
+  display: flex; gap: 12px; padding: 4px 8px 8px;
+}
+
+/* 카드 */
+#enrolledScroller .enrolled-card {
+  flex: 0 0 300px;                 /* 카드 폭 */
+  scroll-snap-align: start;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+  cursor: pointer;
+}
+#enrolledScroller .enrolled-card .badge-row{
+  display:flex; justify-content:space-between; gap:8px; margin-bottom:8px;
+}
+#enrolledScroller .enrolled-card .badge{
+  display:inline-block; padding:4px 8px; background:#f2f4f8; border-radius:9999px; font-size:12px; color:#374151;
+}
+#enrolledScroller .enrolled-card .badge.out{ background:#fff2ec; color:#ff5900; border:1px solid #ffd5c0; }
+#enrolledScroller .enrolled-card .card-title{ font-size:15px; margin:6px 0 10px; font-weight:800; line-height:1.5; }
+#enrolledScroller .enrolled-card .meta{ display:flex; gap:12px; align-items:center; color:#6b7280; font-size:.9rem; }
+
+/* 좌우 버튼 */
+#enrolledScroller .sc-nav{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:34px; height:34px; border:none; border-radius:9999px;
+  box-shadow:0 2px 10px rgba(0,0,0,.15);
+  background:#fff; color:#111; cursor:pointer;
+}
+#enrolledScroller .sc-nav.prev{ left: -6px; }
+#enrolledScroller .sc-nav.next{ right: -6px; }
+#enrolledScroller .sc-nav:disabled{ opacity:.4; cursor:default; }
+
+/* 모바일: 버튼 살짝 안쪽으로 */
+@media (max-width: 640px){
+  #enrolledScroller .sc-nav.prev{ left: 2px; }
+  #enrolledScroller .sc-nav.next{ right: 2px; }
+}
+/* 그리드 */
+.local-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* 카드 */
+.tg-card {
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 16px;
+  box-shadow: 0 3px 18px rgba(0,0,0,.06);
+  padding: 18px 18px 16px;
+  transition: transform .12s ease, box-shadow .12s ease;
+  cursor: pointer;
+}
+.tg-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,.10);
+}
+.tg-card .pill-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+}
+.tg-card .pill {
+  display: inline-flex; align-items:center; gap:6px;
+  padding: 6px 12px; border-radius: 9999px; font-weight: 700;
+  font-size: 14px; background: #f6f7fb; color:#1f2937; border:1px solid #e7eaf0;
+}
+.tg-card .pill .num { color:#ff5900; }
+.tg-card .pill.out { background:#fff6f0; border-color:#ffd8bf; color:#ff6a00; }
+
+.tg-card .title {
+  font-size: 20px; font-weight: 800; line-height: 1.35;
+  margin: 6px 0 12px; letter-spacing: -0.2px;
+}
+.tg-card .meta {
+  color:#6b7280; font-size: 16px; line-height:1.6; display:flex; gap:14px; flex-wrap:wrap;
+}
+
+/* 버튼 */
+.grid-actions {
+  display:flex; gap:10px; justify-content:center; margin-top:16px;
+}
+.btn {
+  appearance: none; border:0; border-radius: 12px; padding: 10px 14px;
+  font-weight: 700; cursor:pointer; font-size: 15px;
+}
+.btn.more { background:#ff5900; color:#fff; }
+.btn.less { background:#f3f4f6; color:#111827; }
+
+/* 반응형 */
+@media (max-width: 1200px) {
+  .local-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .local-grid { grid-template-columns: 1fr; }
+  .local-header h2 { font-size: 24px; }
+  .local-header p  { font-size: 16px; }
+}
+
+.btn.search { background:#ff5900; color:#fff; }
+
+.all-toggle{
+  display:inline-flex; align-items:center; gap:6px;
+  margin-left:8px; color:#374151; user-select:none;
+}
+.all-toggle input{ width:16px; height:16px; }
+
+/* 비활성화 시 시각적 피드백(선택) */
+.select-pill.is-disabled{ opacity:.5 }
+.select-pill.is-disabled *{ pointer-events:none }
+/* 그리드 */
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}

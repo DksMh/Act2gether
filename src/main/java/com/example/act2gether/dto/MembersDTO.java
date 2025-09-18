@@ -7,5 +7,6 @@ public class MembersDTO {
    private String groupId;
    private String userId;
    private String tourId;
+   private String username;
    private String memberType;
 }

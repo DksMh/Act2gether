@@ -23,6 +23,7 @@ import com.example.act2gether.dto.CommentUpdateRequest;
 import com.example.act2gether.dto.GroupMetaResponse;
 import com.example.act2gether.dto.MembersDTO;
 import com.example.act2gether.dto.PostDTO;
+import com.example.act2gether.dto.TravelGroupDto;
 import com.example.act2gether.dto.TravelGroupMembersDTO;
 import com.example.act2gether.entity.PostCommentEntity;
 import com.example.act2gether.entity.PostImageEntity;
@@ -442,6 +443,39 @@ public class CommunityService {
         }
         travelGroupMembersRepository.save(TravelGroupMembersEntity.of(membersDTO));
         return true;
+    }
+
+    public boolean saveOnlyMember(MembersDTO membersDTO) {
+        UserEntity user = userRepository.findByUsername(membersDTO.getUsername()).orElse(null);
+        membersDTO.setUserId(user.getUserId());
+        travelGroupMembersRepository.save(TravelGroupMembersEntity.of(membersDTO));
+        return true;
+    }
+
+    public List<TravelGroupsEntity> getGathering(String region) {
+        if (region == null || region.isBlank() ||
+            "전체".equals(region) || "all".equalsIgnoreCase(region)) {
+            return travelGroupsRepository.findAllOrderByStartDate();
+        }
+        return travelGroupsRepository.findByRegionOrAll(region);
+    }
+
+    public List<TravelGroupDto> findAllRecent() {
+        return travelGroupsRepository.findRecent()
+                .stream().map(TravelGroupDto::from).toList();
+    }
+
+    public List<TravelGroupDto> search(String from, String to, String start, String end) {
+        return travelGroupsRepository.search(from, to, start, end)
+                .stream().map(TravelGroupDto::from).toList();
+    }
+
+    public boolean existsByGroupIdAndUsername(String groupId, String username) {
+        List<TravelGroupMembersEntity> members = travelGroupMembersRepository.findByGroupIdAndUserId(groupId,username);
+        if(members.size() > 0){
+            return true;
+        }
+       return false;
     }
 
 }

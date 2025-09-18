@@ -22,8 +22,7 @@
       </p>
 
       <!-- 가입 중인 여행 가로 스크롤 카드 -->
-      <div id="enrolledScroller" class="scroller"></div>
-
+      <div id="enrolledScroller"></div>
       <div class="hr"></div>
       <br /><br />
       <!-- 내 지역 출발 모임 -->
@@ -32,7 +31,14 @@
         <span id="myCity" style="color: #ef4444; font-weight: 800">서울</span>
         지역의 투어 모임을 추천해 드립니다.
       </p>
-      <div id="localGrid" class="grid"></div>
+      <!-- 카드 그리드 -->
+      <div id="localGrid" class="local-grid" aria-live="polite"></div>
+
+      <!-- 더보기/축소 -->
+      <div class="grid-actions">
+        <button type="button" id="localMoreBtn" class="btn more" hidden>더 보기</button>
+        <button type="button" id="localLessBtn" class="btn less" hidden>축소</button>
+      </div>
 
       <div class="hr"></div>
 
@@ -42,11 +48,49 @@
       <div class="filters">
         <div class="select">
           출발 지역
-          <select id="filterFrom"></select>
+          <!-- 출발 지역 -->
+            <select id="filterFrom">
+              <option value="">출발 지역 선택</option>
+              <option value="서울">서울</option>
+              <option value="경기">경기</option>
+              <option value="인천">인천</option>
+              <option value="부산">부산</option>
+              <option value="대구">대구</option>
+              <option value="광주">광주</option>
+              <option value="대전">대전</option>
+              <option value="울산">울산</option>
+              <option value="강원">강원</option>
+              <option value="충북">충북</option>
+              <option value="충남">충남</option>
+              <option value="전북">전북</option>
+              <option value="전남">전남</option>
+              <option value="경북">경북</option>
+              <option value="경남">경남</option>
+              <option value="제주">제주</option>
+            </select>
         </div>
         <div class="select">
           도착 지역
-          <select id="filterTo"></select>
+          <select id="filterTo">
+              <option value="">도착 지역 선택</option>
+              <option value="전체">전체</option>
+              <option value="서울">서울</option>
+              <option value="경기">경기</option>
+              <option value="인천">인천</option>
+              <option value="부산">부산</option>
+              <option value="대구">대구</option>
+              <option value="광주">광주</option>
+              <option value="대전">대전</option>
+              <option value="울산">울산</option>
+              <option value="강원">강원</option>
+              <option value="충북">충북</option>
+              <option value="충남">충남</option>
+              <option value="전북">전북</option>
+              <option value="전남">전남</option>
+              <option value="경북">경북</option>
+              <option value="경남">경남</option>
+              <option value="제주">제주</option>
+            </select>
         </div>
         <div class="date">
           여행 시작일
@@ -56,8 +100,25 @@
           여행 종료일
           <input id="filterEnd" type="date" />
         </div>
+        <!-- ✅ 종료일 옆 “전체보기” 체크박스 -->
+         <div class="checkbox">
+             <label class="all-toggle">
+                <input type="checkbox" id="allToggle" />
+                전체보기
+              </label>
+         </div>
+ 
+        <div class="search">
+          <button type="button" id="searchBtn" class="btn search" >검색</button>
+        </div>
       </div>
-      <div id="searchGrid" class="grid"></div>
+      <div id="searchGrid" class="search-grid"></div>
+      <!-- 더보기/축소 -->
+      <div class="grid-actions">
+        <button type="button" id="searchMoreBtn" class="btn more" hidden>더 보기</button>
+        <button type="button" id="searchLessBtn" class="btn less" hidden>축소</button>
+      </div>
+      <br />
     </div>
     <!-- Footer -->
     <div th:replace="footer :: footer"></div>
@@ -70,18 +131,18 @@
     renderEnrolled();
     renderLocal();
     // renderLocal('서울');
-    buildFilters();
-    renderSearch();
+    // buildFilters();
+    // renderSearch();
 
-    ["change", "input"].forEach((ev) => {
-      $("#filterFrom").addEventListener(ev, () => {
-        renderSearch();
-        renderLocal($("#filterFrom").value || "서울");
-      });
-      $("#filterTo").addEventListener(ev, renderSearch);
-      $("#filterStart").addEventListener(ev, renderSearch);
-      $("#filterEnd").addEventListener(ev, renderSearch);
-    });
+    // ["change", "input"].forEach((ev) => {
+    //   $("#filterFrom").addEventListener(ev, () => {
+    //     // renderSearch();
+    //     renderLocal($("#filterFrom").value || "서울");
+    //   });
+    //   $("#filterTo").addEventListener(ev, renderSearch);
+    //   $("#filterStart").addEventListener(ev, renderSearch);
+    //   $("#filterEnd").addEventListener(ev, renderSearch);
+    // });
 
     // 사용자 이름 표기 (백엔드에서 window.currentUserName 주입한다고 가정)
     if (window.currentUserName)
