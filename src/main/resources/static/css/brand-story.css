@@ -1,0 +1,508 @@
+/* service.css - 서비스 소개 페이지 스타일 */
+
+/* 메인 컨테이너 */
+.service-main {
+  min-height: 100vh;
+  background: var(--color-white);
+}
+
+/* 히어로 섹션 */
+.hero-section {
+  position: relative;
+  height: 100vh;
+  min-height: 40rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.hero-background img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-background::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(20, 20, 20, 0.2) 0%,
+    rgba(20, 20, 20, 0.5) 100%
+  );
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: var(--color-white);
+  max-width: 55rem;
+  padding: 0 2rem;
+  margin: 0 auto;
+}
+
+.hero-subtitle {
+  font-size: 1rem;
+  font-weight: var(--weight-medium);
+  color: var(--color-main);
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.125rem;
+}
+
+.hero-title {
+  font-size: 3.75rem;
+  color: #fff;
+  font-weight: var(--weight-bold);
+  margin-bottom: 3rem;
+  line-height: 1.2;
+  text-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
+}
+
+.hero-description {
+  font-size: 1.125rem;
+  line-height: 2;
+  color: rgba(255, 255, 255, 0.95);
+}
+.hero-description h4 {
+  color: #fff;
+}
+
+.hero-description p {
+  margin-bottom: 1rem;
+}
+
+.hero-question {
+  font-size: 1.25rem;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 1.5rem 0;
+  font-weight: var(--weight-medium);
+}
+
+/* 문제 인식 섹션 */
+.problem-section {
+  padding: 6rem 0;
+  background: var(--color-white);
+  /* border-bottom: 1px solid var(--color-gray-100); */
+}
+
+.problem-content {
+  text-align: center;
+}
+
+.problem-text {
+  /* font-size: 1.375rem; */
+  line-height: 2;
+  color: var(--color-black);
+  font-weight: var(--weight-regular);
+}
+
+.problem-text .highlight {
+  color: var(--color-main);
+  font-weight: var(--weight-semibold);
+}
+
+/* 솔루션 섹션 */
+.solution-section {
+  padding: 6rem 0;
+  background: var(--color-gray-050);
+}
+
+.solution-intro {
+  text-align: center;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.solution-icon {
+  font-size: 3.5rem;
+  display: inline-block;
+  margin-bottom: 2.5rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.solution-text {
+  font-size: 1.25rem;
+  line-height: 2;
+  color: var(--color-black);
+}
+
+.solution-text p {
+  margin-bottom: 0.75rem;
+}
+
+.solution-highlight {
+  font-size: 1.375rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-main);
+  margin-top: 2rem;
+}
+
+/* 철학 섹션 */
+.philosophy-section {
+  padding: 6rem 0;
+  background: var(--color-white);
+}
+
+.section-title {
+  font-size: 2.75rem;
+  font-weight: var(--weight-bold);
+  text-align: center;
+  color: var(--color-black);
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.25rem;
+  text-align: center;
+  margin-bottom: 4rem;
+  font-weight: var(--weight-regular);
+}
+
+.philosophy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem;
+  max-width: 65rem;
+  margin: 0 auto;
+}
+
+.philosophy-card {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: rgb(255, 89, 0, 0.1);
+  border-radius: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.philosophy-center-card {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: #f5f5f5;
+  border-radius: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.philosophy-card:hover {
+  transform: translateY(-0.75rem);
+  border-color: var(--color-main);
+  box-shadow: 0 1.5rem 3rem rgba(255, 89, 0, 0.15);
+}
+
+.philosophy-card h3 {
+  font-size: 1.5rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-black);
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.philosophy-center-card h3 {
+  font-size: 1.5rem;
+  font-weight: var(--weight-semibold);
+  color: var(--color-main);
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.philosophy-card p {
+  font-size: 1.125rem;
+  color: var(--color-gray-500);
+  line-height: 1.8;
+}
+
+/* 가치 섹션 */
+.value-section {
+  margin-top: 6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.value-background {
+  margin-bottom: 7rem;
+}
+
+.value-background img {
+  width: 100%;
+}
+.philosophy-title,
+.value-title {
+  font-size: 1rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-main);
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.125rem;
+}
+
+.value-content {
+  font-size: 1.25rem;
+  line-height: 2;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.value-content p {
+  margin-bottom: 0.5rem;
+}
+
+.value-description {
+  margin-top: 2rem;
+  font-size: 1.375rem;
+  font-weight: var(--weight-medium);
+}
+
+.value-tagline {
+  font-size: 1.875rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-white);
+  margin-top: 3rem;
+  text-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
+}
+
+/* CTA 섹션 */
+.cta-section {
+  padding: 7rem 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 89, 0, 0.03) 0%,
+    rgba(255, 89, 0, 0.08) 100%
+  );
+  text-align: center;
+}
+
+.cta-section h2 {
+  font-size: 2.5rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-black);
+  margin-bottom: 1rem;
+}
+
+.cta-section p {
+  font-size: 1.375rem;
+  color: var(--color-gray-500);
+  margin-bottom: 3rem;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.cta-buttons .btn-primary,
+.cta-buttons .btn-secondary {
+  font-size: 1.25rem;
+  padding: 1.25rem 3rem;
+  border-radius: 0.75rem;
+}
+
+/* 반응형 - 태블릿 */
+@media (max-width: 1024px) {
+  .hero-title {
+    font-size: 3rem;
+  }
+
+  .hero-question {
+    font-size: 1.125rem;
+  }
+
+  .problem-text {
+    font-size: 1.25rem;
+  }
+
+  .philosophy-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 35rem;
+  }
+
+  .section-title {
+    font-size: 2.25rem;
+  }
+
+  .value-title {
+    font-size: 2rem;
+  }
+
+  .value-content {
+    font-size: 1.125rem;
+  }
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 35rem;
+  }
+
+  .hero-title {
+    font-size: 2.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+  }
+
+  .hero-question {
+    font-size: 1rem;
+    margin: 1rem 0;
+  }
+
+  .problem-text {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    padding: 0 1rem;
+  }
+
+  .solution-icon {
+    font-size: 2.5rem;
+  }
+
+  .solution-text {
+    font-size: 1.125rem;
+    padding: 0 1rem;
+  }
+
+  .solution-highlight {
+    font-size: 1.25rem;
+  }
+
+  .section-title {
+    font-size: 1.875rem;
+    padding: 0 1rem;
+  }
+
+  .section-subtitle {
+    font-size: 1.125rem;
+    padding: 0 1rem;
+  }
+
+  .philosophy-section,
+  .solution-section,
+  .problem-section {
+    padding: 4rem 1rem;
+  }
+
+  .philosophy-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .philosophy-card h3 {
+    font-size: 1.375rem;
+  }
+
+  .philosophy-card p {
+    font-size: 1rem;
+  }
+
+  .value-section {
+    min-height: 30rem;
+    margin-top: 4rem;
+  }
+
+  .value-title {
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .value-content {
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  .value-description {
+    font-size: 1.125rem;
+  }
+
+  .value-tagline {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .cta-section {
+    padding: 5rem 1rem;
+  }
+
+  .cta-section h2 {
+    font-size: 1.875rem;
+    padding: 0 1rem;
+  }
+
+  .cta-section p {
+    font-size: 1.125rem;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .cta-buttons .btn-primary,
+  .cta-buttons .btn-secondary {
+    width: 100%;
+    max-width: 20rem;
+    font-size: 1.125rem;
+    padding: 1rem 2rem;
+  }
+}
+
+/* 시니어를 위한 추가 접근성 */
+@media (prefers-contrast: high) {
+  .hero-title,
+  .section-title,
+  .value-title,
+  .value-tagline {
+    font-weight: var(--weight-bold);
+  }
+
+  .philosophy-card {
+    border-width: 3px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    font-weight: var(--weight-semibold);
+    border: 2px solid currentColor;
+  }
+}
+
+/* 애니메이션 감소 선호 사용자 */
+@media (prefers-reduced-motion: reduce) {
+  .solution-icon {
+    animation: none;
+  }
+
+  .philosophy-card:hover {
+    transform: none;
+  }
+}

@@ -34,35 +34,35 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/signup", "/forgot-loginfo", "/users/**", "/onboarding", "/qna", "/faq", "/tour-search", "/community-search", "/tour-community").permitAll()
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
-                .requestMatchers("/qna/api/inquiry-types", "/qna/api/statuses").permitAll()
-                .requestMatchers("/api/current-user", "/api/tours/**").permitAll()
-                .requestMatchers("/tour-detail","/tour-detail/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/users/login")
-                .usernameParameter("email")
-                .passwordParameter("password")
-                .failureUrl("/login?error=true")
-                //.successHandler(DebugLoginSuccessHandler)  // 이 부분 수정
-                .successHandler(successHandler)
-                .failureHandler(failureHandler)
-                .permitAll()
-            )
-            .userDetailsService(customUserDetailsService)
-            .logout(logout -> logout
-                .logoutUrl("/users/logout")
-                .logoutSuccessUrl("/login?logout=true")
-                .deleteCookies("JSESSIONID")
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-                .permitAll()
-            );
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/login", "/signup", "/forgot-loginfo", "/users/**", "/onboarding",
+                                "/qna", "/faq", "/tour-search", "/community-search", "/tour-community", "/guide",
+                                "/brand-story")
+                        .permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
+                        .requestMatchers("/qna/api/inquiry-types", "/qna/api/statuses").permitAll()
+                        .requestMatchers("/api/current-user", "/api/tours/**").permitAll()
+                        .requestMatchers("/tour-detail", "/tour-detail/**").permitAll()
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/users/login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .failureUrl("/login?error=true")
+                        // .successHandler(DebugLoginSuccessHandler) // 이 부분 수정
+                        .successHandler(successHandler)
+                        .failureHandler(failureHandler)
+                        .permitAll())
+                .userDetailsService(customUserDetailsService)
+                .logout(logout -> logout
+                        .logoutUrl("/users/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .deleteCookies("JSESSIONID")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .permitAll());
 
         return http.build();
     }

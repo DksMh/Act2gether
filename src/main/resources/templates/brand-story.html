@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>서비스 소개 - 여기부터</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/brand-story.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <div th:replace="header :: header"></div>
+
+    <!-- 서비스 소개 본문 -->
+    <main class="service-main">
+      <!-- 히어로 섹션 -->
+      <section class="hero-section">
+        <div class="hero-background">
+          <img src="/uploads/serviceexp/brandstory1.jpg" alt="숲속의 두 사람" />
+        </div>
+        <div class="hero-content">
+          <p class="hero-subtitle">서비스 소개</p>
+          <h1 class="hero-title">여행, 이제 '여기부터'</h1>
+          <div class="hero-description">
+            <h4>초고령화 사회로 접어든 지금, 저희는 고민했습니다.</h4>
+            <h4 class="hero-question">
+              "노년에 혼자가 되고나면 여행을 멈춰야할까?"
+            </h4>
+            <h4 class="hero-question">
+              "우리 할머니는 누군가 모시고 가주지 않아도 친구들과 자유로이
+              여행이 가능하실까?"
+            </h4>
+          </div>
+        </div>
+      </section>
+
+      <!-- 문제 인식 섹션 -->
+      <section class="problem-section">
+        <div class="container">
+          <div class="problem-content">
+            <h3 class="problem-text">
+              대한민국 인구의 절반 가까이가 50대 이상이지만,<br />
+              여행을 가고 싶어도 정보
+              <span class="highlight"
+                >접근의 장벽, 디지털 격차, 함께할 동행의 부재</span
+              >
+              때문에<br />
+              그 마음은 종종 발길에 닿지 못합니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 솔루션 섹션 -->
+      <section class="solution-section">
+        <div class="container">
+          <div class="solution-intro">
+            <span class="solution-icon">💡</span>
+            <div class="solution-text">
+              <h4>'여기부터'는 바로 이 지점에서 출발했습니다.</h4>
+              <h4>시니어 세대가 편안하게 여행 정보를 얻고,</h4>
+              <h4>비슷한 또래와 함께 떠날 수 있도록 연결해 주는 다리.</h4>
+              <h4 class="solution-highlight">
+                누군가의 삶에서 "여기부터 다시"라고 말할 수 있는 새로운 시작점.
+              </h4>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 철학 섹션 -->
+       <!-- 철학 섹션 -->
+      <section class="philosophy-section">
+        <div class="container">
+          <h2 class="section-title philosophy-title">우리의 철학</h2>
+          <p class="section-subtitle">'여기부터'는 단순한 여행 플랫폼이 아닙니다.</p>
+          
+          <div class="philosophy-grid">
+            <div class="philosophy-card">
+              <h3>사람을 잇는<br />플랫폼</h3>
+              <p>
+                혼자가 아닌 함께하는 경험을 통해<br />
+                새로운 인연을 만듭니다.
+              </p>
+            </div>
+            <div class="philosophy-card philosophy-center-card">
+              <h3>마음을 돌보는<br />플랫폼</h3>
+              <p>
+                안전하고 따뜻한 여행을 통해<br />
+                삶의 활력을 되찾습니다.
+              </p>
+            </div>
+            <div class="philosophy-card">
+              <h3>지역과 동행하는<br />플랫폼</h3>
+              <p>
+                지역의 문화와 이야기를 담아내어<br />
+                함께 성장합니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 가치 섹션 (배경 이미지 포함) -->
+      <section class="value-section">
+        <div class="container">
+          <h2 class="section-title value-title">우리가 믿는 가치</h2>
+            <p class="section-subtitle">
+              ‘여기부터’는 시니어를 위한 여행 서비스이자,<br/>
+지역을 살리고, 사람을 잇고, 삶을 풍요롭게 만드는 공익 플랫폼입니다.
+            </p>
+          <div class="value-background">
+            <img
+              src="/uploads/serviceexp/brandstory2.png"
+              alt="한옥과 자연 풍경"
+            />
+          </div>
+        <!-- <div class="value-overlay">
+          <div class="container">
+            <h2 class="value-title">우리가 믿는 가치</h2>
+            <div class="value-content">
+              <p>'여기부터'는 시니어를 위한 여행 서비스이자,</p>
+              <p>
+                지역을 살리고, 사람을 잇고, 삶을 풍요롭게 만드는 공익
+                플랫폼입니다.
+              </p>
+              <div class="value-description">
+                <p>누군가는 첫 여행을, 누군가는 오랜만의 여행을,</p>
+                <p>누군가는 새로운 인연을 여기부터 시작합니다.</p>
+              </div>
+              <h3 class="value-tagline">우리의 여정은 지금, 여기부터입니다.</h3>
+            </div>
+          </div>
+        </div> -->
+      </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="footer :: footer"></div>
+  </body>
+</html>

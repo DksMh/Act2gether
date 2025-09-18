@@ -39,7 +39,7 @@
               기본 기능(여행지 탐색, 필터, 즐겨찾기, Q&A 게시판 열람)은
               무료입니다. 다만, 페이지 내 일부 링크는 제휴/광고가 포함된
               <b>외부 사이트</b>로 이동하며, 예약·결제가 필요한 경우
-              <b>해당 외부 사이트에서</b> 비용이 발생할 수 있습니다. 우리
+              <b>해당 외부 사이트에서</b> 비용이 발생할 수 있습니다. 저희
               서비스는 결제/예약을 제공하지 않습니다.
             </p>
           </div>
@@ -50,18 +50,32 @@
           <button class="faq-question" type="button" aria-expanded="false">
             <span class="q-label">Q</span>
             <span class="category">[이용 방법]</span>
-            실제 투어를 운영하거나 동행을 매칭해 주나요?
+            실제 투어를 운영하나요?
             <span class="faq-toggle-icon">▲</span>
           </button>
           <div class="faq-answer">
             <p>
-              아니요. 우리는 여행 정보 큐레이션 및 링크 제공 서비스입니다.
-              가이드 동행, 패키지 운영, 동행자 매칭은 제공하지 않습니다.
+              아니요. 저희 서비스는 여행 정보 큐레이션 및 링크를 제공합니다.
+              가이드 동행, 패키지 운영은 제공하지 않습니다.
             </p>
           </div>
         </li>
-
         <!-- 질문 3 -->
+        <li class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false">
+            <span class="q-label">Q</span>
+            <span class="category">[이용 방법]</span>
+            소도시 여행 정보도 있나요?
+            <span class="faq-toggle-icon">▼</span>
+          </button>
+          <div class="faq-answer" hidden>
+            <p>
+              있어요. 한국관광공사 TourAPI 를 기반으로 원하는 소도시도 탐색할 수
+              있습니다. (일부 지역은 데이터가 제한적일 수 있습니다.)
+            </p>
+          </div>
+        </li>
+        <!-- 질문 4 -->
         <li class="faq-item">
           <button class="faq-question" type="button" aria-expanded="false">
             <span class="q-label">Q</span>
@@ -79,7 +93,7 @@
             </p>
           </div>
         </li>
-        <!-- 질문 4 -->
+        <!-- 질문 5 -->
         <li class="faq-item">
           <button class="faq-question" type="button" aria-expanded="false">
             <span class="q-label">Q</span>
@@ -95,7 +109,7 @@
             </p>
           </div>
         </li>
-        <!-- 질문 5 -->
+        <!-- 질문 6 -->
         <li class="faq-item">
           <button class="faq-question" type="button" aria-expanded="false">
             <span class="q-label">Q</span>
@@ -105,9 +119,24 @@
           </button>
           <div class="faq-answer" hidden>
             <p>
-              가능해요. 난이도·동선·편의시설 필터로 본인에게 맞는 정보를 골라볼
-              수 있도록 돕습니다. 다만, 저희 서비스에서는 현장 안내/가이드를
-              제공하지 않습니다.
+              가능합니다. 지역·관광지·편의시설 필터로 본인에게 맞는 정보를
+              골라볼 수 있도록 돕습니다. 다만, 저희 서비스에서는 현장
+              안내/가이드를 제공하지 않습니다.
+            </p>
+          </div>
+        </li>
+        <!-- 질문 7 -->
+        <li class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false">
+            <span class="q-label">Q</span>
+            <span class="category">[이용 방법]</span>
+            오류 신고·제휴 문의는 어디로 하나요?
+            <span class="faq-toggle-icon">▼</span>
+          </button>
+          <div class="faq-answer" hidden>
+            <p>
+              ‘문의하기’에 글을 남겨주세요. 잘못된 링크/정보는 확인 후 빠르게
+              수정하겠습니다.
             </p>
           </div>
         </li>
@@ -116,7 +145,7 @@
 
     <!-- Footer -->
     <div th:replace="footer :: footer"></div>
-    <script>
+    <!-- <script>
       // FAQ 아코디언 기능 구현
       $(document).ready(function () {
         // 페이지 로드 시 모든 답변 숨기기 (aria-expanded="true"인 항목 제외)
@@ -164,6 +193,6 @@
           }
         });
       });
-    </script>
+    </script> -->
   </body>
 </html>
