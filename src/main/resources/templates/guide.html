@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>이용 방법 - 여기부터</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/guide.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <div th:replace="header :: header"></div>
+
+    <!-- 이용 방법 본문 -->
+    <main class="guide-container">
+      <!-- 메인 타이틀 섹션 -->
+      <section class="guide-hero">
+        <div class="hero-badge">이용 방법</div>
+        <h1 class="hero-title">
+          맞춤형 투어 추천 서비스 '여기부터'<br />
+          어떻게 이용하면 되나요?
+        </h1>
+      </section>
+
+      <div class="guide-content">
+        <!-- 섹션 1: 원하는 여행을, 취향대로 탐색 -->
+        <section class="guide-section">
+          <!-- <div class="section-icon">🚗</div> -->
+          <div class="section-wrapper">
+            <div class="section-left">
+              <div class="image-placeholder">
+                <img
+                  src="/uploads/serviceexp/guide1.png"
+                  alt="투어검색페이지"
+                />
+              </div>
+            </div>
+            <div class="section-right">
+              <h2 class="section-title">원하는 여행을, 취향대로 탐색</h2>
+              <p class="section-description">
+                지역별 다양한 투어와 체험을 한눈에 볼 수 있습니다.<br />
+                내 관심사에 맞는 여행을 손쉽게 찾아보세요.
+              </p>
+              <p class="section-highlight">
+                나에게 꼭 맞는 여행, 이제 여기부터 시작됩니다.
+              </p>
+              <div class="tag-group">
+                <span class="tag">🏔️ 산</span>
+                <span class="tag">🌊 바다</span>
+                <span class="tag">🏛️ 유적지</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 2: 직접 즐기며 남기는 나만의 여정 -->
+        <section class="guide-section">
+          <!-- <div class="section-icon">🚶</div> -->
+          <div class="section-wrapper reverse">
+            <div class="section-left">
+              <h2 class="section-title">직접 즐기며 남기는 나만의 여정</h2>
+              <p class="section-description">
+                여기부터와 함께 마음에 드는 투어를 직접 꾸리고 바로
+                떠나보세요.<br />
+                내가 원하는대로, 현지의 문화와 이야기를 가까이서 경험하며<br />
+                새로운 추억을 만듭니다.
+              </p>
+              <p class="section-highlight">
+                여행이 생활 속 활력이 되고, 특별한 순간이 됩니다.
+              </p>
+            </div>
+            <div class="section-right">
+              <div class="image-placeholder map-image">
+                <img
+                  src="/uploads/serviceexp/guide2.png"
+                  alt="투어상세페이지지도"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 3: 함께할 친구와 따뜻한 인연 -->
+        <section class="guide-section">
+          <!-- <div class="section-icon">✌️</div> -->
+          <div class="section-wrapper">
+            <div class="section-left">
+              <div class="section-left">
+                <div class="image-placeholder">
+                  <img src="/uploads/serviceexp/guide3.png" alt="커뮤니티" />
+                </div>
+              </div>
+            </div>
+            <div class="section-right">
+              <h2 class="section-title">함께할 친구와 따뜻한 인연</h2>
+              <p class="section-description">
+                동행찾기 서비스를 통해 같은 취향의 사람들을 만나보세요.<br />
+                함께 투어를 즐기고,<br />
+                여행 이후에도 이어지는 친목을 쌓을 수 있습니다.
+              </p>
+              <p class="section-highlight">
+                혼자가 아닌, 함께라서 더 풍성해지는 여행입니다.
+              </p>
+              <!-- <div class="emoji-decoration">😊</div> -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 섹션 4: 편안하고 쉽게, 누구나 이용할 수 있도록 -->
+        <section class="guide-section">
+          <!-- <div class="section-icon">👓</div> -->
+          <div class="section-wrapper reverse">
+            <div class="section-left">
+              <h2 class="section-title">
+                편안하고 쉽게,<br />누구나 이용할 수 있도록
+              </h2>
+              <p class="section-description">
+                큰 글씨, 높은 대비, 직관적인 화면 구성을 적용했습니다.<br />
+                시니어도 부담 없이 탐색하고 예약할 수 있도록 세심히
+                설계했습니다.<br />
+                여행의 즐거움은 불편함이 아니라 편리함에서 시작된다고 믿습니다.
+              </p>
+            </div>
+            <div class="section-right">
+              <div class="image-placeholder map-image">
+                <img src="/uploads/serviceexp/guide4.png" alt="폰트사이즈" />
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- CTA 섹션 -->
+      <section class="guide-cta">
+        <h2 class="cta-title">
+          그럼 이제 여기부터와 함께<br />
+          여기부터, 시작해볼까요?
+        </h2>
+        <a href="/tour-search" class="btn-primary cta-button">투어 탐색하기</a>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="footer :: footer"></div>
+  </body>
+</html>

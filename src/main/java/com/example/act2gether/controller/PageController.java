@@ -170,6 +170,15 @@ public class PageController {
         return "mypage";
     }
 
+    @GetMapping("/guide")
+    public String guide() {
+        return "guide";
+    }
+
+    @GetMapping("/brand-story")
+    public String brandStory() {
+        return "brand-story";
+    }
     // 메인 페이지 수정사항
     // @GetMapping(value = { "/" })
     // public String main() {

@@ -77,32 +77,7 @@ class QnaUI {
                 <div class="login-prompt" style="text-align: center; padding: 4rem 2rem;">
                     <i class="fas fa-lock login-icon" style="font-size: 3rem; color: #6b7280; margin-bottom: 1rem;"></i>
                     <h3 style="color: #374151; margin-bottom: 0.5rem;">로그인이 필요합니다</h3>
-                    <p style="color: #6b7280; margin-bottom: 1.5rem;">QnA 게시판을 이용하시려면 우측 상단의 로그인 버튼을 클릭해주세요.</p>
-                    
-                    <div class="login-benefits" style="background: #f9fafb; border-radius: 8px; padding: 1.5rem; margin-top: 2rem; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
-                        <h4 style="color: #374151; margin-bottom: 1rem; font-size: 1.1rem; text-align: center;">
-                            <i class="fas fa-star" style="color: #fbbf24; margin-right: 0.5rem;"></i>
-                            로그인하면 이용할 수 있어요
-                        </h4>
-                        <ul style="list-style: none; padding: 0; margin: 0;">
-                            <li style="display: flex; align-items: center; margin-bottom: 0.75rem; color: #4b5563;">
-                                <i class="fas fa-check-circle" style="color: #10b981; margin-right: 0.75rem;"></i>
-                                문의 작성 및 관리
-                            </li>
-                            <li style="display: flex; align-items: center; margin-bottom: 0.75rem; color: #4b5563;">
-                                <i class="fas fa-check-circle" style="color: #10b981; margin-right: 0.75rem;"></i>
-                                관리자 답변 확인
-                            </li>
-                            <li style="display: flex; align-items: center; margin-bottom: 0.75rem; color: #4b5563;">
-                                <i class="fas fa-check-circle" style="color: #10b981; margin-right: 0.75rem;"></i>
-                                문의 내역 조회
-                            </li>
-                            <li style="display: flex; align-items: center; color: #4b5563;">
-                                <i class="fas fa-check-circle" style="color: #10b981; margin-right: 0.75rem;"></i>
-                                다중 이미지 첨부
-                            </li>
-                        </ul>
-                    </div>
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">QnA 게시판을 이용하시려면 로그인 버튼을 클릭해주세요.</p>
                 </div>
             `;
       boardView.appendChild(loginMessage);
@@ -136,7 +111,11 @@ class QnaUI {
       this.inquiryTypes = await qnaApi.getInquiryTypes();
     } catch (error) {
       console.error("문의 유형 로드 실패:", error);
-      this.inquiryTypes = [{ code: "일반문의", displayName: "일반문의" }];
+      //this.inquiryTypes = [{ code: "일반문의", displayName: "일반문의" }];
+      this.inquiryTypes = [
+        { code: "일반문의", displayName: "일반문의" },
+        { code: "신고", displayName: "신고" },
+      ];
     }
   }
 

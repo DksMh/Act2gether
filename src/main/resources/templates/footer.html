@@ -1,13 +1,220 @@
-<!-- footer.html -->
+<!-- footer.html (수정본: 그대로 교체해 붙여넣기) -->
 <div th:fragment="footer">
-<footer>
-  <div class="footer-menu">
-    <a href="#">개인정보처리방침</a>
-    <a href="#">이용 약관</a>
+  <footer>
+    <!-- 공통 스타일 -->
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+      .footer {
+        margin-top: 80px;
+        padding: 40px 0;
+        background-color: #f8f9fa !important;
+        border-top: 1px solid #dee2e6;
+        width: 100%;
+      }
+      .footer-container {
+        width: 1920px;
+        margin: 0 auto;
+        position: relative;
+      }
+      .footer-grid {
+        width: 864px;
+        margin: 0 auto;
+        padding: 0;
+      }
+      .footer-menu {
+        text-align: center;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: center;
+        gap: 48px;
+      }
+      .footer-menu a {
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      .footer-menu a:hover {
+        color: #495057;
+        text-decoration: underline;
+      }
+      .footer-info {
+        text-align: center;
+      }
+      .footer-info p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 12px;
+        letter-spacing: 0.5px;
+      }
+      @media (max-width: 1919px) {
+        .footer-container {
+          width: 100%;
+          padding: 0 20px;
+        }
+        .footer-grid {
+          width: 100%;
+          max-width: 864px;
+        }
+      }
+      @media (max-width: 768px) {
+        .footer-menu {
+          flex-direction: column;
+          gap: 12px;
+        }
+        .footer-menu a {
+          padding: 8px 0;
+        }
+      }
+
+      /* 모달 */
+      .modal {
+        position: fixed;
+        z-index: 1000;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-content {
+        background: #fff;
+        padding: 40px;
+        width: 864px;
+        max-height: 80vh;
+        overflow-y: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+      .close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: #aaa;
+        font-size: 28px;
+        font-weight: 700;
+        cursor: pointer;
+        line-height: 20px;
+      }
+      .close:hover,
+      .close:focus {
+        color: #000;
+      }
+      #modalTitle {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #212529;
+      }
+      #modalContent {
+        line-height: 1.6;
+        color: #495057;
+      }
+      #modalContent h3 {
+        font-size: 20px;
+        margin: 0 0 20px;
+        color: #212529;
+      }
+      #modalContent h4 {
+        font-size: 16px;
+        margin: 24px 0 12px;
+        color: #343a40;
+      }
+      #modalContent p {
+        margin: 8px 0;
+        font-size: 14px;
+      }
+      @media (max-width: 768px) {
+        .modal-content {
+          width: 90%;
+          padding: 20px;
+        }
+      }
+    </style>
+
+    <div class="footer-menu">
+      <div class="logo">
+        <a href="/"><img src="/uploads/logo/logo-1.png" alt="여기부터" /></a>
+      </div>
+      <!-- href="#"의 기본 스크롤 방지 위해 javascript:void(0) -->
+      <a href="javascript:void(0)" onclick="showTerms('privacy')"
+        >개인정보처리방침</a
+      >
+      <a href="javascript:void(0)" onclick="showTerms('terms')">이용 약관</a>
+      <a href="/faq">자주 묻는 질문</a>
+      <a href="/qna">1:1 문의</a>
+    </div>
+    <div class="footer-info">
+      <p>COPYRIGHTⓒ여기부터. ALL RIGHTS RESERVED.</p>
+    </div>
+  </footer>
+
+  <!-- 약관 모달 -->
+  <div id="termsModal" class="modal" style="display: none">
+    <div class="modal-content">
+      <span class="close" onclick="closeTerms()">&times;</span>
+      <div id="modalTitle"></div>
+      <div id="modalContent"></div>
+    </div>
   </div>
-  <div class="footer-info">
-    <p>서비스 정보</p>
-    <p>COPYRIGHT©</p>
-  </div>
-</footer>
+
+  <!-- !!! 중요한 부분: 스크립트를 프래그먼트 내부에 두고, 전역으로 노출 !!! -->
+  <script>
+    const termsData = {
+      privacy: `
+        <h4>1. 개인정보의 처리 목적</h4>
+        <p>회사는 다음의 목적을 위하여 개인정보를 처리합니다:</p>
+        <p>- 서비스 제공 및 계약 이행</p>
+        <p>- 회원 식별 및 인증</p>
+        <p>- 고객 문의 처리 및 서비스 개선</p>
+        <p>- 맞춤형 여행 추천 (연령층, 성별, 거주지역 기반)</p>
+        <p>- 통계 분석 및 서비스 품질 향상</p>
+        <h4>2. 수집하는 개인정보 항목</h4>
+        <p>필수항목: 이메일, 닉네임, 이름, 비밀번호, 연령층, 성별, 거주지역</p>
+        <p>선택항목: 여행 관심사, 마케팅 수신 동의</p>
+        <p>※ 연령층, 성별은 가입 후 변경이 제한될 수 있습니다.</p>
+        <p>※ 거주지역은 마이페이지에서 수정 가능합니다.</p>
+        <h4>3. 개인정보의 처리 및 보유 기간</h4>
+        <p>법령 또는 동의받은 기간 내에서 처리·보유합니다.</p>
+        <h4>4. 개인정보의 제3자 제공</h4>
+        <p>법령 근거 또는 동의가 있는 경우에만 제공합니다.</p>
+      `,
+      terms: `
+        <h4>제1조 (목적)</h4>
+        <p>본 약관은 회사가 제공하는 서비스 이용에 관한 조건, 절차, 권리·의무를 정합니다.</p>
+        <h4>제2조 (정의)</h4>
+        <p>1. "서비스": 회사가 제공하는 여행 추천 등 일체의 서비스</p>
+        <p>2. "회원": 이용계약을 체결하고 서비스를 이용하는 자</p>
+        <h4>제3조 (약관의 효력 및 변경)</h4>
+        <p>게시 또는 공지로 효력이 발생하며, 회사는 필요한 경우 변경할 수 있습니다.</p>
+      `,
+    };
+
+    // 전역에 노출
+    window.showTerms = function (type) {
+      const modal = document.getElementById("termsModal");
+      modal.style.display = "flex";
+      document.getElementById("modalTitle").innerHTML =
+        type === "privacy" ? "개인정보처리방침" : "이용약관";
+      document.getElementById("modalContent").innerHTML = termsData[type] || "";
+      document.body.style.overflow = "hidden";
+    };
+
+    window.closeTerms = function () {
+      document.getElementById("termsModal").style.display = "none";
+      document.body.style.overflow = "auto";
+    };
+
+    // 바깥 클릭 / ESC 닫기 (덮어쓰기 방지 위해 addEventListener)
+    window.addEventListener("click", (e) => {
+      const modal = document.getElementById("termsModal");
+      if (e.target === modal) window.closeTerms();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") window.closeTerms();
+    });
+  </script>
 </div>
