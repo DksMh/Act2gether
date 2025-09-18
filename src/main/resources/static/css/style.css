@@ -242,7 +242,8 @@ header {
 
 .auth-buttons a:hover,
 .user-buttons a:hover {
-  color: var(--color-main);
+  color: #fff;
+  /* color: var(--color-main); */
 }
 
 /* 버튼 스타일 */

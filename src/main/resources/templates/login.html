@@ -7,81 +7,97 @@
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="stylesheet" href="/css/login.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+    <link
+      rel="stylesheet"
+      as="style"
+      crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+    />
     <script src="/js/userlogin.js"></script>
   </head>
   <body>
     <!-- Header -->
     <div th:replace="header :: header"></div>
-    
+
     <!-- Main Login Container -->
     <div class="login-page">
-        <div class="login-container">
-            <div class="login-header">
-                <h2>로그인</h2>
-                <p>서비스 이용을 위해 로그인해주세요</p>
-            </div>
+      <div class="login-container">
+        <div class="login-header">
+          <h2>로그인</h2>
+          <p>서비스 이용을 위해 로그인해주세요</p>
+        </div>
 
-            <!-- 로그인 5번 이상 표시 영역 -->
-            <div class="error-message" id="errorMessage" th:if="${param.locked}">
-                <p th:if="${param.locked}">로그인 시도 횟수가 5회를 초과하여 계정이 잠겼습니다.<br>
-                    비밀번호 찾기를 통해 새 비밀번호를 설정한 후 다시 로그인해 주세요.</p>
-            </div>
-            <!-- 에러 메시지 표시 영역 -->
-            <div class="error-message" id="errorMessage" th:if="${param.error}">
-                <p th:if="${param.error}">아이디 또는 비밀번호가 올바르지 않습니다.</p>
-            </div>
+        <!-- 로그인 5번 이상 표시 영역 -->
+        <div class="error-message" id="errorMessage" th:if="${param.locked}">
+          <p th:if="${param.locked}">
+            로그인 시도 횟수가 5회를 초과하여 계정이 잠겼습니다.<br />
+            비밀번호 찾기를 통해 새 비밀번호를 설정한 후 다시 로그인해 주세요.
+          </p>
+        </div>
+        <!-- 에러 메시지 표시 영역 -->
+        <div class="error-message" id="errorMessage" th:if="${param.error}">
+          <p th:if="${param.error}">
+            아이디 또는 비밀번호가 올바르지 않습니다.
+          </p>
+        </div>
 
-            <!-- 로그아웃 메시지 표시 영역 -->
-            <div class="success-message" id="logoutMessage" th:if="${param.logout}">
-                <p>로그아웃되었습니다.</p>
-            </div>
+        <!-- 로그아웃 메시지 표시 영역 -->
+        <div class="success-message" id="logoutMessage" th:if="${param.logout}">
+          <p>로그아웃되었습니다.</p>
+        </div>
 
-            <form action="/users/login" method="post" id="loginForm" autocomplete="off">
-                <div class="form-group">
-                    <label for="email">이메일</label>
-                    <input type="email" id="email" name="email" placeholder="이메일 주소를 입력하세요" required autocomplete="off">
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">비밀번호</label>
-                    <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" required autocomplete="new-password">
-                </div>
-                
-                <div class="form-options">
-                    <!-- <label class="remember-me">
+        <form
+          action="/users/login"
+          method="post"
+          id="loginForm"
+          autocomplete="off"
+        >
+          <div class="form-group">
+            <label for="email">이메일</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="이메일 주소를 입력하세요"
+              required
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="password">비밀번호</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="비밀번호를 입력하세요"
+              required
+              autocomplete="new-password"
+            />
+          </div>
+
+          <div class="form-options">
+            <!-- <label class="remember-me">
                         <input type="checkbox" name="remember-me">
                         <span>로그인 상태 유지</span>
                     </label> -->
-                    <a href="/forgot-loginfo?type=email" class="forgot-password">이메일 찾기</a>
-                    <a href="/forgot-loginfo?type=password" class="forgot-password">비밀번호 찾기</a>
-                </div>
+            <a href="/forgot-loginfo?type=email" class="forgot-password"
+              >이메일 찾기</a
+            >
+            <a href="/forgot-loginfo?type=password" class="forgot-password"
+              >비밀번호 찾기</a
+            >
+          </div>
 
-                <button class="login-btn" type="submit">로그인</button>
-            </form>
+          <button class="login-btn" type="submit">로그인</button>
+        </form>
 
-            <div class="form-divider">
-                <span>또는</span>
-            </div>
-
-            <div class="social-login">
-                <button class="social-btn google-btn" type="button">
-                    <span>Google로 로그인</span>
-                </button>
-                <button class="social-btn naver-btn" type="button">
-                    <span>네이버로 로그인</span>
-                </button>
-                <button class="social-btn kakao-btn" type="button">
-                    <span>카카오로 로그인</span>
-                </button>
-            </div>
-
-            <div class="signup-link">
-                <p>아직 계정이 없으신가요? <a href="/signup">회원가입하기</a></p>
-            </div>
+        <div class="signup-link">
+          <p>아직 계정이 없으신가요? <a href="/signup">회원가입하기</a></p>
         </div>
+      </div>
     </div>
-    
+
     <!-- Footer -->
     <div th:replace="footer :: footer"></div>
   </body>

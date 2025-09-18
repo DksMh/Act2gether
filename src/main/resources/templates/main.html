@@ -178,7 +178,6 @@
     </section>
 
     <!-- Experience Section - 지역별 체험 -->
-    <!-- Experience Section - 지역별 체험 -->
     <section class="recommend-section experience-section">
       <div class="recommend-title">
         <h2>
@@ -233,22 +232,35 @@
       </div>
     </section>
 
-    <!-- Companion Section - 동행 모임 -->
+    <!-- 동행 모임 섹션 -->
     <section class="companion-recommend-section">
       <h2>동행에 참여해<br />즐거운 인연을 만들어 보세요</h2>
 
-      <div class="product-grid">
+      <div class="product-grid" th:if="${!#lists.isEmpty(companionGroups)}">
         <div
           class="product-card"
           th:each="group : ${companionGroups}"
           th:data-group-id="${group.id}"
+          style="cursor: pointer; transition: all 0.3s"
         >
           <div class="card-header">
             <h3 th:text="${group.title}">모임명</h3>
+            <span class="arrow">→</span>
           </div>
           <p class="desc" th:text="${group.description}">설명</p>
-          <button class="btn-primary">둘러보기</button>
         </div>
+      </div>
+
+      <!-- 데이터가 없을 때 표시 -->
+      <div
+        th:if="${#lists.isEmpty(companionGroups)}"
+        class="no-data-message"
+        style="text-align: center; padding: 2rem"
+      >
+        <p style="color: #666">현재 모집중인 모임이 없습니다.</p>
+        <p style="color: #999; font-size: 0.9rem">
+          새로운 모임이 곧 등록될 예정입니다!
+        </p>
       </div>
 
       <button class="more-button gray">다른 모임도 구경하기</button>

@@ -30,12 +30,18 @@
         <li class="faq-item">
           <button class="faq-question" type="button" aria-expanded="true">
             <span class="q-label">Q</span>
-            <span class="category">[앱 다운로드]</span>
-            Smart TV에서 설치한 앱은 어디에서 확인할 수 있나요?
-            <span class="faq-toggle-icon">▼</span>
+            <span class="category">[이용 방법]</span>
+            서비스 이용은 유료인가요?
+            <span class="faq-toggle-icon">▲</span>
           </button>
-          <div class="faq-answer" hidden>
-            <p>앱 목록은 홈 화면 또는 앱스 메뉴에서 확인하실 수 있습니다.</p>
+          <div class="faq-answer">
+            <p>
+              기본 기능(여행지 탐색, 필터, 즐겨찾기, Q&A 게시판 열람)은
+              무료입니다. 다만, 페이지 내 일부 링크는 제휴/광고가 포함된
+              <b>외부 사이트</b>로 이동하며, 예약·결제가 필요한 경우
+              <b>해당 외부 사이트에서</b> 비용이 발생할 수 있습니다. 우리
+              서비스는 결제/예약을 제공하지 않습니다.
+            </p>
           </div>
         </li>
 
@@ -43,23 +49,14 @@
         <li class="faq-item">
           <button class="faq-question" type="button" aria-expanded="false">
             <span class="q-label">Q</span>
-            <span class="category">[LG계정]</span>
-            LG전자 계정은 무엇인가요?
+            <span class="category">[이용 방법]</span>
+            실제 투어를 운영하거나 동행을 매칭해 주나요?
             <span class="faq-toggle-icon">▲</span>
           </button>
           <div class="faq-answer">
             <p>
-              LG전자 계정이란, LG전자의 스마트 서비스(LG Smart TV, LG Content
-              Store, LG Smart ThinQ 등)를 하나의 아이디로 이용할 수 있는 통합
-              아이디입니다. 하나로 로그인하여 다양한 서비스를 이용하실 수
-              있습니다.
-            </p>
-            <p>
-              고객지원 >
-              <a href="https://www.lgappstv.com" target="_blank"
-                >www.lgappstv.com</a
-              >
-              > LG전자 계정 안내
+              아니요. 우리는 여행 정보 큐레이션 및 링크 제공 서비스입니다.
+              가이드 동행, 패키지 운영, 동행자 매칭은 제공하지 않습니다.
             </p>
           </div>
         </li>
@@ -68,12 +65,50 @@
         <li class="faq-item">
           <button class="faq-question" type="button" aria-expanded="false">
             <span class="q-label">Q</span>
-            <span class="category">[질문3]</span>
-            회원가입시 어떤 기능을 사용 할 수 있나요?
+            <span class="category">[이용 방법]</span>
+            ‘투어 상세페이지의 지역별 참고 정보(꿀정보)’는 뭐예요?
             <span class="faq-toggle-icon">▼</span>
           </button>
           <div class="faq-answer" hidden>
-            <p>앱 목록은 홈 화면 또는 앱스 메뉴에서 확인하실 수 있습니다.</p>
+            <p>
+              지자체·관광기관·파트너가 제공하는
+              <b>외부 정보(제휴/광고 포함)</b>를 한 화면에 모아 보여줍니다.
+              <em>모든 지역에서 동일하게 제공되지는 않으며</em>, 더 다양한
+              정보를 위해 관련 기관·기업과의 <b>협업을 지속 확대</b>하고
+              있습니다. 자세한 내용·이용조건·문의는 각 제공처에 확인해 주세요.
+            </p>
+          </div>
+        </li>
+        <!-- 질문 4 -->
+        <li class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false">
+            <span class="q-label">Q</span>
+            <span class="category">[이용 방법]</span>
+            커뮤니티 활동은 어떻게 이루어지나요?
+            <span class="faq-toggle-icon">▼</span>
+          </button>
+          <div class="faq-answer" hidden>
+            <p>
+              온라인 게시판과 채팅 기능을 통해 투어 후기를 공유하거나 동행자를
+              모집할 수 있습니다. 이후 오프라인 모임으로 이어지는 수도 있으니
+              관심사가 비슷한 분들과 자유롭게 소통하며 연을 이어나가보세요.
+            </p>
+          </div>
+        </li>
+        <!-- 질문 5 -->
+        <li class="faq-item">
+          <button class="faq-question" type="button" aria-expanded="false">
+            <span class="q-label">Q</span>
+            <span class="category">[이용 방법]</span>
+            여행이 처음인 초보자도 참여할 수 있나요?
+            <span class="faq-toggle-icon">▼</span>
+          </button>
+          <div class="faq-answer" hidden>
+            <p>
+              가능해요. 난이도·동선·편의시설 필터로 본인에게 맞는 정보를 골라볼
+              수 있도록 돕습니다. 다만, 저희 서비스에서는 현장 안내/가이드를
+              제공하지 않습니다.
+            </p>
           </div>
         </li>
       </ul>
@@ -82,7 +117,7 @@
     <!-- Footer -->
     <div th:replace="footer :: footer"></div>
     <script>
-            // FAQ 아코디언 기능 구현
+      // FAQ 아코디언 기능 구현
       $(document).ready(function () {
         // 페이지 로드 시 모든 답변 숨기기 (aria-expanded="true"인 항목 제외)
         $(".faq-item").each(function () {
@@ -129,7 +164,6 @@
           }
         });
       });
-
     </script>
   </body>
 </html>
