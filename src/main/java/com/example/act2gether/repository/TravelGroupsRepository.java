@@ -3,6 +3,8 @@ package com.example.act2gether.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -51,4 +53,47 @@ public interface TravelGroupsRepository extends JpaRepository<TravelGroupsEntity
       "ORDER BY created_at DESC " +
       "LIMIT 3", nativeQuery = true)
   List<TravelGroupsEntity> findLatestGroups();
+
+  @Query(value = """
+        SELECT *
+        FROM travel_groups tg
+        WHERE (:region = '전체' OR :region = 'all')
+           OR JSON_UNQUOTE(JSON_EXTRACT(CAST(tg.intro AS JSON), '$.departureRegion')) = :region
+        ORDER BY tg.start_date ASC
+        """, nativeQuery = true)
+    List<TravelGroupsEntity> findByRegionOrAll(@Param("region") String region);
+
+    // 전체 (정렬만)
+    @Query(value = """
+            SELECT * FROM travel_groups t ORDER BY t.start_date ASC
+            """, nativeQuery = true)
+    List<TravelGroupsEntity> findAllOrderByStartDate();
+
+    // 전체(최신순) – 필요에 따라 LIMIT 조절
+    @Query(value = """
+        SELECT * 
+        FROM travel_groups
+        ORDER BY created_at DESC
+        LIMIT 200
+        """, nativeQuery = true)
+    List<TravelGroupsEntity> findRecent();
+
+    // 조건 검색
+    @Query(value = """
+        SELECT *
+        FROM travel_groups
+        WHERE (:from IS NULL OR JSON_UNQUOTE(JSON_EXTRACT(intro, '$.departureRegion')) = :from)
+          AND (:to   IS NULL OR JSON_UNQUOTE(JSON_EXTRACT(intro, '$.spot'))   = :to)
+          AND (:start IS NULL OR start_date >= :start)
+          AND (:end   IS NULL OR end_date   <= :end)
+        ORDER BY start_date ASC, created_at DESC
+        LIMIT 300
+        """, nativeQuery = true)
+    List<TravelGroupsEntity> search(
+            @Param("from")  String from,
+            @Param("to")    String to,
+            @Param("start") String start,
+            @Param("end")   String end
+    );
+  
 }

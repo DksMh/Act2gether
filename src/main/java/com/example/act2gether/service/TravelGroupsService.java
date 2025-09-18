@@ -52,6 +52,7 @@ public class TravelGroupsService {
       introJson.put("title", dto.getGroupName()); // 모임 제목
       introJson.put("flexible", dto.isFlexible()); // 날짜 조율 가능
       introJson.put("departureRegion", dto.getDepartureRegion()); // 출발 지역
+      introJson.put("spot", dto.getSpot()); // 관광지역
 
       // 출생연도를 나이로 변환 (현재 연도 기준)
       if (dto.getBirthYearStart() != null && dto.getBirthYearEnd() != null) {

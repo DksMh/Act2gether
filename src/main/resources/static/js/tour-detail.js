@@ -2381,6 +2381,7 @@ window.tourDetail = {
     const noAgeLimit = document.getElementById("noAgeLimit").checked;
     var groupId = crypto.randomUUID();
     const groupData = {
+      spot: document.getElementById('regionBadge').textContent.replace('📍', '').trim(), //목적지 추가
       groupId: groupId,
       tourId: this.currentTour.tourId,
       groupName: document.getElementById("groupName").value,
