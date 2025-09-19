@@ -607,7 +607,7 @@ function adjustCommentCount($post, delta) {
     $post.data("postId") || // jQuery data-api
     $post.attr("data-post-id") || // HTML data attribute
     ($post.data("post") && $post.data("post").id); // 전체 객체에 있으면
-  console.log("postId : " + $post.attr("data-post-id"));
+  // console.log("postId : " + $post.attr("data-post-id"));
   const data = {
     postId: postId,
     commentCount: next,
@@ -619,7 +619,7 @@ function adjustCommentCount($post, delta) {
     contentType: "application/json",
     success: function () {
       $t.text(`댓글 ${next}`);
-      console.log("댓글 수 업데이트 완료");
+      // console.log("댓글 수 업데이트 완료");
     },
     error: function (req, status, err) {
       console.error("댓글 수 업데이트 오휴:", err);
@@ -879,7 +879,7 @@ function toggleLike($btn) {
     $post.data("postId") || // jQuery data-api
     $post.attr("data-post-id") || // HTML data attribute
     ($post.data("post") && $post.data("post").id); // 전체 객체에 있으면
-  console.log("postId : " + $post.attr("data-post-id"));
+  // // console.log("postId : " + $post.attr("data-post-id"));
   const data = {
     postId: postId,
     likesCount: nextCount,
@@ -892,7 +892,7 @@ function toggleLike($btn) {
     data: JSON.stringify(data),
     contentType: "application/json",
     success: function () {
-      console.log("좋아요 저장 완료");
+      // // console.log("좋아요 저장 완료");
       const post = {
         username: window.currentUser.username, //user_id
         postId: postId,
@@ -903,7 +903,7 @@ function toggleLike($btn) {
         data: JSON.stringify(post),
         contentType: "application/json",
         success: function () {
-          console.log("좋아요 사용자 저장 완료");
+          // console.log("좋아요 사용자 저장 완료");
         },
         error: function (req, status, err) {
           console.error("좋아요 사용자 오류:", err);
@@ -948,7 +948,7 @@ function sharePost($post) {
         url: url,
       })
       .catch((err) => {
-        console.log("공유 실패:", err);
+        // console.log("공유 실패:", err);
         copyToClipboard(url);
       });
   } else {
@@ -1442,7 +1442,7 @@ function deletePost($post) {
     $post.data("postId") || // jQuery data-api
     $post.attr("data-post-id") || // HTML data attribute
     ($post.data("post") && $post.data("post").id); // 전체 객체에 있으면
-  console.log("postId : " + $post.attr("data-post-id"));
+  // console.log("postId : " + $post.attr("data-post-id"));
   const data = {
     postId: postId,
   };
@@ -1453,7 +1453,7 @@ function deletePost($post) {
     contentType: "application/json",
     data: JSON.stringify(data),
     success: function (response, textStatus, jqXHR) {
-      console.log("게시글 삭제 성공");
+      // console.log("게시글 삭제 성공");
       $post.slideUp(400, function () {
         $(this).remove();
         updatePostCount();
@@ -1733,8 +1733,8 @@ function generateMemberList() {
     contentType: "application/json",
     data: JSON.stringify(groupId), //그룹id
     success: function (response, textStatus, jqXHR) {
-      console.log("멤버 정보 가져오기 성공 : " + Array.isArray(response)); //데이터 갖고오는 방법,,,,
-      console.log(JSON.stringify(response, null, 2));
+      // console.log("멤버 정보 가져오기 성공 : " + Array.isArray(response)); //데이터 갖고오는 방법,,,,
+      // console.log(JSON.stringify(response, null, 2));
       // members.push(response);
       $("#memberList").html(memberList(response));
       $("#memNum").text(response.length);

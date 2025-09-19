@@ -91,14 +91,14 @@ $(document).ready(function () {
   const data = {
     email: emailData,
   };
-  console.log(emailData);
+  // console.log(emailData);
   $.ajax({
     url: "/profile/user",
     type: "post",
     contentType: "application/json",
     data: JSON.stringify(data),
     success: function (res, textStatus, jqXHR) {
-      console.log(res);
+      // console.log(res);
       $("#nickname").text(res.username);
       $("#ageGroup").text(res.age);
       $("#gender").text(res.gender);
@@ -117,8 +117,8 @@ $(document).ready(function () {
       renderWishlist(sampleWishlist);
       setActive("upcoming");
       renderGathering();
-      console.log(interestsObj.preferredRegions); // ["서울"]
-      console.log(interestsObj.preferredRegions[0]); // "서울"
+      // console.log(interestsObj.preferredRegions); // ["서울"]
+      // console.log(interestsObj.preferredRegions[0]); // "서울"
       // $('#location').text(res.location);
     },
     error: function (request, status, error) {
@@ -625,7 +625,7 @@ $(document).ready(function () {
       } catch {
         data = { success: res.ok, message: txt };
       }
-      console.log(data);
+      // console.log(data);
       if (!res.ok || data.success === false) {
         toast(data.message || "동의 내역 불러오기에 실패했습니다.");
         return;
@@ -909,7 +909,7 @@ $(document).ready(function () {
     try {
       const usernames = await getUsernames();
       const lowerSet = new Set(usernames.map((u) => u.toLowerCase()));
-      console.log("username : " + me);
+      // console.log("username : " + me);
       // 본인의 기존 닉네임은 통과, 그 외엔 중복 금지
       const isDup =
         lowerSet.has(nickname.toLowerCase()) && nickname.toLowerCase() !== me;
@@ -1026,7 +1026,7 @@ $(document).ready(function () {
       }
 
       const fd = new FormData();
-      console.log("username >>> " + $("#nickname").text().trim());
+      // console.log("username >>> " + $("#nickname").text().trim());
       fd.append("username", $("#nickname").text().trim());
       fd.append("file", pickedFile);
 
@@ -1125,7 +1125,7 @@ function updateUserInterests() {
     userInterests.needs.push($(this).data("value"));
   });
 
-  console.log("Updated interests:", userInterests);
+  // console.log("Updated interests:", userInterests);
 }
 
 function escapeHtml(s = "") {
@@ -1213,7 +1213,7 @@ async function renderGathering() {
   });
 
   const txt = await res.json();
-  console.log("txt>>>> " + JSON.stringify(txt));
+  // console.log("txt>>>> " + JSON.stringify(txt));
 
   const listEl = document.getElementById("gathering");
   const seeAllBtn = document.getElementById("seeAllBtn-m");
@@ -1483,7 +1483,7 @@ function completeOnboarding() {
     return;
   }
 
-  console.log("선택된 관심사:", userInterests);
+  // console.log("선택된 관심사:", userInterests);
 
   // 로딩 표시
   //   showLoading();
@@ -1495,7 +1495,7 @@ function completeOnboarding() {
     contentType: "application/json",
     data: JSON.stringify(userInterests),
     success: function (response, textStatus, jqXHR) {
-      console.log("관심사 저장 성공");
+      // console.log("관심사 저장 성공");
       closeInterestModal();
       // location.reload();
       // 250917 페이지 새로고침으로 변경사항 반영

@@ -7,13 +7,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpHeaders;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
+import org.apache.tomcat.util.http.parser.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -1060,51 +1070,41 @@ public class TourFilterService {
 
     private List<JsonNode> callTourApiForCombination(SearchParam searchParam) {
         try {
-            // API 호출 전 잠시 대기 (Rate Limiting 회피)
             Thread.sleep(500); // 0.5초 대기
-            // URL 직접 조합 방식으로 변경
-            String url = baseUrl + "/areaBasedList2" +
-                    "?serviceKey=" + serviceKey +
-                    "&MobileOS=ETC&MobileApp=Act2gether" +
-                    "&contentTypeId=12&_type=json" +
-                    "&numOfRows=100&pageNo=1";
+            StringBuilder urlBuilder = new StringBuilder();
+            urlBuilder.append(baseUrl).append("/areaBasedList2")
+                    .append("?serviceKey=").append(serviceKey)
+                    .append("&MobileOS=ETC&MobileApp=Act2gether")
+                    .append("&contentTypeId=12")
+                    .append("&_type=json");
 
             if (searchParam.areaCode != null) {
-                url += "&areaCode=" + searchParam.areaCode;
+                urlBuilder.append("&areaCode=").append(searchParam.areaCode);
             }
+
             if (searchParam.sigunguCode != null && !isMetropolitanCity(searchParam.areaCode)) {
-                url += "&sigunguCode=" + searchParam.sigunguCode;
+                urlBuilder.append("&sigunguCode=").append(searchParam.sigunguCode);
             }
+
             if (searchParam.cat1 != null) {
-                url += "&cat1=" + searchParam.cat1;
+                urlBuilder.append("&cat1=").append(searchParam.cat1);
             }
+
             if (searchParam.cat2 != null) {
-                url += "&cat2=" + searchParam.cat2;
+                urlBuilder.append("&cat2=").append(searchParam.cat2);
             }
+
             if (searchParam.cat3 != null) {
-                url += "&cat3=" + searchParam.cat3;
+                urlBuilder.append("&cat3=").append(searchParam.cat3);
             }
 
-            log.debug("API 호출 URL: {}", url);
+            urlBuilder.append("&numOfRows=100&pageNo=1");
 
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-            String responseBody = response.getBody();
+            ResponseEntity<String> response = restTemplate.getForEntity(urlBuilder.toString(), String.class);
+            JsonNode jsonNode = objectMapper.readTree(response.getBody());
 
-            // HTML 응답 체크
-            // if (responseBody != null && responseBody.trim().startsWith("<")) {
-            // log.error("callTourApiForCombination HTML 응답 수신: {}",
-            // responseBody.substring(0, Math.min(200, responseBody.length())));
-            // return new ArrayList<>();
-            // }
-
-            // JSON 파싱
-            JsonNode jsonNode = objectMapper.readTree(responseBody);
             JsonNode header = jsonNode.path("response").path("header");
-
             if (!"0000".equals(header.path("resultCode").asText())) {
-                log.warn("callTourApiForCombination API 오류: {} - {}",
-                        header.path("resultCode").asText(),
-                        header.path("resultMsg").asText());
                 return new ArrayList<>();
             }
 
@@ -1112,7 +1112,9 @@ public class TourFilterService {
             List<JsonNode> results = new ArrayList<>();
 
             if (items.isArray()) {
-                items.forEach(results::add);
+                for (JsonNode item : items) {
+                    results.add(item);
+                }
             } else if (!items.isMissingNode()) {
                 results.add(items);
             }
@@ -1120,7 +1122,7 @@ public class TourFilterService {
             return results;
 
         } catch (Exception e) {
-            log.error("callTourApiForCombination API 호출 실패: {} - {}", searchParam, e.getMessage());
+            log.warn("❌ API 호출 오류: {} - {}", searchParam, e.getMessage());
             return new ArrayList<>();
         }
     }
@@ -1376,6 +1378,36 @@ public class TourFilterService {
         }
 
         return Map.of("success", false, "message", "검색 결과가 없습니다", "fallback", true);
+    }
+
+    // 아이템 처리 (간단 버전)
+    private Map<String, Object> processItem(JsonNode item) {
+        Map<String, Object> processed = new HashMap<>();
+        processed.put("contentid", item.path("contentid").asText());
+        processed.put("title", item.path("title").asText("제목없음"));
+        processed.put("addr1", item.path("addr1").asText(""));
+        processed.put("addr2", item.path("addr2").asText(""));
+        processed.put("tel", item.path("tel").asText(""));
+        processed.put("firstimage", item.path("firstimage").asText(""));
+        processed.put("firstimage2", item.path("firstimage2").asText(""));
+        processed.put("areacode", item.path("areacode").asText(""));
+        processed.put("sigungucode", item.path("sigungucode").asText(""));
+        processed.put("cat1", item.path("cat1").asText(""));
+        processed.put("cat2", item.path("cat2").asText(""));
+        processed.put("cat3", item.path("cat3").asText(""));
+        processed.put("mapx", item.path("mapx").asText(""));
+        processed.put("mapy", item.path("mapy").asText(""));
+        return processed;
+    }
+
+    private Map<String, Object> createErrorResponse(String message) {
+        return Map.of(
+                "success", false,
+                "data", Collections.emptyList(),
+                "totalCount", 0,
+                "fallback", true,
+                "message", message,
+                "error", true);
     }
 
     // ========================================

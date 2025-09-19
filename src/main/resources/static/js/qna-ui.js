@@ -21,7 +21,7 @@ class QnaUI {
    */
   async initialize() {
     try {
-      console.log("QnA UI 초기화 시작...");
+      // console.log("QnA UI 초기화 시작...");
 
       // 현재 사용자 정보 로드
       await this.loadCurrentUser();
@@ -41,7 +41,7 @@ class QnaUI {
       // QnA 목록 로드
       await this.loadAndRenderQnaPosts();
 
-      console.log("QnA UI 초기화 완료");
+      // console.log("QnA UI 초기화 완료");
     } catch (error) {
       console.error("QnA UI 초기화 실패:", error);
       this.showError("페이지 로드 중 오류가 발생했습니다.");
@@ -92,7 +92,7 @@ class QnaUI {
   async loadCurrentUser() {
     try {
       this.currentUser = await qnaApi.getCurrentUser();
-      console.log("현재 사용자:", this.currentUser);
+      // console.log("현재 사용자:", this.currentUser);
     } catch (error) {
       console.warn("사용자 정보 로드 실패:", error);
       this.currentUser = {
@@ -220,7 +220,7 @@ class QnaUI {
   async loadAndRenderQnaPosts() {
     try {
       const response = await qnaApi.getQnaPosts(this.currentSearchParams);
-      console.log("QnA 목록 응답:", response);
+      // console.log("QnA 목록 응답:", response);
 
       this.renderQnaPosts(response);
       this.renderPagination(response);
@@ -954,12 +954,12 @@ class QnaUI {
       document.getElementById("myPostsOnly")?.checked || false;
 
     //  디버깅 로그 추가 - 여기부터 추가
-    console.log("=== 검색 필터 디버깅 ===");
-    console.log("선택된 상태 필터:", status);
-    console.log("상태 필터 길이:", status.length);
-    console.log("카테고리 필터:", category);
-    console.log("검색어:", searchKeyword);
-    console.log("내 글만 보기:", myPostsOnly);
+    // console.log("=== 검색 필터 디버깅 ===");
+    // console.log("선택된 상태 필터:", status);
+    // console.log("상태 필터 길이:", status.length);
+    // console.log("카테고리 필터:", category);
+    // console.log("검색어:", searchKeyword);
+    // console.log("내 글만 보기:", myPostsOnly);
     // 여기까지 추가
 
     this.currentSearchParams = {
@@ -972,8 +972,8 @@ class QnaUI {
     };
 
     //  추가 디버깅 로그
-    console.log("전송할 파라미터:", this.currentSearchParams);
-    console.log("========================");
+    // console.log("전송할 파라미터:", this.currentSearchParams);
+    // console.log("========================");
     // 여기까지 추가
 
     if (
