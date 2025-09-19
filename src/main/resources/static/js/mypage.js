@@ -76,6 +76,7 @@ $(document).ready(function () {
   };
   let interests = null;
 
+
   function applySelected(containerSelector, values) {
     const $scope = $(containerSelector);
     // 먼저 초기화
@@ -134,10 +135,11 @@ $(document).ready(function () {
     $(".option-button").removeClass("selected");
     selectedPlaceCount = 0;
     userInterests = {};
-
+    modal.hidden = false;
     modal.classList.add("is-open");
     document.body.classList.add("modal-open");
-    modal.removeAttribute("aria-hidden");
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
 
     // interests가 준비되어 있으면 선택 반영
     if (interests) {
@@ -1471,6 +1473,7 @@ function renderReviews(reviews) {
 
 // 온보딩 완료
 function completeOnboarding() {
+
   updateUserInterests();
 
   // 최소 하나의 관심사는 선택해야 함
@@ -1512,6 +1515,9 @@ function closeInterestModal() {
   const modal = document.getElementById("interestModal");
   modal.classList.remove("is-open");
   document.body.classList.remove("modal-open");
+  modal.setAttribute('aria-hidden', 'true');
+  modal.hidden = true;
+  document.body.style.overflow = '';
 
   // 250917 선택 초기화
   $(".option-button").removeClass("selected");

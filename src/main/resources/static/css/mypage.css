@@ -1215,4 +1215,11 @@ body.modal-open {
   .place-group .options-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+}
+.modal[hidden],
+.modal[aria-hidden="true"],
+[hidden] {
+  display: none !important;
+  visibility: hidden !important; /* (선택) 애니메이션/포커스 문제 예방 */
 }

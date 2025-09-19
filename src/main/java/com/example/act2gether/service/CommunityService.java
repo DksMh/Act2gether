@@ -478,4 +478,8 @@ public class CommunityService {
        return false;
     }
 
+    public List<TravelGroupsEntity> findByIds(List<String> ids) {
+        return travelGroupsRepository.findAllById(ids);
+    }
+
 }
