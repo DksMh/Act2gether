@@ -6,14 +6,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpHeaders;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
+import org.apache.tomcat.util.http.parser.MediaType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -977,11 +989,6 @@ public class TourFilterService {
         return combinations;
     }
 
-    // private boolean isLogicalCombination(String cat1, String cat2, String cat3) {
-    // // 새로운 메서드로 위임
-    // return isValidHierarchyCombination(cat1, cat2, cat3);
-    // }
-
     /**
      * ✅ 완전한 계층 구조 검증 로직
      */
@@ -1063,6 +1070,7 @@ public class TourFilterService {
 
     private List<JsonNode> callTourApiForCombination(SearchParam searchParam) {
         try {
+            Thread.sleep(500); // 0.5초 대기
             StringBuilder urlBuilder = new StringBuilder();
             urlBuilder.append(baseUrl).append("/areaBasedList2")
                     .append("?serviceKey=").append(serviceKey)
@@ -1118,7 +1126,6 @@ public class TourFilterService {
             return new ArrayList<>();
         }
     }
-
     // ========================================
     // 매핑 메서드들 (기존 코드 유지)
     // ========================================
@@ -1373,6 +1380,36 @@ public class TourFilterService {
         return Map.of("success", false, "message", "검색 결과가 없습니다", "fallback", true);
     }
 
+    // 아이템 처리 (간단 버전)
+    private Map<String, Object> processItem(JsonNode item) {
+        Map<String, Object> processed = new HashMap<>();
+        processed.put("contentid", item.path("contentid").asText());
+        processed.put("title", item.path("title").asText("제목없음"));
+        processed.put("addr1", item.path("addr1").asText(""));
+        processed.put("addr2", item.path("addr2").asText(""));
+        processed.put("tel", item.path("tel").asText(""));
+        processed.put("firstimage", item.path("firstimage").asText(""));
+        processed.put("firstimage2", item.path("firstimage2").asText(""));
+        processed.put("areacode", item.path("areacode").asText(""));
+        processed.put("sigungucode", item.path("sigungucode").asText(""));
+        processed.put("cat1", item.path("cat1").asText(""));
+        processed.put("cat2", item.path("cat2").asText(""));
+        processed.put("cat3", item.path("cat3").asText(""));
+        processed.put("mapx", item.path("mapx").asText(""));
+        processed.put("mapy", item.path("mapy").asText(""));
+        return processed;
+    }
+
+    private Map<String, Object> createErrorResponse(String message) {
+        return Map.of(
+                "success", false,
+                "data", Collections.emptyList(),
+                "totalCount", 0,
+                "fallback", true,
+                "message", message,
+                "error", true);
+    }
+
     // ========================================
     // 🚨 필수 메서드들 (컨트롤러에서 호출됨) - 편의시설 옵션에 무장애여행 관련 추가
     // ========================================
@@ -1479,44 +1516,29 @@ public class TourFilterService {
      */
     public Map<String, Object> getTourDetail(String contentId) {
         try {
-            String url = String.format(
-                    "%s/detailCommon2?serviceKey=%s&MobileOS=ETC&MobileApp=Act2gether&_type=json&contentId=%s",
-                    baseUrl, serviceKey, contentId);
-            // 디버깅 로그만 추가
-            log.debug("API 호출 - contentId: {}, URL: {}", contentId, url);
+            // 문자열 직접 연결 방식으로 변경
+            String url = baseUrl + "/detailCommon2" +
+                    "?serviceKey=" + serviceKey +
+                    "&MobileOS=ETC&MobileApp=Act2gether" +
+                    "&_type=json" +
+                    "&contentId=" + contentId;
+
+            log.debug("getTourDetail 상세조회 URL: {}", url);
 
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-            JsonNode jsonNode = objectMapper.readTree(response.getBody());
             String responseBody = response.getBody();
 
-            JsonNode header = jsonNode.path("response").path("header");
-            // if (!"0000".equals(header.path("resultCode").asText())) {
-            // return Map.of("success", false, "message", "상세 정보를 찾을 수 없습니다");
-            // }
-            String resultCode = header.path("resultCode").asText();
-
-            // 원본 응답 확인 (중요!)
-            log.info("🔍 API 원본 응답 (첫 200자): {}",
-                    responseBody != null ? responseBody.substring(0, Math.min(200, responseBody.length())) : "null");
-            // resultCode가 비어있는 경우 처리
-            if (resultCode == null || resultCode.isEmpty()) {
-                log.error("⚠️ resultCode가 비어있음! 전체 응답: {}", responseBody);
-
-                // HTML 응답인지 확인 (API 키 문제일 때 자주 발생)
-                if (responseBody != null && responseBody.contains("<!DOCTYPE") || responseBody.contains("<html")) {
-                    log.error("❌ HTML 응답 수신 - API 키 문제 가능성");
-                    return Map.of("success", false, "message", "API 키 인증 실패");
-                }
-
-                return Map.of("success", false, "message", "비정상적인 API 응답");
+            // HTML 체크
+            if (responseBody != null && responseBody.trim().startsWith("<")) {
+                log.error("getTourDetail 상세조회 HTML 응답: {}",
+                        responseBody.substring(0, Math.min(200, responseBody.length())));
+                return Map.of("success", false, "message", "API 오류가 발생했습니다");
             }
-            // 실패 시에만 상세 로그
-            if (!"0000".equals(resultCode)) {
-                log.error("API 호출 실패 - contentId: {}, resultCode: {}, resultMsg: {}",
-                        contentId, resultCode, header.path("resultMsg").asText());
-                log.error("사용된 API Key: {}...{}",
-                        serviceKey.substring(0, 10),
-                        serviceKey.substring(serviceKey.length() - 10));
+
+            JsonNode jsonNode = objectMapper.readTree(responseBody);
+            JsonNode header = jsonNode.path("response").path("header");
+
+            if (!"0000".equals(header.path("resultCode").asText())) {
                 return Map.of("success", false, "message", "상세 정보를 찾을 수 없습니다");
             }
 
@@ -1532,13 +1554,13 @@ public class TourFilterService {
                 processedItem.put("categoryName", getCategoryDisplayName(cat1));
 
                 return Map.of("success", true, "data", processedItem);
-            } else {
-                return Map.of("success", false, "message", "상세 정보가 없습니다");
             }
 
+            return Map.of("success", false, "message", "상세 정보가 없습니다");
+
         } catch (Exception e) {
-            log.error("관광지 상세 정보 조회 실패: {}", e.getMessage(), e);
-            return Map.of("success", false, "message", "상세 정보 조회에 실패했습니다");
+            log.error("getTourDetail 상세 조회 실패: {}", e.getMessage(), e);
+            return Map.of("success", false, "message", "조회 실패");
         }
     }
 

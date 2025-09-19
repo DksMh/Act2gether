@@ -19,7 +19,7 @@ let tourSearchManager = {
   // ========================================
 
   async init() {
-    console.log("🚀 투어 검색 매니저 v3.0 투어상품화 시작");
+    // console.log("🚀 투어 검색 매니저 v3.0 투어상품화 시작");
 
     try {
       await this.loadFilterOptions();
@@ -32,7 +32,7 @@ let tourSearchManager = {
         this.updateInterestTags();
       }, 500);
 
-      console.log("✅ 투어 검색 매니저 v3.0 초기화 완료");
+      // console.log("✅ 투어 검색 매니저 v3.0 초기화 완료");
     } catch (error) {
       console.error("❌ 초기화 실패:", error);
       window.tourUtils?.showToast("시스템 초기화에 실패했습니다", "error");
@@ -46,7 +46,7 @@ let tourSearchManager = {
 
       if (result.success) {
         this.filterOptions = result.data;
-        console.log("✅ v3.0 필터 옵션 로드:", this.filterOptions);
+        // console.log("✅ v3.0 필터 옵션 로드:", this.filterOptions);
         this.populateFilters();
       }
     } catch (error) {
@@ -59,17 +59,17 @@ let tourSearchManager = {
       const response = await fetch("/api/tours/user-interests");
       const result = await response.json();
 
-      console.log("API 응답 전체:", result); // 디버깅용
+      // console.log("API 응답 전체:", result); // 디버깅용
 
       if (result.success) {
         this.userInterests = result.data;
         this.currentUser = result.user || result.currentUser || null; // 여러 필드 확인
-        console.log("사용자 관심사 로드됨:", this.userInterests);
-        console.log("현재 사용자 정보:", this.currentUser);
+        // console.log("사용자 관심사 로드됨:", this.userInterests);
+        // console.log("현재 사용자 정보:", this.currentUser);
         this.showLoginStatus(true);
       } else {
         // 🚨 수정: 로그인하지 않은 경우 명확히 null 설정
-        console.log("❌ 로그인하지 않음 - 사용자 정보 null 설정");
+        // console.log("❌ 로그인하지 않음 - 사용자 정보 null 설정");
         this.userInterests = null;
         this.currentUser = null;
         this.showLoginStatus(false);
@@ -144,7 +144,7 @@ let tourSearchManager = {
       6 // 최대 6개 선택 가능
     );
 
-    console.log("✅ v3.0 필터 생성 완료 - 장소 중심 단순화 + 편의시설 지원");
+    // console.log("✅ v3.0 필터 생성 완료 - 장소 중심 단순화 + 편의시설 지원");
   },
 
   createGroupedPlaceDropdown(
@@ -551,24 +551,24 @@ let tourSearchManager = {
     try {
       const searchParams = new URLSearchParams();
 
-      console.log("🔍 v3.0 현재 필터:", this.currentFilters);
+      // console.log("🔍 v3.0 현재 필터:", this.currentFilters);
 
       // 지역 파라미터
       if (this.currentFilters.region) {
         const areaCode = this.getAreaCodeByName(this.currentFilters.region);
         if (areaCode) {
           searchParams.append("areaCode", areaCode);
-          console.log("✅ 지역코드 설정:", {
-            지역명: this.currentFilters.region,
-            지역코드: areaCode,
-          });
+          // console.log("✅ 지역코드 설정:", {
+          //   지역명: this.currentFilters.region,
+          //   지역코드: areaCode,
+          // });
         }
       }
 
       // 시군구 파라미터
       if (this.currentFilters.sigungu) {
         searchParams.append("sigunguCode", this.currentFilters.sigungu);
-        console.log("✅ 시군구코드 설정:", this.currentFilters.sigungu);
+        // console.log("✅ 시군구코드 설정:", this.currentFilters.sigungu);
       }
 
       // 장소 파라미터 (JSON 배열) - v3.0: 장소에서 테마/활동 자동 매칭
@@ -577,7 +577,7 @@ let tourSearchManager = {
           "places",
           JSON.stringify(this.currentFilters.places)
         );
-        console.log("✅ 장소 설정:", this.currentFilters.places);
+        // console.log("✅ 장소 설정:", this.currentFilters.places);
 
         // 장소 기반 자동 테마/활동 매칭
         const mappedThemes = this.mapPlacesToThemes(this.currentFilters.places);
@@ -587,12 +587,12 @@ let tourSearchManager = {
 
         if (mappedThemes.length > 0) {
           searchParams.append("themes", JSON.stringify(mappedThemes));
-          console.log("🔄 자동 매칭된 테마:", mappedThemes);
+          // console.log("🔄 자동 매칭된 테마:", mappedThemes);
         }
 
         if (mappedActivities.length > 0) {
           searchParams.append("activities", JSON.stringify(mappedActivities));
-          console.log("🔄 자동 매칭된 활동:", mappedActivities);
+          // console.log("🔄 자동 매칭된 활동:", mappedActivities);
         }
       }
 
@@ -602,7 +602,7 @@ let tourSearchManager = {
         this.currentFilters.needs !== "필요없음"
       ) {
         searchParams.append("needs", this.currentFilters.needs);
-        console.log("✅ 편의시설 설정:", this.currentFilters.needs);
+        // console.log("✅ 편의시설 설정:", this.currentFilters.needs);
       }
 
       // 방문지 수
@@ -610,14 +610,14 @@ let tourSearchManager = {
       searchParams.append("pageNo", this.currentPage.toString());
 
       const finalUrl = `/api/tours/search?${searchParams.toString()}`;
-      console.log("🔍 v3.0 최종 검색 URL:", finalUrl);
+      // console.log("🔍 v3.0 최종 검색 URL:", finalUrl);
 
       const response = await fetch(finalUrl);
       const result = await response.json();
 
       // 🆕 개수 부족 디버깅 로그 추가
-      console.log("📊 요청 개수:", this.currentFilters.numOfRows);
-      console.log("📊 받은 개수:", result.data?.length);
+      // console.log("📊 요청 개수:", this.currentFilters.numOfRows);
+      // console.log("📊 받은 개수:", result.data?.length);
 
       if (
         result.data &&
@@ -629,7 +629,7 @@ let tourSearchManager = {
         console.warn("백엔드 카테고리 배분 알고리즘 확인 필요");
       }
 
-      console.log("📊 v3.0 검색 결과:", result);
+      // console.log("📊 v3.0 검색 결과:", result);
 
       if (result.success) {
         const actualCount = result.data?.length || 0;
@@ -883,7 +883,7 @@ let tourSearchManager = {
       numOfRows: curationCount?.value || "6",
     };
 
-    console.log("🔍 v3.0 현재 필터 상태:", this.currentFilters);
+    // console.log("🔍 v3.0 현재 필터 상태:", this.currentFilters);
   },
 
   getFilterSummary() {
@@ -936,7 +936,7 @@ let tourSearchManager = {
       return;
     }
 
-    console.log("🎯 관심사 자동 적용 시작:", this.userInterests);
+    // console.log("🎯 관심사 자동 적용 시작:", this.userInterests);
 
     // 지역 적용 (preferredRegions로 수정)
     if (this.userInterests.preferredRegions?.length > 0) {
@@ -1347,12 +1347,12 @@ let tourSearchManager = {
       }
     });
 
-    console.log(
-      "편의시설 집계 결과:",
-      targetFeatures,
-      "validCount:",
-      validCount
-    );
+    // console.log(
+    //   "편의시설 집계 결과:",
+    //   targetFeatures,
+    //   "validCount:",
+    //   validCount
+    // );
 
     return {
       features: targetFeatures,
@@ -1399,12 +1399,12 @@ let tourSearchManager = {
     const actualCount = tours.length;
     const displayTours = tours.slice(0, tourCount);
 
-    console.log("🔍 개수 체크:", {
-      요청개수: tourCount,
-      받은개수: actualCount,
-      표시개수: displayTours.length,
-      부족여부: actualCount < tourCount,
-    });
+    // console.log("🔍 개수 체크:", {
+    //   요청개수: tourCount,
+    //   받은개수: actualCount,
+    //   표시개수: displayTours.length,
+    //   부족여부: actualCount < tourCount,
+    // });
 
     // 투어 상품 생성
     //const tourProduct = this.createTourProduct(displayTours, tourCount, searchResult);
@@ -1421,7 +1421,7 @@ let tourSearchManager = {
       if (titleElement) {
         let titleHtml;
 
-        console.log("🔍 사용자 정보 체크:", this.currentUser);
+        // console.log("🔍 사용자 정보 체크:", this.currentUser);
 
         // ✅ 수정: null 체크 강화
         if (
@@ -1448,7 +1448,7 @@ let tourSearchManager = {
     recommendedContainer.innerHTML = "";
     // ✅ 부족 상황 안내
     if (actualCount < tourCount) {
-      console.log("⚠️ 부족 상황 감지 - createShortageNotice 호출");
+      // console.log("⚠️ 부족 상황 감지 - createShortageNotice 호출");
       const shortageInfo = this.createShortageNotice(
         tourCount,
         actualCount,
@@ -1608,7 +1608,7 @@ let tourSearchManager = {
 
     // 편의시설 배지 제거 (사용자 요청에 따라)
     let accessibilityBadge = "";
-    console.log("편의시설 정보 확인:", tourProduct.accessibilityInfo);
+    // console.log("편의시설 정보 확인:", tourProduct.accessibilityInfo);
 
     // 방문지 목록 생성 (가로 레이아웃용)
     let tourListHtml = "";
@@ -1763,7 +1763,7 @@ let tourSearchManager = {
         `tour_${tourProduct.id}`,
         JSON.stringify(tourSessionData)
       );
-      console.log("✅ 완전한 투어 데이터 세션 저장:", tourProduct.id);
+      // console.log("✅ 완전한 투어 데이터 세션 저장:", tourProduct.id);
     } catch (error) {
       console.error("❌ 세션 저장 실패:", error);
     }
@@ -1777,7 +1777,7 @@ let tourSearchManager = {
       const sessionData = sessionStorage.getItem(`tour_${tourId}`);
       if (sessionData) {
         const tourData = JSON.parse(sessionData);
-        console.log("✅ 세션에서 투어 데이터 로드:", tourId);
+        // console.log("✅ 세션에서 투어 데이터 로드:", tourId);
         return tourData;
       }
       return null;
@@ -1798,16 +1798,16 @@ let tourSearchManager = {
    * 투어 상품의 편의시설 정보 표시 (관광지 개수 기준으로 개선)
    */
   createTourAccessibilityInfo(tourProduct) {
-    console.log("편의시설 정보 생성 시작:", tourProduct.accessibilityInfo);
+    // console.log("편의시설 정보 생성 시작:", tourProduct.accessibilityInfo);
 
     // 편의시설 필터가 없으면 아예 표시 안함
     if (!tourProduct.accessibilityInfo.hasAccessibilityFilter) {
-      console.log("편의시설 필터 없음");
+      // console.log("편의시설 필터 없음");
       return "";
     }
 
     const selectedNeeds = tourProduct.accessibilityInfo.selectedNeedsType;
-    console.log("선택된 편의시설 타입:", selectedNeeds);
+    // console.log("선택된 편의시설 타입:", selectedNeeds);
 
     // 편의시설이 있는 관광지 수 계산 (개별 시설 수가 아닌 관광지 수)
     let facilitySiteCount = 0;
@@ -1885,12 +1885,12 @@ let tourSearchManager = {
       displayText = `🚻 편의시설 ${facilitySiteCount}/${tours.length}곳`;
     }
 
-    console.log(
-      `${selectedNeeds} - 시설 보유 관광지:`,
-      facilitySiteCount,
-      "/",
-      tours.length
-    );
+    // console.log(
+    //   `${selectedNeeds} - 시설 보유 관광지:`,
+    //   facilitySiteCount,
+    //   "/",
+    //   tours.length
+    // );
 
     if (facilitySiteCount > 0) {
       const result = `
@@ -1900,12 +1900,12 @@ let tourSearchManager = {
                 </small>
             </div>
         `;
-      console.log("편의시설 정보 HTML:", result);
+      // console.log("편의시설 정보 HTML:", result);
       return result;
     }
 
     // 편의시설 필터가 적용되었지만 정보가 없는 경우
-    console.log("편의시설 필터 적용되었지만 정보 없음");
+    // console.log("편의시설 필터 적용되었지만 정보 없음");
     return `
         <div class="tour-accessibility-info-horizontal">
             <small class="accessibility-summary">
@@ -2270,7 +2270,7 @@ let tourSearchManager = {
 // ========================================
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🚀 투어 검색 페이지 v3.0 투어상품화 로드됨");
+  // console.log("🚀 투어 검색 페이지 v3.0 투어상품화 로드됨");
   tourSearchManager.init();
 });
 

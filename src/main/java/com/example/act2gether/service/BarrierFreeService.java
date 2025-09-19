@@ -75,74 +75,135 @@ public class BarrierFreeService {
             return new ArrayList<>();
         }
 
-        log.info("📄 무장애여행 정보 통합 시작: {}개 관광지", tourNodes.size());
+        log.info("무장애여행 정보 통합 시작: {}개 관광지", tourNodes.size());
 
-        // 1단계: areaBasedSyncList2로 무장애 관광지 목록 조회
-        Set<String> barrierFreeContentIds = getBarrierFreeContentIds(areaCode, sigunguCode);
+        // // 1단계: areaBasedSyncList2로 무장애 관광지 목록 조회
+        // Set<String> barrierFreeContentIds = getBarrierFreeContentIds(areaCode,
+        // sigunguCode);
+        // log.info("무장애 정보 보유 관광지: {}개", barrierFreeContentIds.size());
+        // 1. 전체 서울 지역 무장애 관광지 조회 (시군구 제한 없이)
+        Set<String> barrierFreeContentIds = getBarrierFreeContentIds(areaCode, null); // sigunguCode 제거!
         log.info("📋 무장애 정보 보유 관광지: {}개", barrierFreeContentIds.size());
 
         // 2단계: 교집합 찾기 (공통분모)
-        List<JsonNode> barrierFreeCandidates = tourNodes.stream()
-                .filter(node -> barrierFreeContentIds.contains(node.path("contentid").asText()))
+        // List<JsonNode> barrierFreeCandidates = tourNodes.stream()
+        // .filter(node ->
+        // barrierFreeContentIds.contains(node.path("contentid").asText()))
+        // .collect(Collectors.toList());
+
+        // log.info("🎯 교집합 발견: {}개 (Tour API {}개 × 무장애 API {}개)",
+        // barrierFreeCandidates.size(), tourNodes.size(),
+        // barrierFreeContentIds.size());
+        // if (barrierFreeCandidates.isEmpty()) {
+        // log.warn("⚠️ 교집합이 없음 - 편의시설 필터 조건에 맞는 관광지가 없습니다");
+        // return new ArrayList<>();
+        // }
+
+        // 2. 교집합 방식 대신 각 contentId 개별 체크
+        List<String> contentIdsToCheck = tourNodes.stream()
+                .map(node -> node.path("contentid").asText())
+                .filter(id -> !id.isEmpty())
                 .collect(Collectors.toList());
 
-        log.info("🎯 교집합 발견: {}개 (Tour API {}개 × 무장애 API {}개)",
-                barrierFreeCandidates.size(), tourNodes.size(), barrierFreeContentIds.size());
-
-        if (barrierFreeCandidates.isEmpty()) {
-            log.warn("⚠️ 교집합이 없음 - 편의시설 필터 조건에 맞는 관광지가 없습니다");
-            return new ArrayList<>();
-        }
+        log.info("🎯 무장애 정보 조회 대상: {}개", contentIdsToCheck.size());
 
         // 3단계: 교집합에 대해서만 detailWithTour2 호출 (병렬 처리)
-        List<CompletableFuture<JsonNode>> futures = barrierFreeCandidates.stream()
+        // List<CompletableFuture<JsonNode>> futures = barrierFreeCandidates.stream()
+        // .map(node -> CompletableFuture.supplyAsync(() -> {
+        // try {
+        // String contentId = node.path("contentid").asText();
+
+        // // detailWithTour2로 편의시설 정보 조회
+        // Map<String, String> barrierFreeInfo = getBarrierFreeInfo(contentId);
+
+        // // 접근성 점수 계산
+        // int accessibilityScore = calculateAccessibilityScore(barrierFreeInfo);
+
+        // // JsonNode에 무장애 정보 추가
+        // ObjectNode enrichedNode = (ObjectNode) node.deepCopy();
+        // enrichedNode.put("accessibilityScore", accessibilityScore);
+        // enrichedNode.put("hasBarrierFreeInfo", !barrierFreeInfo.isEmpty());
+
+        // // 편의시설 정보를 JSON 문자열로 저장
+        // try {
+        // enrichedNode.put("barrierFreeInfo",
+        // objectMapper.writeValueAsString(barrierFreeInfo));
+        // } catch (Exception e) {
+        // enrichedNode.put("barrierFreeInfo", "{}");
+        // }
+
+        // log.debug("✅ {} 무장애 정보 통합 완료 - 점수: {}", contentId, accessibilityScore);
+        // return (JsonNode) enrichedNode;
+
+        // } catch (Exception e) {
+        // log.warn("⚠️ 무장애여행 정보 조회 실패 - contentId: {}",
+        // node.path("contentid").asText());
+        // return null; // 실패한 경우 제외
+        // }
+        // }, executorService))
+        // .collect(Collectors.toList());
+        // 3. 각 contentId에 대해 직접 detailWithTour2 호출
+        List<CompletableFuture<JsonNode>> futures = tourNodes.stream()
                 .map(node -> CompletableFuture.supplyAsync(() -> {
                     try {
                         String contentId = node.path("contentid").asText();
 
-                        // detailWithTour2로 편의시설 정보 조회
+                        // 무조건 시도 (교집합 체크 없이)
                         Map<String, String> barrierFreeInfo = getBarrierFreeInfo(contentId);
 
-                        // 접근성 점수 계산
-                        int accessibilityScore = calculateAccessibilityScore(barrierFreeInfo);
-
-                        // JsonNode에 무장애 정보 추가
                         ObjectNode enrichedNode = (ObjectNode) node.deepCopy();
-                        enrichedNode.put("accessibilityScore", accessibilityScore);
-                        enrichedNode.put("hasBarrierFreeInfo", !barrierFreeInfo.isEmpty());
 
-                        // 편의시설 정보를 JSON 문자열로 저장
-                        try {
+                        if (!barrierFreeInfo.isEmpty()) {
+                            int accessibilityScore = calculateAccessibilityScore(barrierFreeInfo);
+                            enrichedNode.put("accessibilityScore", accessibilityScore);
+                            enrichedNode.put("hasBarrierFreeInfo", true);
                             enrichedNode.put("barrierFreeInfo", objectMapper.writeValueAsString(barrierFreeInfo));
-                        } catch (Exception e) {
+                            log.info("✅ {} 무장애 정보 발견 - 점수: {}", contentId, accessibilityScore);
+                        } else {
+                            enrichedNode.put("accessibilityScore", 0);
+                            enrichedNode.put("hasBarrierFreeInfo", false);
                             enrichedNode.put("barrierFreeInfo", "{}");
+                            log.info("⚠️ {} 무장애 정보 없음", contentId);
                         }
 
-                        log.debug("✅ {} 무장애 정보 통합 완료 - 점수: {}", contentId, accessibilityScore);
                         return (JsonNode) enrichedNode;
 
                     } catch (Exception e) {
-                        log.warn("⚠️ 무장애여행 정보 조회 실패 - contentId: {}",
-                                node.path("contentid").asText());
-                        return null; // 실패한 경우 제외
+                        log.warn("무장애 정보 조회 실패: {}", e.getMessage());
+                        // 실패해도 원본 반환
+                        ObjectNode fallbackNode = (ObjectNode) node.deepCopy();
+                        fallbackNode.put("accessibilityScore", 0);
+                        fallbackNode.put("hasBarrierFreeInfo", false);
+                        fallbackNode.put("barrierFreeInfo", "{}");
+                        return (JsonNode) fallbackNode;
                     }
                 }, executorService))
                 .collect(Collectors.toList());
 
+        // 모든 호출 완료 대기
         // 모든 detailWithTour2 호출 완료 대기
+        // List<JsonNode> enrichedResults = futures.stream()
+        // .map(CompletableFuture::join)
+        // .filter(node -> node != null) // 실패한 것 제외
+        // .collect(Collectors.toList());
         List<JsonNode> enrichedResults = futures.stream()
                 .map(CompletableFuture::join)
-                .filter(node -> node != null) // 실패한 것 제외
+                .filter(node -> node != null)
                 .collect(Collectors.toList());
 
-        int barrierFreeCount = (int) enrichedResults.stream()
-                .mapToInt(node -> node.path("hasBarrierFreeInfo").asBoolean() ? 1 : 0)
-                .sum();
-
-        log.info("✅ 무장애여행 정보 통합 완료: 교집합 {}개 → 성공 {}개, 무장애 정보 포함 {}개",
-                barrierFreeCandidates.size(), enrichedResults.size(), barrierFreeCount);
+        log.info("✅ 무장애여행 정보 통합 완료: {}개 중 {}개 처리",
+                tourNodes.size(), enrichedResults.size());
 
         return enrichedResults;
+
+        // int barrierFreeCount = (int) enrichedResults.stream()
+        // .mapToInt(node -> node.path("hasBarrierFreeInfo").asBoolean() ? 1 : 0)
+        // .sum();
+
+        // log.info("✅ 무장애여행 정보 통합 완료: 교집합 {}개 → 성공 {}개, 무장애 정보 포함 {}개",
+        // barrierFreeCandidates.size(), enrichedResults.size(), barrierFreeCount);
+
+        // return enrichedResults;
     }
 
     /**

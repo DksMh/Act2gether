@@ -7,7 +7,7 @@ const MAX_PLACE_SELECTION = 6; // 최대 6개 장소 선택
 
 // 페이지 로드 시 초기화
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("관심사 온보딩 페이지 로드 완료");
+  // console.log("관심사 온보딩 페이지 로드 완료");
 
   // 바로 관심사 선택 화면으로 이동
   showInterestSelection();
@@ -34,10 +34,10 @@ function initializeInterestEventListeners() {
 
   // 모든 장소 그룹에 이벤트 리스너 추가 (.place-grid 클래스로 찾기)
   const placeGroups = document.querySelectorAll(".place-grid");
-  console.log("찾은 장소 그룹 개수:", placeGroups.length);
+  // console.log("찾은 장소 그룹 개수:", placeGroups.length);
 
   placeGroups.forEach((group, index) => {
-    console.log(`장소 그룹 ${index + 1} 이벤트 리스너 추가`);
+    // console.log(`장소 그룹 ${index + 1} 이벤트 리스너 추가`);
     group.addEventListener("click", handlePlaceGroupClick);
   });
 }
@@ -144,7 +144,7 @@ function updateUserInterests() {
     userInterests.needs = selectedNeed ? [selectedNeed.dataset.value] : [];
   }
 
-  console.log("업데이트된 관심사 (투어 검색 호환):", userInterests);
+  // console.log("업데이트된 관심사 (투어 검색 호환):", userInterests);
 
   // 선택 개수 표시 업데이트
   updateSelectionCounter();
@@ -166,7 +166,7 @@ function showInterestSelection() {
   const interestSection = document.getElementById("interestSelection");
   if (interestSection) {
     interestSection.classList.add("active");
-    console.log("관심사 선택 화면 표시됨 - 투어 검색 호환 버전");
+    // console.log("관심사 선택 화면 표시됨 - 투어 검색 호환 버전");
   }
 }
 
@@ -184,7 +184,7 @@ function completeOnboarding() {
     return;
   }
 
-  console.log("전송할 관심사 데이터:", userInterests);
+  // console.log("전송할 관심사 데이터:", userInterests);
 
   // 로딩 표시
   showLoading();
@@ -206,7 +206,7 @@ function completeOnboarding() {
       hideLoading();
       showSuccess("관심사가 성공적으로 저장되었습니다!");
 
-      console.log("서버 응답:", response);
+      // console.log("서버 응답:", response);
 
       // 3초 후 메인 페이지로 이동
       setTimeout(() => {
@@ -229,7 +229,7 @@ function skipOnboarding() {
       "관심사 설정을 건너뛰시겠습니까?\n나중에 마이페이지에서 설정할 수 있습니다."
     )
   ) {
-    console.log("관심사 설정 건너뛰기");
+    // console.log("관심사 설정 건너뛰기");
     window.location.href = "/";
   }
 }

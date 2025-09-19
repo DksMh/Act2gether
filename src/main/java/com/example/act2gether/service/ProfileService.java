@@ -43,19 +43,19 @@ public class ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final WithdrawRepository withdrawRepository;
     private final TravelGroupsRepository travelGroupsRepository;
-     private final TravelGroupMembersRepository travelGroupMembersRepository;
+    private final TravelGroupMembersRepository travelGroupMembersRepository;
 
-    public ProfileDTO getProfile(String email){
+    public ProfileDTO getProfile(String email) {
         UserEntity userEntity = userRepository.findByEmail(email).orElse(null);
         List<ReviewsEntity> reviewsEntity = reviewsRepository.findByUserId(userEntity.getUserId());
         ProfileDTO profileDto = ProfileDTO.setData(userEntity, reviewsEntity);
-        
+
         return profileDto;
     }
 
-    public UserEntity getProfileByUsername(String username){
+    public UserEntity getProfileByUsername(String username) {
         UserEntity userEntity = userRepository.findByUsername(username).orElse(null);
-        
+
         return userEntity;
     }
 
@@ -84,7 +84,8 @@ public class ProfileService {
     public UserAvatarEntity getAvatarByUserId(String username) {
         UserEntity userEntity = userRepository.findByUsername(username).orElse(null);
         log.info("username >>> {}, userID : {}", username, userEntity.getUserId());
-        UserAvatarEntity a = avatarRepository.findFirstByUserIdOrderByCreatedAtDesc(userEntity.getUserId()).orElse(null);
+        UserAvatarEntity a = avatarRepository.findFirstByUserIdOrderByCreatedAtDesc(userEntity.getUserId())
+                .orElse(null);
         log.info("image id >> {}", a.getImageId());
         return avatarRepository.findFirstByUserIdOrderByCreatedAtDesc(userEntity.getUserId()).orElse(null);
     }
@@ -104,7 +105,7 @@ public class ProfileService {
     @Transactional
     public boolean setPassword(UserDTO userDTO) {
         UserEntity userEntity = userRepository.findByUsername(userDTO.getUsername()).orElse(null);
-        if(!passwordEncoder.matches(userDTO.getRawPassword(), userEntity.getPassword())){
+        if (!passwordEncoder.matches(userDTO.getRawPassword(), userEntity.getPassword())) {
             return false;
         }
         userEntity.setPassword(passwordEncoder.encode(userDTO.getPassword()));
@@ -134,7 +135,8 @@ public class ProfileService {
     public List<TravelGroupsEntity> getTravelGroups(UserDTO userDTO) {
         UserEntity userEntity = userRepository.findByUsername(userDTO.getUsername()).orElse(null);
         List<TravelGroupMembersEntity> member = travelGroupMembersRepository.findByUserId(userEntity.getUserId());
-        List<TravelGroupsEntity> group = member.stream().map(m -> travelGroupsRepository.findById(m.getGroupId())).flatMap(Optional::stream).collect(Collectors.toList());
+        List<TravelGroupsEntity> group = member.stream().map(m -> travelGroupsRepository.findById(m.getGroupId()))
+                .flatMap(Optional::stream).collect(Collectors.toList());
         return group;
     }
 }

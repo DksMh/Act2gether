@@ -29,10 +29,10 @@ $(document).ready(function () {
       method: "GET",
       async: false,
       success: function (data) {
-        console.log("세션 정보:", data);
+        // console.log("세션 정보:", data);
         if (data.isAuthenticated) {
           currentUser = data;
-          console.log("로그인 사용자:", data.username);
+          // console.log("로그인 사용자:", data.username);
         }
       },
       error: function () {
@@ -81,7 +81,7 @@ $(document).ready(function () {
 
       const type = $(this).data("type");
       currentTravelType = type;
-      console.log("선택된 타입:", type);
+      // console.log("선택된 타입:", type);
 
       generateTour(type);
     });
@@ -94,7 +94,7 @@ $(document).ready(function () {
       $(this).addClass("active");
 
       const region = $(this).data("region");
-      console.log("선택된 지역:", region);
+      // console.log("선택된 지역:", region);
 
       loadRegionExperiences(region);
     });
@@ -109,7 +109,7 @@ $(document).ready(function () {
       const cityName = $card.data("city");
 
       if (!tourId) {
-        console.log("투어 ID가 없습니다");
+        // console.log("투어 ID가 없습니다");
         return;
       }
 
@@ -123,7 +123,7 @@ $(document).ready(function () {
           window.location.href = `/login?redirect=/tour-detail?id=${tourId}`;
         }
       } else {
-        console.log(`${cityName} 투어 상세 페이지로 이동: ${tourId}`);
+        // console.log(`${cityName} 투어 상세 페이지로 이동: ${tourId}`);
         window.location.href = `/tour-detail?id=${tourId}`;
       }
     });
@@ -169,7 +169,7 @@ $(document).ready(function () {
     const cached = tourCache.get(type);
     if (cached && Date.now() - cached.time < 300000) {
       // 5분 캐시
-      console.log("캐시에서 투어 데이터 사용:", type);
+      // console.log("캐시에서 투어 데이터 사용:", type);
       displayTourCards(cached.data);
       updateTravelThemeTitle(type);
       return;
@@ -177,7 +177,7 @@ $(document).ready(function () {
 
     // 중복 요청 방지
     if (isProcessing) {
-      console.log("이미 처리 중인 요청이 있습니다");
+      // console.log("이미 처리 중인 요청이 있습니다");
       return;
     }
 
@@ -193,7 +193,7 @@ $(document).ready(function () {
         numOfRows: 6,
       },
       success: function (response) {
-        console.log("투어 생성 응답:", response);
+        // console.log("투어 생성 응답:", response);
 
         if (response.success && response.data) {
           // 캐시에 저장
@@ -362,7 +362,7 @@ $(document).ready(function () {
       .off("click")
       .on("click", function () {
         const tourId = $(this).closest(".tour-product-card").data("tour-id");
-        console.log("투어 상세보기 클릭 - tourId:", tourId); // 디버깅용
+        // console.log("투어 상세보기 클릭 - tourId:", tourId); // 디버깅용
 
         if (!tourId) {
           alert("투어 정보를 찾을 수 없습니다.");
@@ -412,7 +412,7 @@ $(document).ready(function () {
         region: regionCode,
       },
       success: function (response) {
-        console.log(`${response.regionName} 투어 데이터:`, response);
+        // console.log(`${response.regionName} 투어 데이터:`, response);
 
         if (response.success && response.data && response.data.length > 0) {
           displayRegionalTours(response.data, response.regionName);
