@@ -20,6 +20,7 @@ import com.example.act2gether.dto.CommentCreateRequest;
 import com.example.act2gether.dto.CommentResponse;
 import com.example.act2gether.dto.CommentUpdateRequest;
 import com.example.act2gether.dto.GroupMetaResponse;
+import com.example.act2gether.dto.IdListReq;
 import com.example.act2gether.dto.MembersDTO;
 import com.example.act2gether.dto.PostDTO;
 import com.example.act2gether.dto.ResetPasswordDTO;
@@ -47,6 +48,14 @@ import org.springframework.web.bind.annotation.RequestPart;
 public class CommunityController {
     @Autowired
     private CommunityService communityService;
+
+    /** 모달 카드에 뿌릴 그룹 상세 조회 */
+    @PostMapping("/groups/lookup")
+    public List<TravelGroupsEntity> lookup(@RequestBody IdListReq req) {
+        if (req == null || req.ids() == null || req.ids().isEmpty()) return List.of();
+
+        return communityService.findByIds(req.ids());
+    }
 
     // 가입 여부 확인
     @GetMapping("/member/me")

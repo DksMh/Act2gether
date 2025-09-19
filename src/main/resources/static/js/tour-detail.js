@@ -2491,7 +2491,7 @@ window.tourDetail = {
   /**
    * 👥 여행참여
    */
-  handleTravelJoin() {
+  async handleTravelJoin() {
     // 로그인 체크
     if (!this.currentUser) {
       this.showToast("로그인이 필요합니다", "warning");
@@ -2510,7 +2510,9 @@ window.tourDetail = {
     // 참여 가능한 그룹 목록 확인
     if (this.currentTravelGroups && this.currentTravelGroups.length > 0) {
       const availableGroups = this.currentTravelGroups.filter((g) => g.canJoin);
-
+      // console.log(JSON.stringify(this.currentTravelGroups, null, 2));
+      console.log(JSON.stringify(availableGroups, null, 2));
+     
       if (availableGroups.length === 1) {
         // 그룹이 하나면 바로 참여 확인
         const group = availableGroups[0];
@@ -2527,14 +2529,17 @@ window.tourDetail = {
           window.location.href = `/community?groupId=${group.groupId}`;
         }
       } else if (availableGroups.length > 1) {
+        await showAvailableGroupsModal(availableGroups);
         // 여러 그룹이 있으면 커뮤니티 페이지로 이동
-        if (
-          confirm(
-            `${availableGroups.length}개의 여행 그룹이 모집 중입니다.\n커뮤니티 페이지에서 확인하시겠습니까?`
-          )
-        ) {
-          window.location.href = `/community?tourId=${this.currentTour.tourId}`;
-        }
+        // if (
+        //   confirm(
+        //     `${availableGroups.length}개의 여행 그룹이 모집 중입니다.\n커뮤니티 페이지에서 확인하시겠습니까?`
+        //   )
+        // ) {
+        //   //이 부분 수정해야함
+
+        //   window.location.href = `/community?tourId=${this.currentTour.tourId}`;
+        // }
       }
     } else {
       this.showToast("여행 그룹 정보를 불러올 수 없습니다", "error");
@@ -2734,3 +2739,201 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // tourDetail을 전역으로 노출 (기존과 동일)
 window.tourDetail = window.tourDetail;
+
+function openGroupModal() {
+  const m = document.getElementById('groupPickModal');
+  m.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+function closeGroupModal() {
+  document.getElementById('groupPickModal').hidden = true;
+  document.body.style.overflow = '';
+}
+document.addEventListener('click', (e)=>{
+  if (e.target.closest('[data-close="true"]')) closeGroupModal();
+});
+document.addEventListener('keydown', (e)=>{
+  if (e.key === 'Escape') closeGroupModal();
+});
+const MS_PER_DAY = 86_400_000;
+
+// 입력을 "로컬 자정"으로 정규화
+function toMidnightLocal(input) {
+  if (input instanceof Date) {
+    return new Date(input.getFullYear(), input.getMonth(), input.getDate());
+  }
+  if (typeof input === 'string') {
+    // 'YYYY-MM-DD' 형태는 타임존 흔들림 방지용 수동 생성
+    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+      const [y, m, d] = input.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    const d = new Date(input); // ISO 등
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  return new Date(NaN);
+}
+
+// today(기본: 지금)와 target 사이의 D-day (오늘=0, 내일=1, 어제=-1)
+function dday1(target, today = new Date()) {
+  const t0 = toMidnightLocal(target);
+  const n0 = toMidnightLocal(today);
+  return Math.ceil((t0 - n0) / MS_PER_DAY);
+}
+
+function renderGroupCards(groups) {
+  const grid = document.getElementById('gmGrid');
+  grid.innerHTML = '';
+
+  groups.forEach(g => {
+    // intro(JSON) 파싱
+    let intro = {};
+    try { intro = typeof g.intro === 'string' ? JSON.parse(g.intro) : (g.intro||{}); } catch {}
+    const title  = intro.title ;
+    const depart = intro.departureRegion;
+    const start  = (g.startDate||'').replaceAll('-', '.');
+    const end    = (g.endDate||'').replaceAll('-', '.');
+
+    const n = dday1(g.startDate);
+    const pill =
+      n > 0 ? `여행 시작까지 <strong style="color:#ff5900">${n}</strong>일 남았어요!`
+      : n === 0 ? `<strong style="color:#ff5900">오늘 출발!</strong>`
+      : '여행 중이거나 종료';
+
+    const card = document.createElement('article');
+    card.className = 'gm-card';
+    card.dataset.groupId = g.groupId;
+
+  // 서버가 가입여부를 내려줄 경우 true로 세팅(없으면 생략)
+  if (g.enrolled === true || g.isMember === true) {
+    card.dataset.enrolled = 'true';
+  }
+
+    card.innerHTML = `
+      <div class="gm-pill-row">
+        <span class="gm-pill">${pill}</span>
+        ${depart ? `<span class="gm-pill out">${depart} 출발</span>` : ''}
+      </div>
+      <div class="gm-title2">${title}</div>
+      <div class="gm-meta">
+        <span>${start} ~ ${end}</span>
+        <span>${Number(g.maxMembers)||0}명 모집 (현재 ${Number(g.currentMembers)||0}명)</span>
+      </div>
+    `;
+
+    card.addEventListener('click', () => {
+      // 그냥 이동만 할지, 가입 로직을 탈지 선택해서 넣으세요.
+
+      window.location.href = `/community?groupId=${encodeURIComponent(g.groupId)}`;
+    });
+
+    grid.appendChild(card);
+  });
+}
+async function showAvailableGroupsModal(availableGroups) {
+  // 1) groupId 목록만 추출
+  const ids = (availableGroups || [])
+    .map(g => g.groupId)
+    .filter(Boolean);
+
+  if (ids.length === 0) {
+    // 없으면 모달 안 띄우고 바로 안내
+    if (window.showToast) showToast('모집 중인 그룹이 없습니다.', 'info');
+    return;
+  }
+
+  try {
+    // 2) 서버로 조회 (필드는 아래 컨트롤러와 맞춤)
+    const res = await fetch('/community/groups/lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ ids })
+    });
+
+    const groups = await res.json();   // [{groupId, startDate, endDate, maxMembers, currentMembers, intro:JSON,...}]
+    // 3) 모달 열고 그리드 채우기
+    document.getElementById('gmSub').textContent =
+      `${groups.length}개의 커뮤니티가 진행 중입니다. 선택해 들어가세요.`;
+    renderGroupCards(groups);
+    openGroupModal();
+
+  } catch (e) {
+    console.error(e);
+    alert('그룹 정보를 불러오지 못했습니다.');
+  }
+}
+
+// 카드 클릭 위임: 페이지 어디서든 [data-group-id] 요소 클릭을 잡음
+document.addEventListener('click', async (e) => {
+  const card = e.target.closest('[data-group-id]');
+  if (!card) return;
+
+  const groupId   = card.dataset.groupId;
+  const enrolledH = card.dataset.enrolled === 'true';
+  await handleGroupCardClick(groupId, enrolledH);
+});
+
+async function handleGroupCardClick(groupId, enrolledHint = false) {
+  // 1) 로그인 체크
+  const username = (window.currentUser?.username || '').toLowerCase();
+  if (!username) {
+    if (confirm('로그인이 필요합니다. 로그인 하시겠어요?')) {
+      const redirect = `/community?groupId=${encodeURIComponent(groupId)}`;
+      window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`;
+    }
+    return;
+  }
+
+  // 2) 가입 여부 확인(힌트가 없으면 서버에 한번 확인)
+  let isMember = enrolledHint;
+  if (!isMember) {
+    try {
+      const r = await fetch(`/community/member/me?groupId=${encodeURIComponent(groupId)}`, {
+        credentials: 'include'
+      });
+      if (r.ok) {
+        const j = await r.json();
+        isMember = !!j.member;
+      }
+    } catch (err) {
+      console.warn('가입 여부 확인 실패(무시):', err);
+    }
+  }
+
+  // 3) 이미 가입 → 바로 이동
+  if (isMember) {
+    window.location.href = `/community?groupId=${encodeURIComponent(groupId)}`;
+    return;
+  }
+
+  // 4) 미가입 → 가입 확인
+  if (!confirm('아직 가입하지 않은 모임입니다. 지금 가입하시겠어요?')) return;
+
+  // 5) 가입 시도 (너가 쓰던 API에 맞춰 전달)
+  try {
+    const payload = {
+      groupId,                     // 커뮤니티 그룹 ID
+      username: username,                    // 현재 사용자
+      memberType: 'member'         // 기본 member (필요에 맞게)
+    };
+
+    const r = await fetch('/community/only/member/save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+
+    if (!r.ok) {
+      const msg = await r.text();
+      throw new Error(msg || '가입 실패');
+    }
+
+    toast('가입이 완료되었습니다. 커뮤니티로 이동합니다.', 'success');
+    window.location.href = `/community?groupId=${encodeURIComponent(groupId)}`;
+  } catch (err) {
+    console.error(err);
+    toast('가입 중 오류가 발생했습니다.');
+  }
+}

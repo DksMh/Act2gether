@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.act2gether.entity.TravelGroupMembersEntity;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 
 public interface TravelGroupMembersRepository extends JpaRepository<TravelGroupMembersEntity, String>{
@@ -13,4 +14,5 @@ public interface TravelGroupMembersRepository extends JpaRepository<TravelGroupM
     Optional<TravelGroupMembersEntity> findByMemberId(String memberId);
     List<TravelGroupMembersEntity> findByGroupIdAndUserId(String groupId, String userId);
     long countByGroupId(String groupId);  
+    boolean existsByGroupIdAndUserId(String groupId, String userId);
 }
