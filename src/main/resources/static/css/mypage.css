@@ -1215,6 +1215,7 @@ body.modal-open {
   .place-group .options-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
 }
 .modal[hidden],
 .modal[aria-hidden="true"],
