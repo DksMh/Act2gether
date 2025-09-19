@@ -169,14 +169,8 @@ public class TourDetailController {
   @GetMapping("/{tourId}/fallback")
   public ResponseEntity<Map<String, Object>> getTourDetailFallback(
       @PathVariable String tourId,
-      @RequestParam(required = false) String selectedNeedsType, // 파라미터 추가
+      @RequestParam(required = false) String needs, // URL 파라미터에서 받기
       HttpServletRequest request) {
-
-    HttpSession session = request.getSession(true);
-    // 테스트용: 1분 세션 타임아웃
-    session.setMaxInactiveInterval(60);
-
-    log.info("📌 테스트모드: 세션 타임아웃 10분 설정 - tourId: {}", tourId);
     log.info("투어 상세페이지 fallback 요청 - tourId: {}", tourId);
 
     try {
@@ -259,6 +253,10 @@ public class TourDetailController {
             spot.put("sigungucode", "");
             spot.put("optimizedImage", "/uploads/tour/no-image.png");
             spot.put("categoryName", "기타");
+            // 무장애 정보 필드도 추가
+            spot.put("hasBarrierFreeInfo", false);
+            spot.put("accessibilityScore", 0);
+            spot.put("barrierFreeInfo", "{}");
             // 스택 트레이스도 로그에 출력 (디버깅용)
             log.error("상세 에러 스택:", e);
           }
@@ -297,8 +295,6 @@ public class TourDetailController {
       // 3. 무장애 정보 통합 (안전 merge) - 핵심 수정 부분
       try {
         List<JsonNode> spotsAsJsonNodes = convertToJsonNodes(tourSpots);
-
-        // enrich: 순서/개수 보장 안되므로 "참고 데이터"로만 사용
         List<JsonNode> enriched = barrierFreeService.enrichWithBarrierFreeInfo(
             spotsAsJsonNodes, primaryAreaCode, primarySigunguCode);
 
@@ -310,30 +306,29 @@ public class TourDetailController {
             byId.put(cid, n);
         }
 
-        int bfCount = 0;
+        // 모든 spot에 대해 무장애 정보 보장
         for (Map<String, Object> spot : tourSpots) {
           String cid = String.valueOf(spot.getOrDefault("contentid", ""));
           JsonNode n = byId.get(cid);
 
-          if (n != null) {
-            bfCount++;
+          if (n != null && n.has("barrierFreeInfo")) {
             spot.put("hasBarrierFreeInfo", true);
             spot.put("accessibilityScore", n.path("accessibilityScore").asInt(0));
-            // 문자열(JSON)로 저장하면 프론트에서 JSON.parse 가능
-            if (n.has("barrierFreeInfo")) {
-              spot.put("barrierFreeInfo", n.get("barrierFreeInfo").toString());
-            }
+            spot.put("barrierFreeInfo", n.get("barrierFreeInfo").toString());
           } else {
-            spot.putIfAbsent("hasBarrierFreeInfo", false);
-            spot.putIfAbsent("accessibilityScore", 0);
-            spot.putIfAbsent("barrierFreeInfo", "{}");
+            // ✅ 무장애 정보가 없어도 필드는 반드시 추가
+            spot.put("hasBarrierFreeInfo", false);
+            spot.put("accessibilityScore", 0);
+            spot.put("barrierFreeInfo", "{}");
           }
         }
-        log.info("🛡️ 무장애 merge 완료: 입력 {} → 무장애 {}개 (리스트 크기 유지)",
-            tourSpots.size(), bfCount);
+
+        log.info("🛡️ 무장애 merge 완료: 전체 {} 중 무장애정보 {}개",
+            tourSpots.size(), byId.size());
+
       } catch (Exception e) {
         log.warn("무장애 merge 실패, 원본 유지: {}", e.getMessage());
-        // 실패해도 기본 무장애 필드 추가
+        // ✅ 예외 발생 시에도 모든 spot에 기본값 설정
         for (Map<String, Object> spot : tourSpots) {
           spot.putIfAbsent("hasBarrierFreeInfo", false);
           spot.putIfAbsent("accessibilityScore", 0);
@@ -413,49 +408,52 @@ public class TourDetailController {
       response.put("spots", tourSpots);
       response.put("restaurants", restaurants);
       response.put("kakaoMapApiKey", kakaoMapApiKey);
-      response.put("version", "v3.0-consistent");
-      if (selectedNeedsType != null && !selectedNeedsType.isEmpty()) {
-        // accessibilityInfo 객체 생성
+      // 편의시설 필터 정보 추가 (URL 파라미터에서 온 경우)
+      if (needs != null && !needs.isEmpty()) {
         Map<String, Object> accessibilityInfo = new HashMap<>();
-        accessibilityInfo.put("selectedNeedsType", selectedNeedsType);
+        accessibilityInfo.put("selectedNeedsType", needs);
         accessibilityInfo.put("hasAccessibilityFilter", true);
 
-        // 해당 편의시설을 가진 관광지 수 계산
-        Map<String, String[]> needsMap = Map.of(
-            "주차 편의", new String[] { "parking", "publictransport" },
-            "접근 편의", new String[] { "route", "exit" },
-            "시설 편의", new String[] { "restroom", "elevator" });
+        // 편의시설별 카운트
+        Map<String, String[]> needsMapping = Map.of(
+            "주차편의", new String[] { "parking", "publictransport" },
+            "접근편의", new String[] { "route", "exit" },
+            "시설편의", new String[] { "restroom", "elevator" });
 
-        String[] fields = needsMap.get(selectedNeedsType);
+        String needsType = needs.replace("편의", " 편의"); // "주차편의" -> "주차 편의"
+        accessibilityInfo.put("selectedNeedsType", needsType);
+
+        // validCount 계산
         int validCount = 0;
-
+        String[] fields = needsMapping.get(needs);
         if (fields != null) {
           for (Map<String, Object> spot : tourSpots) {
-            String barrierFreeJson = (String) spot.get("barrierFreeInfo");
-            if (barrierFreeJson != null && !barrierFreeJson.equals("{}")) {
+            String bfInfo = (String) spot.get("barrierFreeInfo");
+            if (bfInfo != null && !bfInfo.equals("{}")) {
               try {
-                JsonNode bfInfo = objectMapper.readTree(barrierFreeJson);
+                JsonNode node = objectMapper.readTree(bfInfo);
                 for (String field : fields) {
-                  if (bfInfo.has(field) && !bfInfo.get(field).asText("").isEmpty()) {
+                  if (node.has(field) && !node.get(field).asText("").isEmpty()) {
                     validCount++;
                     break;
                   }
                 }
               } catch (Exception e) {
-                // 무시
               }
             }
           }
         }
-
         accessibilityInfo.put("validCount", validCount);
         accessibilityInfo.put("totalCount", tourSpots.size());
 
         response.put("accessibilityInfo", accessibilityInfo);
+        log.info("편의시설 필터 적용: {}, valid={}/{}", needsType, validCount, tourSpots.size());
       }
+
       log.info("fallback 완료: {}개 관광지 → 무장애 {}개, 맛집 {}개 카테고리",
           tourSpots.size(), totalBarrierFreeSpots, restaurants.size());
 
+      response.put("version", "v3.0-consistent");
       return ResponseEntity.ok(response);
 
     } catch (

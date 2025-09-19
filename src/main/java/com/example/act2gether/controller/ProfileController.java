@@ -31,14 +31,13 @@ import com.example.act2gether.service.ProfileService;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Controller 
+@Controller
 @RequestMapping("/profile")
 public class ProfileController {
     @Autowired
     private ProfileService profileService;
     @Autowired
     private UserRepository userRepository;
-
 
     @PostMapping("/user")
     public ResponseEntity<?> verifyCode(@RequestBody EmailDTO emailDto) {
@@ -48,14 +47,14 @@ public class ProfileController {
         return ResponseEntity.status(HttpStatus.OK).body(profileDto);
     }
 
-     @PostMapping("/user/username")
+    @PostMapping("/user/username")
     public ResponseEntity<?> user(@RequestBody UserDTO userDTO) {
         UserEntity user = profileService.getProfileByUsername(userDTO.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
     // 업로드(대표 사진 변경)
-    @PostMapping(path="/account/avatar", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path = "/account/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadAvatar(
             @RequestParam("username") String username,
             @RequestParam("file") MultipartFile file) throws IOException {
@@ -73,8 +72,7 @@ public class ProfileController {
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "imageId", imageId,
-                "avatarUrl", url
-        ));
+                "avatarUrl", url));
     }
 
     // 아바타 조회(캐시 방지 쿼리스트링 사용 권장: ?v=timestamp)
@@ -108,7 +106,7 @@ public class ProfileController {
     @PostMapping("/password")
     public ResponseEntity<?> setPassword(@RequestBody UserDTO userDTO) {
         boolean password = profileService.setPassword(userDTO);
-        if(!password){
+        if (!password) {
             return ResponseEntity.badRequest().body("비밀번호를 잘못 입력했습니다.");
         }
         return ResponseEntity.status(HttpStatus.OK).body("비밀번호 변경 성공했습니다.");
@@ -117,14 +115,14 @@ public class ProfileController {
     @PostMapping("/policy")
     public ResponseEntity<?> setPolicy(@RequestBody UserDTO userDTO) {
         profileService.setPolicy(userDTO);
-        
+
         return ResponseEntity.status(HttpStatus.OK).body("정책 업데이트에 성공했습니다.");
     }
 
     @PostMapping("/agreement")
     public ResponseEntity<?> getAgreement(@RequestBody UserDTO userDTO) {
         String user = profileService.getAgreement(userDTO);
-        
+
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
@@ -140,5 +138,3 @@ public class ProfileController {
         return ResponseEntity.status(HttpStatus.OK).body(travelgroups);
     }
 }
-
-

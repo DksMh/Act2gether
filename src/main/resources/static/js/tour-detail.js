@@ -38,7 +38,6 @@ window.tourDetail = {
     console.log("🚀 투어 상세정보 로드 시작 (세션 우선):", tourId);
     // 로그인 상태 먼저 확인
     await this.checkLoginStatus();
-
     this.showLoading();
 
     try {
@@ -53,12 +52,68 @@ window.tourDetail = {
 
         // 백엔드에서 추가 데이터 (맛집, API 키) 가져오기
         await this.loadAdditionalData(tourId);
+        // 세션 데이터에는 barrierFreeInfo가 없으므로
+        // fallback API를 호출해서 편의시설 정보를 가져와야 함
+        try {
+          // URL에서 needs 파라미터 확인
+          const urlParams = new URLSearchParams(window.location.search);
+          const needs = urlParams.get("needs");
+
+          // needs 파라미터가 있으면 포함해서 호출
+          let url = `/tour-detail/${tourId}/fallback`;
+          if (needs) {
+            url += `?needs=${encodeURIComponent(needs)}`;
+            console.log("🔍 편의시설 필터 포함:", needs);
+          }
+
+          const response = await fetch(url);
+          const result = await response.json();
+
+          if (result.success && result.spots) {
+            // spots 배열의 barrierFreeInfo만 업데이트
+            result.spots.forEach((apiSpot) => {
+              const currentSpot = this.currentSpots.find(
+                (s) => s.contentid === apiSpot.contentid
+              );
+              if (currentSpot) {
+                currentSpot.barrierFreeInfo = apiSpot.barrierFreeInfo || "{}";
+                currentSpot.hasBarrierFreeInfo =
+                  apiSpot.hasBarrierFreeInfo || false;
+                currentSpot.accessibilityScore =
+                  apiSpot.accessibilityScore || 0;
+              }
+            });
+
+            // 맛집 정보도 업데이트
+            if (result.restaurants) {
+              this.currentRestaurants = result.restaurants;
+            }
+
+            // kakaoMapApiKey
+            if (result.kakaoMapApiKey) {
+              this.kakaoMapApiKey = result.kakaoMapApiKey;
+            }
+
+            // accessibilityInfo 업데이트 (needs 파라미터가 있었다면)
+            if (result.accessibilityInfo) {
+              this.currentTour.accessibilityInfo = result.accessibilityInfo;
+            }
+
+            // 편의시설 정보가 업데이트되었으므로 UI 재렌더링
+            this.renderSpotAccordions();
+            this.renderRestaurants();
+            this.initializeKakaoMap();
+
+            console.log("✅ 편의시설 및 맛집 정보 업데이트 완료");
+          }
+        } catch (error) {
+          console.warn("⚠️ 추가 데이터 로드 실패:", error);
+          // 실패해도 세션 데이터로 기본 UI는 유지
+        }
 
         this.showSuccess("투어 정보를 불러왔습니다! (세션 활용)");
       } else {
         console.log("❌ 세션 데이터 없음 - API 호출 시도");
-
-        // 2단계: API fallback
         await this.loadFromApi(tourId);
       }
     } catch (error) {
@@ -247,11 +302,15 @@ window.tourDetail = {
     try {
       // URL에서 필터 파라미터 확인 (예: ?needs=주차편의)
       const urlParams = new URLSearchParams(window.location.search);
-      const selectedNeedsType = urlParams.get("needs");
-      const response = await fetch(`/tour-detail/${tourId}/fallback`);
-      if (selectedNeedsType) {
-        url += `?selectedNeedsType=${encodeURIComponent(selectedNeedsType)}`;
+      const needs = urlParams.get("needs");
+      // fallback API 호출 시 needs 파라미터 포함
+      let url = `/tour-detail/${tourId}/fallback`;
+      if (needs) {
+        url += `?needs=${encodeURIComponent(needs)}`;
+        console.log("🔍 편의시설 필터 포함:", needs);
       }
+      //const response = await fetch(`/tour-detail/${tourId}/fallback`);
+      const response = await fetch(url);
       const result = await response.json();
 
       console.log("📦 API 응답:", result);
@@ -261,6 +320,12 @@ window.tourDetail = {
         this.currentSpots = result.spots || [];
         this.currentRestaurants = result.restaurants || {};
         this.kakaoMapApiKey = result.kakaoMapApiKey;
+
+        // accessibilityInfo 저장
+        if (result.accessibilityInfo) {
+          this.accessibilityInfo = result.accessibilityInfo;
+          console.log("✅ 편의시설 필터 정보:", this.accessibilityInfo);
+        }
 
         // UI 업데이트
         this.updateTourHeader();
@@ -2387,7 +2452,10 @@ window.tourDetail = {
     const noAgeLimit = document.getElementById("noAgeLimit").checked;
     var groupId = crypto.randomUUID();
     const groupData = {
-      spot: document.getElementById('regionBadge').textContent.replace('📍', '').trim(), //목적지 추가
+      spot: document
+        .getElementById("regionBadge")
+        .textContent.replace("📍", "")
+        .trim(), //목적지 추가
       groupId: groupId,
       tourId: this.currentTour.tourId,
       groupName: document.getElementById("groupName").value,
