@@ -19,11 +19,11 @@
         <div class="container">
           <div class="community-info-card">
             <div class="community-banner">
-              <img
+              <!-- <img
                 src="/images/travel-banner.jpg"
                 alt="커뮤니티 배너"
                 class="banner-image"
-              />
+              /> -->
               <div class="banner-overlay">
                 <h1 class="community-title">
                   중년 여성들의 소박한 국내 여행 기록
@@ -208,14 +208,14 @@
             <div class="write-post-card">
               <div class="card-header">
                 <h3>새 글 작성</h3>
-                <div class="post-count">총 16개의 글</div>
+                <!-- <div class="post-count">총 16개의 글</div> -->
               </div>
 
               <div class="write-form">
                 <div class="author-info">
                   <div class="author-avatar">
                     <img
-                      src="/images/default-avatar.png"
+                      th:src="@{'/profile/avatars/user/' + ${username}}"
                       alt="프로필"
                       class="avatar-img"
                     />
@@ -270,7 +270,7 @@
                 <div class="post-header">
                   <div class="author-info">
                     <div class="author-avatar">
-                      <img src="/images/default-avatar.png" alt="프로필" class="avatar-img" />
+                      <img th:src="@{'/profile/avatars/user/' + ${username}}" alt="프로필" class="avatar-img" />
                     </div>
                     <div class="author-details">
                       <span class="author-name"></span>
@@ -418,7 +418,6 @@ function renderImages(root, pictures) {
 }
 
 function renderPostCard(post) {
-  console.log("aaaa");
   const tpl = document.getElementById('postCardTpl');
   const node = tpl.content.firstElementChild.cloneNode(true);
 
@@ -487,7 +486,7 @@ function hydrateLikeState(cardEl, postId) {
     contentType: "application/json",
     success: function (resp) {
       if(resp){
-        console.log("resp >>> " + resp);
+        // console.log("resp >>> " + resp);
          const btn  = cardEl.querySelector('.like-btn');
          const $btn = $(btn);
           // UI
@@ -558,7 +557,7 @@ async function loadPosts() {
     currentPage = 1;
     renderCurrentPage();  // ← 새 함수
  
-    console.log("posts >>> " + JSON.stringify(data));
+    // console.log("posts >>> " + JSON.stringify(data));
     
   } catch (e) {
     console.error('게시글 로드 실패:', e);
@@ -643,7 +642,7 @@ async function loadGroupMeta() {
     const res = await fetch(`/community/group/${encodeURIComponent(groupId)}/meta`);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const m = await res.json();
-    console.log(m);
+    // console.log(m);
 
     document.querySelector('.community-title')  .textContent = m.title ?? '';
     document.querySelector('.community-subtitle').textContent = m.description ?? '';

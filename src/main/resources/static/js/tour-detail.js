@@ -2558,7 +2558,7 @@ window.tourDetail = {
 
       // console.log(JSON.stringify(this.currentTravelGroups, null, 2));
 
-      console.log(JSON.stringify(availableGroups, null, 2));
+      // console.log(JSON.stringify(availableGroups, null, 2));
 
       if (availableGroups.length === 1) {
         // 그룹이 하나면 바로 참여 확인

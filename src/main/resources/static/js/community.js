@@ -22,6 +22,7 @@ $(document).ready(function () {
 
   // 시니어 친화적 UI 설정
   setupSeniorUI();
+  // updatePostCount();
 });
 
 // 시니어 친화적 기능 초기화
@@ -452,10 +453,14 @@ function escapeHtml(text) {
 }
 
 // 게시글 수 업데이트
-function updatePostCount() {
-  const count = $(".posts-list .post-card").length;
-  $(".post-count").text(`총 ${count}개의 글`);
-}
+// function updatePostCount() {
+//   const container = document.querySelector('.posts-list');
+//   const count = container
+//     ? container.querySelectorAll('.post-card').length
+//     : 0;
+
+//   document.querySelector('.post-count').textContent = `총 ${count}개의 글`;
+// }
 
 // 게시글 상호작용 초기화(위임)
 function initPostInteractions() {
@@ -516,7 +521,7 @@ function initPostInteractions() {
     const $post = $(this).closest(".post-card");
     showPostMenu(e, $post);
   });
-
+  // updatePostCount();
   // ✅ 이미지 클릭은 라이트박스가 document 위임으로 이미 처리 중이므로
   // 여기서 .post-img 클릭 바인딩은 더 이상 필요 없습니다.
 }
@@ -1456,7 +1461,7 @@ function deletePost($post) {
       // console.log("게시글 삭제 성공");
       $post.slideUp(400, function () {
         $(this).remove();
-        updatePostCount();
+        // updatePostCount();
         showToast("게시글이 삭제되었습니다.", "success");
       });
     },
@@ -1562,7 +1567,7 @@ function previewItemHtml(m) {
   return `
     <div class="member-item">
       <div class="member-avatar">
-        <img src="/images/default-avatar.png"
+        <img th:src="@{'/profile/avatars/user/' + ${m.username}}"
              alt="${m.username}"
              class="avatar-img">
       </div>
@@ -1776,7 +1781,7 @@ function memberList(members) {
         " onmouseover="this.style.background='var(--background-primary)'" 
            onmouseout="this.style.background='white'">
             <div class="member-avatar" style="position: relative;">
-                <img src="/images/default-avatar.png" alt="${
+                <img th:src="@{'/profile/avatars/user/' + ${member.username}}" alt="${
                   member.username
                 }" class="avatar-img" style="width: 50px; height: 50px;">
             </div>
@@ -2036,7 +2041,7 @@ $(window).on("load", function () {
   //loadSavedFontSize();
 
   // 초기 게시글 수 업데이트
-  updatePostCount();
+  // updatePostCount();
 
   // 웰컴 메시지
   setTimeout(() => {
