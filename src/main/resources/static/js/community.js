@@ -554,7 +554,7 @@ function makeCommentsBoxHtml() {
     <div class="comment-write" style="display:flex; gap:8px; margin-top:10px;">
       <textarea class="comment-input" placeholder="댓글을 입력하세요"
         style="flex:1; min-height:44px; padding:10px; border:1px solid var(--border-color); border-radius:10px; resize:vertical;"></textarea>
-      <button class="comment-submit" style="white-space:nowrap; padding:0 14px; border:none; background:var(--primary-color); color:#fff; border-radius:10px;">등록</button>
+      <button class="comment-submit" style="white-space:nowrap; padding:0 14px; border:none; background:#ff7a33; color:var(--color-white); border-radius:10px;">등록</button>
     </div>
   </div>`;
 }
@@ -1661,7 +1661,7 @@ function loadSidebarMembers(groupId) {
 // 멤버 모달 열기
 function openMemberModal() {
   const modalHtml = `
-        <div class="modal" id="memberModal" style="display: flex; align-items: center; justify-content: center;">
+        <div class="modal" id="memberModal" style="position: fixed; display: flex; align-items: center; justify-content: center; inset: 0; z-index: 1000;">
             <div class="modal-content" style="width: 90%; max-width: 600px;">
                 <div class="modal-header">
                     <h3>전체 멤버 (<span id="memCount">0</span>명)</h3>
