@@ -1567,7 +1567,7 @@ function previewItemHtml(m) {
   return `
     <div class="member-item">
       <div class="member-avatar">
-        <img th:src="@{'/profile/avatars/user/' + ${m.username}}"
+        <img src="/profile/avatars/user/${m.username}"
              alt="${m.username}"
              class="avatar-img">
       </div>
@@ -1587,7 +1587,7 @@ function previewItemHtml(m) {
                         };
                         color: ${
                           m.memberType === "owner"
-                            ? "white"
+                            ? "#000"
                             : "var(--text-secondary)"
                         };
                         border-radius: 12px;
@@ -1781,7 +1781,7 @@ function memberList(members) {
         " onmouseover="this.style.background='var(--background-primary)'" 
            onmouseout="this.style.background='white'">
             <div class="member-avatar" style="position: relative;">
-                <img th:src="@{'/profile/avatars/user/' + ${member.username}}" alt="${
+                <img src="/profile/avatars/user/${member.username}" alt="${
                   member.username
                 }" class="avatar-img" style="width: 50px; height: 50px;">
             </div>
@@ -1921,7 +1921,7 @@ function showToast(message, type = "success") {
             top: 20px;
             right: 20px;
             background: ${config.color};
-            color: white;
+            color: #000;
             padding: 16px 20px;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-medium);

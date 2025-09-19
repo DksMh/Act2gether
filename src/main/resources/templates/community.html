@@ -374,7 +374,7 @@ function adaptPost(p) {
   return {
     id:           p.id ?? p.postId ?? p.post_id,
     authorName:   p.username,
-    avatarUrl:    p.avatarUrl ?? p.avatar_url ?? '/images/default-avatar.png',
+    avatarUrl:    '/profile/avatars/user/' + p.username ?? '/images/default-avatar.png',
     content:      p.content ?? p.postContent ?? p.text ?? '',
     pictures:     p.pictures ?? p.images ?? p.picturesJson ?? p.picturesCsv,
     likeCount:    p.likesCount,
