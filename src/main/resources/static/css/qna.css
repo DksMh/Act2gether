@@ -1342,8 +1342,8 @@
 
   /* 토스트 모바일 */
   .toast {
-    right: 0.5rem;
-    left: 0.5rem;
+    /* right: 0.5rem;
+    left: 0.5rem; */
     width: auto;
   }
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>투어 상세보기 - Act2gether</title>
+    <title>여기부터 - 투어 상세보기</title>
     <meta
       name="description"
       content="액티브 시니어를 위한 맞춤 투어 상품 상세정보"
@@ -365,23 +365,35 @@
     </div>
 
     <!-- 그룹 선택 모달 -->
-<div id="groupPickModal" class="gm-modal" hidden>
-  <div class="gm-backdrop" data-close="true"></div>
+    <div id="groupPickModal" class="gm-modal" hidden>
+      <div class="gm-backdrop" data-close="true"></div>
 
-  <div class="gm-panel" role="dialog" aria-modal="true" aria-labelledby="gmTitle">
-    <button class="gm-close" type="button" aria-label="닫기" data-close="true">✕</button>
+      <div
+        class="gm-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="gmTitle"
+      >
+        <button
+          class="gm-close"
+          type="button"
+          aria-label="닫기"
+          data-close="true"
+        >
+          ✕
+        </button>
 
-    <h3 id="gmTitle" class="gm-title">모집 중인 커뮤니티</h3>
-    <p class="gm-sub" id="gmSub">선택해서 커뮤니티로 이동해 보세요.</p>
+        <h3 id="gmTitle" class="gm-title">모집 중인 커뮤니티</h3>
+        <p class="gm-sub" id="gmSub">선택해서 커뮤니티로 이동해 보세요.</p>
 
-    <!-- 카드 그리드가 여기에 채워짐 -->
-    <div id="gmGrid" class="gm-grid" aria-live="polite"></div>
+        <!-- 카드 그리드가 여기에 채워짐 -->
+        <div id="gmGrid" class="gm-grid" aria-live="polite"></div>
 
-    <div class="gm-actions">
-      <button class="gm-btn" type="button" data-close="true">닫기</button>
+        <div class="gm-actions">
+          <button class="gm-btn" type="button" data-close="true">닫기</button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
     <!-- Footer -->
     <div th:replace="~{footer :: footer}"></div>
@@ -393,12 +405,12 @@
     <script>
       console.log(document.getElementById("usernameSpan")?.textContent?.trim());
       window.currentUser = {
-    username:
-      document.getElementById("usernameSpan")?.textContent?.trim() || null,
-  };
-    //   window.currentUser = {
-    //   username: /*[[${username}]]*/ "",
-    // };
+        username:
+          document.getElementById("usernameSpan")?.textContent?.trim() || null,
+      };
+      //   window.currentUser = {
+      //   username: /*[[${username}]]*/ "",
+      // };
       // API 키가 있을 때만 카카오맵 SDK 로드
       window.kakaoMapLoaded = false;
       function loadKakaoMapSDK(apiKey) {
