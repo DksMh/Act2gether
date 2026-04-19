@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BarrierFreeService {
 
-    @Value("${tourism.api.base-url}")
+    @Value("${tourism.api.nobarrier-url}")
     private String baseUrl;
 
     @Value("${tourism.api.key}")
@@ -77,27 +77,9 @@ public class BarrierFreeService {
 
         log.info("무장애여행 정보 통합 시작: {}개 관광지", tourNodes.size());
 
-        // // 1단계: areaBasedSyncList2로 무장애 관광지 목록 조회
-        // Set<String> barrierFreeContentIds = getBarrierFreeContentIds(areaCode,
-        // sigunguCode);
-        // log.info("무장애 정보 보유 관광지: {}개", barrierFreeContentIds.size());
         // 1. 전체 서울 지역 무장애 관광지 조회 (시군구 제한 없이)
         Set<String> barrierFreeContentIds = getBarrierFreeContentIds(areaCode, null); // sigunguCode 제거!
         log.info("📋 무장애 정보 보유 관광지: {}개", barrierFreeContentIds.size());
-
-        // 2단계: 교집합 찾기 (공통분모)
-        // List<JsonNode> barrierFreeCandidates = tourNodes.stream()
-        // .filter(node ->
-        // barrierFreeContentIds.contains(node.path("contentid").asText()))
-        // .collect(Collectors.toList());
-
-        // log.info("🎯 교집합 발견: {}개 (Tour API {}개 × 무장애 API {}개)",
-        // barrierFreeCandidates.size(), tourNodes.size(),
-        // barrierFreeContentIds.size());
-        // if (barrierFreeCandidates.isEmpty()) {
-        // log.warn("⚠️ 교집합이 없음 - 편의시설 필터 조건에 맞는 관광지가 없습니다");
-        // return new ArrayList<>();
-        // }
 
         // 2. 교집합 방식 대신 각 contentId 개별 체크
         List<String> contentIdsToCheck = tourNodes.stream()
@@ -107,41 +89,6 @@ public class BarrierFreeService {
 
         log.info("🎯 무장애 정보 조회 대상: {}개", contentIdsToCheck.size());
 
-        // 3단계: 교집합에 대해서만 detailWithTour2 호출 (병렬 처리)
-        // List<CompletableFuture<JsonNode>> futures = barrierFreeCandidates.stream()
-        // .map(node -> CompletableFuture.supplyAsync(() -> {
-        // try {
-        // String contentId = node.path("contentid").asText();
-
-        // // detailWithTour2로 편의시설 정보 조회
-        // Map<String, String> barrierFreeInfo = getBarrierFreeInfo(contentId);
-
-        // // 접근성 점수 계산
-        // int accessibilityScore = calculateAccessibilityScore(barrierFreeInfo);
-
-        // // JsonNode에 무장애 정보 추가
-        // ObjectNode enrichedNode = (ObjectNode) node.deepCopy();
-        // enrichedNode.put("accessibilityScore", accessibilityScore);
-        // enrichedNode.put("hasBarrierFreeInfo", !barrierFreeInfo.isEmpty());
-
-        // // 편의시설 정보를 JSON 문자열로 저장
-        // try {
-        // enrichedNode.put("barrierFreeInfo",
-        // objectMapper.writeValueAsString(barrierFreeInfo));
-        // } catch (Exception e) {
-        // enrichedNode.put("barrierFreeInfo", "{}");
-        // }
-
-        // log.debug("✅ {} 무장애 정보 통합 완료 - 점수: {}", contentId, accessibilityScore);
-        // return (JsonNode) enrichedNode;
-
-        // } catch (Exception e) {
-        // log.warn("⚠️ 무장애여행 정보 조회 실패 - contentId: {}",
-        // node.path("contentid").asText());
-        // return null; // 실패한 경우 제외
-        // }
-        // }, executorService))
-        // .collect(Collectors.toList());
         // 3. 각 contentId에 대해 직접 detailWithTour2 호출
         List<CompletableFuture<JsonNode>> futures = tourNodes.stream()
                 .map(node -> CompletableFuture.supplyAsync(() -> {
@@ -182,10 +129,6 @@ public class BarrierFreeService {
 
         // 모든 호출 완료 대기
         // 모든 detailWithTour2 호출 완료 대기
-        // List<JsonNode> enrichedResults = futures.stream()
-        // .map(CompletableFuture::join)
-        // .filter(node -> node != null) // 실패한 것 제외
-        // .collect(Collectors.toList());
         List<JsonNode> enrichedResults = futures.stream()
                 .map(CompletableFuture::join)
                 .filter(node -> node != null)
@@ -196,14 +139,6 @@ public class BarrierFreeService {
 
         return enrichedResults;
 
-        // int barrierFreeCount = (int) enrichedResults.stream()
-        // .mapToInt(node -> node.path("hasBarrierFreeInfo").asBoolean() ? 1 : 0)
-        // .sum();
-
-        // log.info("✅ 무장애여행 정보 통합 완료: 교집합 {}개 → 성공 {}개, 무장애 정보 포함 {}개",
-        // barrierFreeCandidates.size(), enrichedResults.size(), barrierFreeCount);
-
-        // return enrichedResults;
     }
 
     /**
@@ -218,26 +153,36 @@ public class BarrierFreeService {
 
         try {
             // 🔧 수정: 올바른 무장애여행 API 엔드포인트 사용
-            StringBuilder urlBuilder = new StringBuilder();
-            urlBuilder.append("https://apis.data.go.kr/B551011/KorWithService2/areaBasedSyncList2")
-                    .append("?serviceKey=").append(serviceKey)
-                    .append("&MobileOS=ETC&MobileApp=Act2gether&_type=json")
-                    .append("&contentTypeId=12") // 관광지만
-                    .append("&showflag=1") // 표출되는 것만
-                    .append("&numOfRows=1000") // 충분한 개수
-                    .append("&pageNo=1");
-
-            if (areaCode != null && !areaCode.isEmpty()) {
-                urlBuilder.append("&areaCode=").append(areaCode);
-            }
-
+            // StringBuilder urlBuilder = new StringBuilder();
+            // urlBuilder.append("https://apis.data.go.kr/B551011/KorWithService2/areaBasedSyncList2")
+            // .append("?serviceKey=").append(serviceKey)
+            // .append("&MobileOS=ETC&MobileApp=Act2gether&_type=json")
+            // .append("&contentTypeId=12") // 관광지만
+            // .append("&showflag=1") // 표출되는 것만
+            // .append("&numOfRows=1000") // 충분한 개수
+            // .append("&pageNo=1");
+            String url = String.format(
+                    "%s/areaBasedSyncList2?serviceKey=%s&MobileOS=ETC&MobileApp=Act2gether&_type=json" +
+                            "&contentTypeId=12&showflag=1&numOfRows=1000&pageNo=1&areaCode=%s",
+                    baseUrl, // https://apis.data.go.kr/B551011/KorWithService2
+                    serviceKey,
+                    areaCode != null ? areaCode : "");
+            // sigunguCode가 있으면 추가
             if (sigunguCode != null && !sigunguCode.isEmpty()) {
-                urlBuilder.append("&sigunguCode=").append(sigunguCode);
+                url += "&sigunguCode=" + sigunguCode;
             }
 
-            log.info("무장애여행 API 호출 areaBasedSyncList2: {}", urlBuilder.toString());
+            // if (areaCode != null && !areaCode.isEmpty()) {
+            // urlBuilder.append("&areaCode=").append(areaCode);
+            // }
 
-            ResponseEntity<String> response = restTemplate.getForEntity(urlBuilder.toString(), String.class);
+            // if (sigunguCode != null && !sigunguCode.isEmpty()) {
+            // urlBuilder.append("&sigunguCode=").append(sigunguCode);
+            // }
+
+            log.info("무장애여행 API 호출 areaBasedSyncList2: {}", url);// urlBuilder.toString());
+
+            ResponseEntity<String> response = restTemplate.getForEntity(url.toString(), String.class);
             JsonNode root = objectMapper.readTree(response.getBody());
 
             // 응답 코드 확인
@@ -279,14 +224,19 @@ public class BarrierFreeService {
      * @return 편의시설 정보 Map (필드명 -> 값)
      */
     private Map<String, String> getBarrierFreeInfo(String contentId) throws Exception {
-        String url = "https://apis.data.go.kr/B551011/KorWithService2/detailWithTour2" +
-                "?serviceKey=" + serviceKey +
-                "&contentId=" + contentId +
-                "&MobileOS=ETC&MobileApp=Act2gether&_type=json";
-
+        // String url =
+        // "https://apis.data.go.kr/B551011/KorWithService2/detailWithTour2" +
+        // "?serviceKey=" + serviceKey +
+        // "&contentId=" + contentId +
+        // "&MobileOS=ETC&MobileApp=Act2gether&_type=json";
+        String url = String.format(
+                "%s/detailWithTour2?serviceKey=%s&contentId=%s&MobileOS=ETC&MobileApp=Act2gether&_type=json",
+                baseUrl, // https://apis.data.go.kr/B551011/KorWithService2
+                serviceKey,
+                contentId);
         try {
             log.info("🌐 detailWithTour2 API 호출 시작: contentId={}", contentId);
-
+            log.debug("📡 요청 URL: {}", url);
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
             log.info("📥 detailWithTour2 응답 받음: contentId={}, 응답크기={}바이트",

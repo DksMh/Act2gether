@@ -1654,11 +1654,7 @@ let tourSearchManager = {
           }">
             투어 상세보기
           </button>
-          <button class="btn-tour-favorite-horizontal" data-tour-id="${
-            tourProduct.id
-          }">
-            <i class="heart-icon">♡</i>
-          </button>
+          
         </div>
       </div>
     `;
@@ -1683,19 +1679,19 @@ let tourSearchManager = {
     });
 
     // 찜하기 버튼
-    const favoriteBtn = card.querySelector(".btn-tour-favorite-horizontal");
+    // const favoriteBtn = card.querySelector(".btn-tour-favorite-horizontal");
     // favoriteBtn.addEventListener("click", () =>
     //   this.toggleTourFavorite(tourProduct.id)
     // );
-    favoriteBtn.addEventListener("click", async () => {
-      const isLoggedIn = await this.checkUserLoginStatus();
+    // favoriteBtn.addEventListener("click", async () => {
+    //   const isLoggedIn = await this.checkUserLoginStatus();
 
-      if (isLoggedIn) {
-        this.toggleTourFavorite(tourProduct.id);
-      } else {
-        window.tourUtils?.showToast("로그인 후 이용 가능합니다", "warning");
-      }
-    });
+    //   if (isLoggedIn) {
+    //     this.toggleTourFavorite(tourProduct.id);
+    //   } else {
+    //     window.tourUtils?.showToast("로그인 후 이용 가능합니다", "warning");
+    //   }
+    // });
 
     return card;
   },

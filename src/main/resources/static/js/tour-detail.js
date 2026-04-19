@@ -35,7 +35,7 @@ window.tourDetail = {
    * 🎯 메인 진입점: 세션 우선 → API fallback 투어 상세정보 로드
    */
   async loadTourDetail(tourId) {
-    console.log("🚀 투어 상세정보 로드 시작 (세션 우선):", tourId);
+    //console.log("🚀 투어 상세정보 로드 시작 (세션 우선):", tourId);
     // 로그인 상태 먼저 확인
     await this.checkLoginStatus();
 
@@ -46,7 +46,7 @@ window.tourDetail = {
       const sessionData = this.loadFromSession(tourId);
 
       if (sessionData && this.isSessionDataValid(sessionData)) {
-        console.log("✅ 세션 데이터 발견 - 세션 데이터 사용:", sessionData);
+        //console.log("✅ 세션 데이터 발견 - 세션 데이터 사용:", sessionData);
 
         // 세션 데이터로 UI 구성
         this.loadFromSessionData(sessionData);
@@ -54,15 +54,15 @@ window.tourDetail = {
         // 백엔드에서 추가 데이터 (맛집, API 키) 가져오기
         await this.loadAdditionalData(tourId);
 
-        this.showSuccess("투어 정보를 불러왔습니다! (세션 활용)");
+        this.showSuccess("투어 정보를 불러왔습니다!"); //(세션 활용)
       } else {
-        console.log("❌ 세션 데이터 없음 - API 호출 시도");
+        //console.log("❌ 세션 데이터 없음 - API 호출 시도");
 
         // 2단계: API fallback
         await this.loadFromApi(tourId);
       }
     } catch (error) {
-      console.error("💥 투어 정보 로드 실패:", error);
+      //console.error("💥 투어 정보 로드 실패:", error);
       this.showError("투어 정보를 불러오는데 실패했습니다.");
     } finally {
       this.hideLoading();
@@ -79,13 +79,13 @@ window.tourDetail = {
 
       if (sessionData) {
         const parsedData = JSON.parse(sessionData);
-        console.log("📦 세션 데이터 파싱 완료:", parsedData);
+        //console.log("📦 세션 데이터 파싱 완료:", parsedData);
         return parsedData;
       }
 
       return null;
     } catch (error) {
-      console.error("❌ 세션 데이터 파싱 실패:", error);
+      //console.error("❌ 세션 데이터 파싱 실패:", error);
       return null;
     }
   },
@@ -103,7 +103,7 @@ window.tourDetail = {
     const hoursDiff = (now - createdAt) / (1000 * 60 * 60);
 
     if (hoursDiff > 1) {
-      console.log("⏰ 세션 데이터가 1시간 이상 경과 - 무효 처리");
+      //console.log("⏰ 세션 데이터가 1시간 이상 경과 - 무효 처리");
       return false;
     }
 
@@ -114,7 +114,7 @@ window.tourDetail = {
    * 🆕 세션 데이터로 UI 구성
    */
   loadFromSessionData(sessionData) {
-    console.log("📦 세션 데이터 로드 시작:", sessionData);
+    //console.log("📦 세션 데이터 로드 시작:", sessionData);
 
     // 현재 상태 설정
     this.currentTour = {
@@ -135,10 +135,10 @@ window.tourDetail = {
         hasAccessibilityFilter: false,
       },
     };
-    console.log("✅ 편의시설 정보 확인:", {
-      selectedType: this.currentTour.accessibilityInfo.selectedNeedsType,
-      hasFilter: this.currentTour.accessibilityInfo.hasAccessibilityFilter,
-    });
+    //console.log("✅ 편의시설 정보 확인:", {
+    //   selectedType: this.currentTour.accessibilityInfo.selectedNeedsType,
+    //   hasFilter: this.currentTour.accessibilityInfo.hasAccessibilityFilter,
+    // });
 
     this.currentSpots = sessionData.spots.map((spot, index) => ({
       ...spot,
@@ -159,7 +159,7 @@ window.tourDetail = {
     // 🔥 여행 그룹 상태 확인 추가
     this.checkTravelGroupStatus(sessionData.tourId);
 
-    console.log("✅ 세션 데이터로 UI 구성 완료");
+    //console.log("✅ 세션 데이터로 UI 구성 완료");
   },
   /**
    * 로그인 상태 확인 (간단한 체크)
@@ -178,16 +178,16 @@ window.tourDetail = {
           this.currentUser = result.userid;
           this.currentUserName = result.username;
           this.isAdmin = result.isAdmin || false;
-          console.log("✅ 로그인 사용자 확인:", {
-            userid: this.currentUser,
-            username: this.currentUserName,
-          });
+          //console.log("✅ 로그인 사용자 확인:", {
+          //   userid: this.currentUser,
+          //   username: this.currentUserName,
+          // });
         } else {
           this.currentUser = null;
         }
       }
     } catch (error) {
-      console.error("로그인 상태 확인 오류:", error);
+      //console.error("로그인 상태 확인 오류:", error);
       this.currentUser = null;
     }
   },
@@ -252,11 +252,46 @@ window.tourDetail = {
           const currentSpot = this.currentSpots.find(
             (s) => s.contentid === apiSpot.contentid
           );
+
+          // if (currentSpot) {
+          //   currentSpot.barrierFreeInfo = apiSpot.barrierFreeInfo || "{}";
+          //   currentSpot.hasBarrierFreeInfo =
+          //     apiSpot.hasBarrierFreeInfo || false;
+          //   currentSpot.accessibilityScore = apiSpot.accessibilityScore || 0;
+          // }
           if (currentSpot) {
-            currentSpot.barrierFreeInfo = apiSpot.barrierFreeInfo || "{}";
+            // ✅ FIX: Properly handle barrierFreeInfo object/string
+            if (apiSpot.barrierFreeInfo) {
+              // If it's already a string (JSON), use it
+              if (typeof apiSpot.barrierFreeInfo === "string") {
+                currentSpot.barrierFreeInfo = apiSpot.barrierFreeInfo;
+              }
+              // If it's an object, stringify it
+              else if (typeof apiSpot.barrierFreeInfo === "object") {
+                // Check if object has data
+                if (Object.keys(apiSpot.barrierFreeInfo).length > 0) {
+                  currentSpot.barrierFreeInfo = JSON.stringify(
+                    apiSpot.barrierFreeInfo
+                  );
+                } else {
+                  currentSpot.barrierFreeInfo = "{}";
+                }
+              } else {
+                currentSpot.barrierFreeInfo = "{}";
+              }
+            } else {
+              currentSpot.barrierFreeInfo = "{}";
+            }
+
             currentSpot.hasBarrierFreeInfo =
               apiSpot.hasBarrierFreeInfo || false;
             currentSpot.accessibilityScore = apiSpot.accessibilityScore || 0;
+
+            // 🔍 DEBUG: Log to verify data
+            //console.log(
+            //   `✅ Spot ${currentSpot.contentid} - barrierFreeInfo:`,
+            //   currentSpot.barrierFreeInfo
+            // );
           }
         });
 
@@ -265,7 +300,10 @@ window.tourDetail = {
           this.currentTour.accessibilityInfo = fallbackResult.accessibilityInfo;
         }
 
-        this.renderSpotAccordions();
+        // this.renderSpotAccordions();
+        // AFTER
+        //console.log("🔥 barrierFreeInfo 업데이트 완료, 강제 재렌더링");
+        this.renderSpotAccordions(true);
       }
     } catch (error) {
       console.warn("⚠️ 추가 데이터 로드 실패:", error);
@@ -284,13 +322,13 @@ window.tourDetail = {
       let url = `/tour-detail/${tourId}/fallback`;
       if (needs) {
         url += `?needs=${encodeURIComponent(needs)}`;
-        console.log("🔍 편의시설 필터 포함:", needs);
+        //console.log("🔍 편의시설 필터 포함:", needs);
       }
       //const response = await fetch(`/tour-detail/${tourId}/fallback`);
       const response = await fetch(url);
       const result = await response.json();
 
-      console.log("📦 API 응답:", result);
+      //console.log("📦 API 응답:", result);
 
       if (result.success) {
         this.currentTour = result.tour;
@@ -301,7 +339,7 @@ window.tourDetail = {
         // accessibilityInfo 저장
         if (result.accessibilityInfo) {
           this.accessibilityInfo = result.accessibilityInfo;
-          console.log("✅ 편의시설 필터 정보:", this.accessibilityInfo);
+          //console.log("✅ 편의시설 필터 정보:", this.accessibilityInfo);
         }
 
         // UI 업데이트
@@ -320,12 +358,12 @@ window.tourDetail = {
         // 여행 그룹 상태 확인 추가
         this.checkTravelGroupStatus(tourId);
 
-        this.showSuccess("투어 정보를 불러왔습니다! (API 활용)");
+        this.showSuccess("투어 정보를 불러왔습니다!"); //(API 활용)
       } else {
         throw new Error(result.message || "API 응답 실패");
       }
     } catch (error) {
-      console.error("💥 API fallback 실패:", error);
+      //console.error("💥 API fallback 실패:", error);
       throw error;
     }
   },
@@ -345,7 +383,7 @@ window.tourDetail = {
     if (metaElement) {
       // 편의시설 정보 - 점수 제거, 타입만 표시
       const accessibilityInfo = this.currentTour.accessibilityInfo;
-      console.log("헤더 업데이트 - 편의시설 정보:", accessibilityInfo);
+      //console.log("헤더 업데이트 - 편의시설 정보:", accessibilityInfo);
       if (
         accessibilityInfo?.hasAccessibilityFilter &&
         accessibilityInfo?.selectedNeedsType
@@ -401,14 +439,14 @@ window.tourDetail = {
       wishlistBtn.setAttribute("data-tour-id", this.currentTour.tourId);
     }
 
-    console.log("✅ 헤더 업데이트 완료:", {
-      title: this.currentTour.title,
-      region: this.currentTour.region,
-      sigungu: this.currentTour.sigungu,
-      spots: this.currentSpots.length,
-      accessibilityType: this.currentTour.accessibilityInfo?.selectedNeedsType,
-      dataSource: "세션/API",
-    });
+    // //console.log("✅ 헤더 업데이트 완료:", {
+    //   title: this.currentTour.title,
+    //   region: this.currentTour.region,
+    //   sigungu: this.currentTour.sigungu,
+    //   spots: this.currentSpots.length,
+    //   accessibilityType: this.currentTour.accessibilityInfo?.selectedNeedsType,
+    //   dataSource: "세션/API",
+    // });
   },
 
   /**
@@ -419,14 +457,14 @@ window.tourDetail = {
     const mapPlaceholder = document.getElementById("map-placeholder");
 
     if (!mapContainer) {
-      console.warn("⚠️ 지도 컨테이너를 찾을 수 없습니다");
+      // //console.warn("⚠️ 지도 컨테이너를 찾을 수 없습니다");
       return;
     }
 
     // API 키가 있고 관광지가 있는 경우 실제 카카오맵 로드
     if (this.kakaoMapApiKey && this.currentSpots.length > 0) {
       try {
-        console.log("🗺️ 카카오맵 초기화 시작...");
+        //console.log("🗺️ 카카오맵 초기화 시작...");
 
         // 카카오맵 SDK 로드
         if (typeof loadKakaoMapSDK === "function") {
@@ -441,22 +479,22 @@ window.tourDetail = {
           requestAnimationFrame(() => {
             this.createKakaoMap(mapContainer);
             mapPlaceholder.style.display = "none";
-            console.log("✅ 카카오맵 초기화 완료");
+            //console.log("✅ 카카오맵 초기화 완료");
           });
         } else {
           throw new Error("카카오맵 SDK 로드 실패");
         }
       } catch (error) {
-        console.warn(
-          "⚠️ 카카오맵 로드 실패, 플레이스홀더 표시:",
-          error.message
-        );
+        //console.warn(
+        //   "⚠️ 카카오맵 로드 실패, 플레이스홀더 표시:",
+        //   error.message
+        // );
         this.showMapPlaceholder(mapContainer, mapPlaceholder);
       }
     } else {
-      console.warn(
-        "⚠️ 카카오맵 API 키 없음 또는 관광지 없음, 플레이스홀더 표시"
-      );
+      //console.warn(
+      //   "⚠️ 카카오맵 API 키 없음 또는 관광지 없음, 플레이스홀더 표시"
+      // );
       this.showMapPlaceholder(mapContainer, mapPlaceholder);
     }
   },
@@ -532,12 +570,12 @@ window.tourDetail = {
       // 의료시설 토글 버튼 추가
       this.addMedicalToggleButton();
 
-      console.log(
-        "카카오맵 생성 완료:",
-        this.currentSpots.length + "개 마커 + 경로 라인"
-      );
+      //console.log(
+      //   "카카오맵 생성 완료:",
+      //   this.currentSpots.length + "개 마커 + 경로 라인"
+      // );
     } catch (error) {
-      console.error("카카오맵 생성 실패:", error);
+      // //console.error("카카오맵 생성 실패:", error);
       throw error;
     }
   },
@@ -737,7 +775,7 @@ window.tourDetail = {
     const lng = parseFloat(spot.mapx);
 
     if (isNaN(lat) || isNaN(lng)) {
-      console.warn("유효하지 않은 좌표:", spot.title, lat, lng);
+      //console.warn("유효하지 않은 좌표:", spot.title, lat, lng);
       return;
     }
 
@@ -850,7 +888,7 @@ window.tourDetail = {
     }
 
     if (pathCoords.length < 2) {
-      console.warn("유효한 좌표가 2개 미만이라 경로를 그릴 수 없습니다");
+      //console.warn("유효한 좌표가 2개 미만이라 경로를 그릴 수 없습니다");
       return;
     }
 
@@ -863,22 +901,13 @@ window.tourDetail = {
       strokeStyle: "solid",
     });
 
-    // 다양한 스타일 옵션
-    // const polyline = new kakao.maps.Polyline({
-    //     path: pathCoords,
-    //     strokeWeight: 4,           // 선 두께 (기본: 3)
-    //     strokeColor: '#FF6B35',    // 선 색상 (기본: #4CAF50)
-    //     strokeOpacity: 0.9,        // 투명도 (0~1)
-    //     strokeStyle: 'solid'       // 'solid', 'shortdash', 'shortdot', 'dash'
-    // });
-
     // 지도에 라인 표시
     polyline.setMap(this.kakaoMap);
 
-    console.log(
-      "투어 경로 라인 생성 완료:",
-      pathCoords.length + "개 지점 연결"
-    );
+    //console.log(
+    //   "투어 경로 라인 생성 완료:",
+    //   pathCoords.length + "개 지점 연결"
+    // );
   },
 
   /**
@@ -941,7 +970,8 @@ window.tourDetail = {
   /**
    * 📋 관광지별 상세정보를 아코디언 형태로 렌더링 (기존 renderTourSpots 대체)
    */
-  renderSpotAccordions() {
+  // renderSpotAccordions() {
+  renderSpotAccordions(forceRefresh = false) {
     const container = document.getElementById("tourSpotsList");
     if (!container || !this.currentSpots.length) {
       if (container) {
@@ -1008,22 +1038,87 @@ window.tourDetail = {
     });
 
     html += "</div>";
+
+    // 🔥 수정: 이미 로드된 데이터 보존
+    const existingBodies = {};
+    // if (container.querySelector(".spot-accordion")) {
+    //   // 기존 아코디언 바디 내용 저장
+    //   this.currentSpots.forEach((spot, index) => {
+    //     const order = index + 1;
+    //     const existingBody = document.getElementById(`accordion-body-${order}`);
+    //     if (existingBody && existingBody.dataset.loaded === "1") {
+    //       //console.log(`💾 ${order}번 항목 내용 저장 (이미 로드됨)`);
+    //       existingBodies[order] = existingBody.innerHTML;
+    //     }
+    //   });
+    // }
+    if (container.querySelector(".spot-accordion") && !forceRefresh) {
+      // 기존 아코디언 바디 내용 저장
+      this.currentSpots.forEach((spot, index) => {
+        const order = index + 1;
+        const existingBody = document.getElementById(`accordion-body-${order}`);
+        if (existingBody && existingBody.dataset.loaded === "1") {
+          //console.log(`💾 ${order}번 항목 내용 저장 (이미 로드됨)`);
+          existingBodies[order] = existingBody.innerHTML;
+        }
+      });
+    } else if (forceRefresh) {
+      //console.log(`🔄 강제 새로고침: 캐시 무시`);
+      // _loaded Set 초기화하여 상세정보 재로드 가능하게
+      this._loaded = new Set();
+    }
+
+    //console.log(
+    //   `🔄 전체 아코디언 재렌더링 (보존할 항목: ${
+    //     Object.keys(existingBodies).length
+    //   }개)`
+    // );
     container.innerHTML = html;
 
-    if (this.currentSpots.length > 0) {
+    // 저장된 내용 복원
+    Object.keys(existingBodies).forEach((order) => {
+      const bodyElement = document.getElementById(`accordion-body-${order}`);
+      if (bodyElement) {
+        //console.log(`♻️ ${order}번 항목 내용 복원`);
+        bodyElement.innerHTML = existingBodies[order];
+        bodyElement.dataset.loaded = "1";
+      }
+    });
+
+    // 첫 번째 항목이 아직 로드 안 되었을 때만 로드
+    if (this.currentSpots.length > 0 && !existingBodies[1]) {
+      //console.log(`🎯 첫 번째 항목 로드 시작`);
       this.loadSpotDetail(this.currentSpots[0].contentid, 1);
+    } else if (existingBodies[1]) {
+      //console.log(`✅ 첫 번째 항목 이미 로드됨, 스킵`);
     }
   },
   /**
    * 편의시설 정보 HTML 생성 (계층적 표시)
    */
   createAccessibilityInfoHtml(spot, selectedNeeds) {
+    //console.log(`🔍 createAccessibilityInfoHtml 호출:`, {
+    //   spotTitle: spot.title,
+    //   selectedNeeds: selectedNeeds,
+    //   barrierFreeInfo: spot.barrierFreeInfo,
+    // });
     if (!spot.barrierFreeInfo || !selectedNeeds) {
+      console.warn(`⚠️ 데이터 없음: ${spot.title}`, {
+        hasBarrierFreeInfo: !!spot.barrierFreeInfo,
+        hasSelectedNeeds: !!selectedNeeds,
+      });
       return "";
     }
 
     try {
-      const info = JSON.parse(spot.barrierFreeInfo);
+      // const info = JSON.parse(spot.barrierFreeInfo);
+      let info = JSON.parse(spot.barrierFreeInfo);
+      // 🔥 이중 JSON 인코딩 체크 및 처리
+      if (typeof info === "string") {
+        console.warn(`⚠️ 이중 JSON 인코딩 감지, 재파싱 시도`);
+        info = JSON.parse(info);
+      }
+      //console.log(`📊 파싱된 편의시설 정보:`, info);
       const primaryFacilities = [];
       const secondaryFacilities = [];
 
@@ -1083,16 +1178,22 @@ window.tourDetail = {
       } else if (selectedNeeds === "접근 편의") {
         // 접근 편의 관련 시설을 주요로
         if (info.route && info.route !== "" && info.route !== "없음") {
+          //console.log(`✅ route 추가:`, info.route);
           primaryFacilities.push({
             icon: facilityIcons.route,
             text: facilityTexts.route,
           });
+        } else {
+          //console.log(`❌ route 없음 or 빈값`);
         }
         if (info.exit && info.exit !== "" && info.exit !== "없음") {
+          //console.log(`✅ exit 추가:`, info.exit);
           primaryFacilities.push({
             icon: facilityIcons.exit,
             text: facilityTexts.exit,
           });
+        } else {
+          //console.log(`❌ exit 없음 or 빈값`);
         }
 
         // 나머지는 기타로
@@ -1145,12 +1246,14 @@ window.tourDetail = {
           secondaryFacilities.push(facilityTexts.exit);
         }
       }
-
+      //console.log(`📋 primaryFacilities:`, primaryFacilities);
+      //console.log(`📋 secondaryFacilities:`, secondaryFacilities);
       // HTML 생성
       let html = '<div class="spot-accessibility-info">';
 
       // 주요 편의시설이 있는 경우
       if (primaryFacilities.length > 0) {
+        //console.log(`✅ primaryFacilities HTML 생성`);
         html += `
                     <div class="primary-facilities">
                         <span class="primary-facilities-label">선택하신 편의시설</span>
@@ -1170,6 +1273,7 @@ window.tourDetail = {
                     </div>
                 `;
       } else {
+        //console.log(`⚠️ primaryFacilities 비어있음 - 경고 메시지 표시`);
         // 주요 편의시설이 없는 경우
         html += `
                     <div class="no-primary-facilities">
@@ -1192,10 +1296,11 @@ window.tourDetail = {
       }
 
       html += "</div>";
-
+      //console.log(`🎨 최종 HTML 길이: ${html.length}`);
+      //console.log(`🎨 HTML 내용:`, html.substring(0, 200));
       return html;
     } catch (e) {
-      console.error("편의시설 정보 파싱 실패:", e);
+      // //console.error("편의시설 정보 파싱 실패:", e);
       return "";
     }
   },
@@ -1214,12 +1319,12 @@ window.tourDetail = {
    * 🔄 아코디언 토글 함수 (디버깅 강화)
    */
   toggleAccordion(order) {
-    console.log(`toggleAccordion 호출됨: order=${order}`);
+    //console.log(`toggleAccordion 호출됨: order=${order}`);
 
     try {
       const accordion = document.querySelector(`[data-spot-order="${order}"]`);
       if (!accordion) {
-        console.error(`아코디언 요소를 찾을 수 없음: order=${order}`);
+        // //console.error(`아코디언 요소를 찾을 수 없음: order=${order}`);
         return;
       }
 
@@ -1229,12 +1334,12 @@ window.tourDetail = {
       const body = document.getElementById(`accordion-body-${order}`);
 
       if (!content || !icon || !text || !body) {
-        console.error(`아코디언 하위 요소를 찾을 수 없음: order=${order}`);
+        // //console.error(`아코디언 하위 요소를 찾을 수 없음: order=${order}`);
         return;
       }
 
       const isActive = accordion.classList.contains("active");
-      console.log(`아코디언 ${order} 현재 상태: ${isActive ? "열림" : "닫힘"}`);
+      //console.log(`아코디언 ${order} 현재 상태: ${isActive ? "열림" : "닫힘"}`);
 
       if (isActive) {
         // 닫기
@@ -1242,14 +1347,14 @@ window.tourDetail = {
         content.style.display = "none";
         icon.textContent = "▶";
         text.textContent = "상세보기";
-        console.log(`아코디언 ${order} 닫힘`);
+        //console.log(`아코디언 ${order} 닫힘`);
       } else {
         // 열기
         accordion.classList.add("active");
         content.style.display = "block";
         icon.textContent = "▼";
         text.textContent = "접기";
-        console.log(`아코디언 ${order} 열림`);
+        //console.log(`아코디언 ${order} 열림`);
 
         // 무조건 상세정보 로드 시도 (첫 번째가 아닌 경우)
         // 새 코드 (교체)
@@ -1259,16 +1364,16 @@ window.tourDetail = {
           !body.querySelector(".spot-detail-grid");
 
         if (needsLoad) {
-          console.log(`아코디언 ${order} 상세정보 로드 필요`);
+          //console.log(`아코디언 ${order} 상세정보 로드 필요`);
           const spot = this.currentSpots.find((s) => s.order === order);
           if (spot) {
-            console.log(
-              `API 호출 준비: contentId=${spot.contentid}, order=${order}`
-            );
+            //console.log(
+            //   `API 호출 준비: contentId=${spot.contentid}, order=${order}`
+            // );
             this.loadSpotDetail(spot.contentid, order);
           }
         } else {
-          console.log(`아코디언 ${order} 이미 로드된 상세정보 표시`);
+          //console.log(`아코디언 ${order} 이미 로드된 상세정보 표시`);
         }
       }
 
@@ -1277,70 +1382,124 @@ window.tourDetail = {
         accordion.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }, 100);
     } catch (error) {
-      console.error(`toggleAccordion 오류: order=${order}`, error);
+      //console.error(`toggleAccordion 오류: order=${order}`, error);
     }
   },
   /**
    * 📡 관광지 상세정보 AJAX 로드
    */
   async loadSpotDetail(contentId, order) {
+    //console.log(`🎯 loadSpotDetail 호출됨: contentId=${contentId}, order=${order}`);
+
     // 중복/동시 호출 방지
     this._inflight ??= new Set();
     this._loaded ??= new Set();
     if (this._loaded.has(contentId) || this._inflight.has(contentId)) {
-      console.log(
-        `⏭️ ${order}번째 관광지 이미 로드됨 또는 로딩중: ${contentId}`
-      );
+      //console.log(`${order}번째 관광지 이미 로드됨 또는 로딩중: ${contentId}`);
       return;
     }
     this._inflight.add(contentId);
 
     const bodyElement = document.getElementById(`accordion-body-${order}`);
+    //console.log(`🔍 bodyElement 찾기: accordion-body-${order}`, bodyElement);
+
     if (!bodyElement) {
+      console.error(`❌ bodyElement를 찾을 수 없음: accordion-body-${order}`);
       this._inflight.delete(contentId);
       return;
     }
 
     try {
+      //console.log(`⏳ 로딩 컨텐츠 표시 시작`);
       bodyElement.innerHTML = this.generateLoadingContent();
+      //console.log(`📡 API 호출 시작: /tour-detail/spot-detail/${contentId}`);
 
       const response = await fetch(`/tour-detail/spot-detail/${contentId}`);
+      //console.log(`📡 API 응답 상태:`, response.status, response.statusText);
       const result = await response.json();
-
+      //console.log(`📦 API 응답 데이터:`, result);
+      //console.log(`📦 result.success:`, result.success);
       if (result.success) {
+        //console.log(`✅ API 성공! 데이터 처리 시작`);
         const spotData = result.data;
+        //console.log(`📊 spotData:`, spotData);
         const isFallback = result.fallback === true;
+        //console.log(`📊 isFallback:`, isFallback);
 
-        bodyElement.innerHTML = this.generateSpotDetailContent(
-          spotData,
-          isFallback
-        );
-        bodyElement.dataset.loaded = "1"; // ✅ 로드 완료 마킹
+        //console.log(`🎨 HTML 생성 시작...`);
+        const html = this.generateSpotDetailContent(spotData, isFallback);
+        // ✅ 디버깅 로그 활성화
+        //console.log(`📄 생성된 HTML 길이: ${html.length}자`);
+        //console.log(`📄 HTML 미리보기:`, html.substring(0, 200));
+        //console.log(`🎯 bodyElement:`, bodyElement);
+        //console.log(`🎯 bodyElement.id:`, bodyElement.id);
+        // HTML 삽입
+        //console.log(`🔥 HTML 삽입 시작...`);
+        bodyElement.innerHTML = html;
+        //console.log(`✅ HTML 삽입 완료!`);
 
-        console.log(`✅ ${order}번째 관광지 상세정보 로드 완료: ${contentId}`);
+        bodyElement.dataset.loaded = "1";
+        //console.log(`✅ ${order}번째 관광지 상세정보 로드 완료: ${contentId}`);
+        // 삽입 후 확인
+        //console.log( `🔍 삽입 후 bodyElement.innerHTML 길이:`,bodyElement.innerHTML.length);
       } else {
+        console.warn(`⚠️ API 실패:`, result.message);
         // 세션 데이터 fallback
+        //console.warn(`⚠️ API 실패:`, result.message); // ✅ 추가
+        // const sessionSpot = this.currentSpots.find(
+        //   (s) => s.contentid === contentId
+        // );
         const sessionSpot = this.currentSpots.find(
           (s) => s.contentid === contentId
         );
         if (sessionSpot) {
-          bodyElement.innerHTML = this.generateSessionBasedContent(sessionSpot);
+          //console.log(`📦 세션 데이터 사용:`, sessionSpot);
+          const fallbackHtml = this.generateSpotDetailContent(
+            sessionSpot,
+            true
+          );
+          bodyElement.innerHTML = fallbackHtml;
+          // bodyElement.innerHTML = this.generateSessionBasedContent(sessionSpot);
           bodyElement.dataset.loaded = "1"; // fallback도 로드 완료로 마킹
+          //console.log(`✅ 세션 데이터로 표시 완료`);
+        } else {
+          console.error(`❌ 세션 데이터도 없음`);
+          bodyElement.innerHTML = `
+                    <div class="error-content">
+                        <div class="error-icon">⚠️</div>
+                        <p>상세정보를 불러올 수 없습니다</p>
+                    </div>
+                `;
         }
       }
     } catch (error) {
-      console.error(`💥 ${order}번째 관광지 로드 오류: ${contentId}`, error);
+      console.error(`💥 ${order}번째 관광지 로드 오류:`, error);
+      console.error(`💥 에러 스택:`, error.stack);
       // 에러 시에도 세션 데이터 표시
       const sessionSpot = this.currentSpots.find(
         (s) => s.contentid === contentId
       );
+
       if (sessionSpot) {
-        bodyElement.innerHTML = this.generateSessionBasedContent(sessionSpot);
+        //console.log(`📦 에러 복구: 세션 데이터 사용`);
+        const fallbackHtml = this.generateSpotDetailContent(sessionSpot, true);
+        bodyElement.innerHTML = fallbackHtml;
         bodyElement.dataset.loaded = "1";
+        // bodyElement.innerHTML = this.generateSessionBasedContent(sessionSpot);
+        // bodyElement.dataset.loaded = "1";
+      } else {
+        console.error(`❌ 에러 복구 실패: 세션 데이터 없음`);
+        bodyElement.innerHTML = `
+                <div class="error-content">
+                    <div class="error-icon">⚠️</div>
+                    <p>상세정보를 불러올 수 없습니다</p>
+                </div>
+            `;
       }
     } finally {
       this._inflight.delete(contentId);
       this._loaded.add(contentId);
+      //console.log(`🏁 loadSpotDetail 종료: ${contentId}`);
     }
   },
 
@@ -1348,7 +1507,11 @@ window.tourDetail = {
    * 🎨 상세정보 HTML 생성
    */
   generateSpotDetailContent(data, isFallback = false) {
+    //console.log("📋 generateSpotDetailContent 호출됨:", data);
+    //console.log("📋 isFallback:", isFallback);
+    //console.log("📋 data.sessionBased:", data.sessionBased);
     const isSessionBased = isFallback || data.sessionBased;
+    //console.log("📋 isSessionBased:", isSessionBased);
 
     // 편의시설 상세 정보 파싱
     let barrierFreeDetailHtml = "";
@@ -1388,93 +1551,113 @@ window.tourDetail = {
 
         if (details.length > 0) {
           barrierFreeDetailHtml = `
-                        <div class="detail-section">
-                            <h4 class="detail-title">♿ 편의시설 정보</h4>
-                            <div class="detail-content">
-                                ${details.join("")}
-                            </div>
-                        </div>
-                    `;
+            <div class="detail-section">
+              <h4 class="detail-title">♿ 편의시설 정보</h4>
+              <div class="detail-content">
+                ${details.join("")}
+              </div>
+            </div>
+          `;
         }
       } catch (e) {
         console.error("편의시설 상세 정보 파싱 실패:", e);
       }
     }
 
-    return `
-            <div class="spot-detail-grid ${
-              isSessionBased ? "session-based" : ""
-            }">
-                <div class="detail-section">
-                    <h4 class="detail-title">📋 기본정보</h4>
-                    <div class="detail-content">
-                        ${
-                          data.title
-                            ? `<p><strong>명칭:</strong> ${data.title}</p>`
-                            : ""
-                        }
-                        ${
-                          data.addr1
-                            ? `<p><strong>주소:</strong> ${data.addr1}</p>`
-                            : ""
-                        }
-                        ${
-                          data.tel
-                            ? `<p><strong>전화:</strong> <a href="tel:${data.tel}">${data.tel}</a></p>`
-                            : ""
-                        }
-                        ${
-                          data.homepage
-                            ? `<p><strong>홈페이지:</strong> <a href="${data.homepage}" target="_blank" rel="noopener">바로가기 🔗</a></p>`
-                            : ""
-                        }
-                    </div>
-                </div>
-                
-                <div class="detail-section">
-                    <h4 class="detail-title">🕐 이용정보</h4>
-                    <div class="detail-content">
-                        ${
-                          data.usetime
-                            ? `<p><strong>이용시간:</strong> ${data.usetime}</p>`
-                            : "<p><strong>이용시간:</strong> 정보 없음</p>"
-                        }
-                        ${
-                          data.restdate
-                            ? `<p><strong>휴무일:</strong> ${data.restdate}</p>`
-                            : "<p><strong>휴무일:</strong> 정보 없음</p>"
-                        }
-                        ${
-                          data.parking
-                            ? `<p><strong>주차:</strong> ${data.parking}</p>`
-                            : "<p><strong>주차:</strong> 정보 없음</p>"
-                        }
-                        ${
-                          data.admission
-                            ? `<p><strong>입장료:</strong> ${data.admission}</p>`
-                            : "<p><strong>입장료:</strong> 정보 없음</p>"
-                        }
-                    </div>
-                </div>
-                
-                ${barrierFreeDetailHtml}
-                
-                ${
-                  data.overview
-                    ? `
-                    <div class="detail-section overview-section">
-                        <h4 class="detail-title">📖 상세설명</h4>
-                        <div class="detail-content">
-                            <p class="overview-text">${data.overview}</p>
-                        </div>
-                    </div>
-                `
-                    : ""
-                }
-            </div>
-        `;
-  },
+    // ✅ 핵심 수정: 안전한 데이터 추출 함수
+    const safeGet = (field) => {
+      if (!data[field]) return null;
+      const value = String(data[field]).trim();
+      return value && value !== "" && value !== "null" && value !== "undefined"
+        ? value
+        : null;
+    };
 
+    // 모든 필드에 safeGet 적용
+    const title = safeGet("title") || "정보 없음";
+    const addr1 = safeGet("addr1");
+    const tel = safeGet("tel");
+    const homepage = safeGet("homepage");
+    const usetime = safeGet("usetime");
+    const restdate = safeGet("restdate");
+    const parking = safeGet("parking");
+    const admission = safeGet("admission");
+    const overview = safeGet("overview");
+
+    // console.log("📊 파싱된 데이터:", {
+    //   title,
+    //   addr1,
+    //   tel,
+    //   homepage,
+    //   usetime,
+    //   restdate,
+    //   parking,
+    //   admission,
+    //   overview: overview ? overview.substring(0, 50) + "..." : null,
+    // }  );
+
+    // 🔥 핵심 수정: 백틱 중첩 제거, 직접 HTML 문자열 생성
+    let basicInfoHtml =
+      '<div class="detail-section"><h4 class="detail-title">📋 기본정보</h4><div class="detail-content">';
+
+    if (title) {
+      basicInfoHtml += "<p><strong>명칭:</strong> " + title + "</p>";
+    }
+    if (addr1) {
+      basicInfoHtml += "<p><strong>주소:</strong> " + addr1 + "</p>";
+    }
+    if (tel) {
+      basicInfoHtml +=
+        '<p><strong>전화:</strong> <a href="tel:' +
+        tel +
+        '">' +
+        tel +
+        "</a></p>";
+    }
+    if (homepage) {
+      basicInfoHtml +=
+        '<p><strong>홈페이지:</strong> <a href="' +
+        homepage +
+        '" target="_blank" rel="noopener">바로가기 🔗</a></p>';
+    }
+
+    basicInfoHtml += "</div></div>";
+
+    let usageInfoHtml =
+      '<div class="detail-section"><h4 class="detail-title">🕐 이용정보</h4><div class="detail-content">';
+
+    usageInfoHtml +=
+      "<p><strong>이용시간:</strong> " + (usetime || "정보 없음") + "</p>";
+    usageInfoHtml +=
+      "<p><strong>휴무일:</strong> " + (restdate || "정보 없음") + "</p>";
+    usageInfoHtml +=
+      "<p><strong>주차:</strong> " + (parking || "정보 없음") + "</p>";
+    usageInfoHtml +=
+      "<p><strong>입장료:</strong> " + (admission || "정보 없음") + "</p>";
+
+    usageInfoHtml += "</div></div>";
+
+    let overviewHtml = "";
+    if (overview) {
+      overviewHtml =
+        '<div class="detail-section overview-section"><h4 class="detail-title">📖 상세설명</h4><div class="detail-content"><p class="overview-text">' +
+        overview +
+        "</p></div></div>";
+    }
+
+    const sessionClass = isSessionBased ? "session-based" : "";
+
+    return (
+      '<div class="spot-detail-grid ' +
+      sessionClass +
+      '">' +
+      basicInfoHtml +
+      usageInfoHtml +
+      barrierFreeDetailHtml +
+      overviewHtml +
+      "</div>"
+    );
+  },
   /**
    * ⏳ 로딩 콘텐츠 생성
    */
@@ -1677,7 +1860,7 @@ window.tourDetail = {
       modal.classList.add("active");
       document.body.style.overflow = "hidden"; // 스크롤 방지
 
-      console.log("이미지 전체화면 표시:", title);
+      //console.log("이미지 전체화면 표시:", title);
     }
   },
   /**
@@ -1690,7 +1873,7 @@ window.tourDetail = {
       modal.classList.remove("active");
       document.body.style.overflow = ""; // 스크롤 복원
 
-      console.log("이미지 전체화면 닫기");
+      //console.log("이미지 전체화면 닫기");
     }
   },
 
@@ -1789,7 +1972,7 @@ window.tourDetail = {
       (total, restaurants) => total + restaurants.length,
       0
     );
-    console.log("✅ 맛집 정보 렌더링 완료:", totalRestaurants + "개 맛집");
+    //console.log("✅ 맛집 정보 렌더링 완료:", totalRestaurants + "개 맛집");
   },
   /**
    * 맛집을 관광지별로 재그룹화
@@ -1865,10 +2048,10 @@ window.tourDetail = {
       }
     });
 
-    console.log(
-      "✅ 관광지별 맛집 그룹화 완료:",
-      Object.keys(filteredGroups).length + "개 관광지"
-    );
+    //console.log(
+    //   "✅ 관광지별 맛집 그룹화 완료:",
+    //   Object.keys(filteredGroups).length + "개 관광지"
+    // );
 
     return filteredGroups;
   },
@@ -1904,12 +2087,12 @@ window.tourDetail = {
         sigunguCode ? "?sigunguCode=" + sigunguCode : ""
       }`;
 
-      console.log(
-        "🌟 지역 팁 조회: areaCode=" +
-          areaCode +
-          ", region=" +
-          this.currentTour.region
-      );
+      //console.log(
+      //   "🌟 지역 팁 조회: areaCode=" +
+      //     areaCode +
+      //     ", region=" +
+      //     this.currentTour.region
+      // );
 
       const response = await fetch(url);
       const result = await response.json();
@@ -1926,7 +2109,7 @@ window.tourDetail = {
         //this.renderPreparingTips(result.regionName || this.currentTour.region);
       }
     } catch (error) {
-      console.error("지역 팁 로드 실패:", error);
+      //console.error("지역 팁 로드 실패:", error);
       // this.renderPreparingTips(this.currentTour.region);
       // 에러 시 현재 투어의 지역명  사용
       this.renderPreparingTips(this.currentTour.region || "해당 지역");
@@ -2036,7 +2219,7 @@ window.tourDetail = {
         return;
       }
     } catch (error) {
-      console.warn("로그인 상태 확인 실패:", error);
+      //console.warn("로그인 상태 확인 실패:", error);
     }
 
     const button = document.getElementById("wishlistButton");
@@ -2078,7 +2261,7 @@ window.tourDetail = {
         throw new Error(result.message || "찜하기 처리 실패");
       }
     } catch (error) {
-      console.error("💥 찜하기 실패:", error);
+      //console.error("💥 찜하기 실패:", error);
       this.showToast("찜하기 처리 중 오류가 발생했습니다", "error");
     } finally {
       if (button) {
@@ -2097,7 +2280,7 @@ window.tourDetail = {
       // HTML 응답인지 확인 (로그인 페이지 리다이렉트 등)
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        console.warn("찜하기 상태 확인 - 비로그인 상태 또는 리다이렉트");
+        //console.warn("찜하기 상태 확인 - 비로그인 상태 또는 리다이렉트");
         this.isWishlisted = false;
         this.updateWishlistButton();
         return;
@@ -2109,12 +2292,12 @@ window.tourDetail = {
         this.updateWishlistButton();
       } else {
         // 401 Unauthorized 등
-        console.warn("찜하기 상태 확인 - 인증 필요");
+        //console.warn("찜하기 상태 확인 - 인증 필요");
         this.isWishlisted = false;
         this.updateWishlistButton();
       }
     } catch (error) {
-      console.warn("찜하기 상태 확인 실패:", error.message);
+      //console.warn("찜하기 상태 확인 실패:", error.message);
       this.isWishlisted = false;
       this.updateWishlistButton();
     }
@@ -2157,7 +2340,7 @@ window.tourDetail = {
       const response = await fetch(`/tour-detail/${tourId}/group-status`);
       const result = await response.json();
 
-      console.log("🔍 여행 그룹 상태:", result);
+      //console.log("🔍 여행 그룹 상태:", result);
 
       if (result.success) {
         // 그룹 정보 저장
@@ -2202,7 +2385,7 @@ window.tourDetail = {
         return result;
       }
     } catch (error) {
-      console.error("💥 여행 그룹 상태 확인 실패:", error);
+      //console.error("💥 여행 그룹 상태 확인 실패:", error);
       // 오류 시 여행참여 버튼 숨김
       const joinBtn = document.getElementById("travelJoinButton");
       const mobileJoinBtn = document.querySelector(".mobile-join-btn");
@@ -2415,7 +2598,7 @@ window.tourDetail = {
    * 여행 그룹 생성 (API 호출)
    */
   async createTravelGroup() {
-    console.log("createTravelGroup 누름!");
+    //console.log("createTravelGroup 누름!");
     // 유효성 검사
     if (!this.validateTravelForm()) {
       return;
@@ -2487,9 +2670,9 @@ window.tourDetail = {
           // 실패해도 커뮤니티로 보내고 싶으면 에러만 로그
           if (!resJoin.ok) throw new Error("HTTP " + resJoin.status);
           // 필요하면 const joinResult = await resJoin.json();
-          console.log("투어 커뮤니티 생성/참여 성공");
+          //console.log("투어 커뮤니티 생성/참여 성공");
         } catch (err) {
-          console.warn("투어 그룹 참여 실패(무시하고 이동):", err);
+          //console.warn("투어 그룹 참여 실패(무시하고 이동):", err);
           this.showToast(
             "이미 참여 중일 수 있어요. 커뮤니티로 이동합니다.",
             "error"
@@ -2507,14 +2690,14 @@ window.tourDetail = {
         this.showToast(result.message || "그룹 생성에 실패했습니다.", "error");
       }
     } catch (error) {
-      console.error("여행 그룹 생성 오류:", error);
+      //console.error("여행 그룹 생성 오류:", error);
       this.showToast("그룹 생성 중 오류가 발생했습니다.", "error");
     }
   },
 
   handleTravelCreate() {
     // 로그인 체크
-    console.log("여행만들기 버튼 클릭 - 현재 사용자:", this.currentUser);
+    //console.log("여행만들기 버튼 클릭 - 현재 사용자:", this.currentUser);
 
     if (!this.currentUser) {
       this.showToast("로그인이 필요합니다", "warning");
@@ -2556,9 +2739,9 @@ window.tourDetail = {
     if (this.currentTravelGroups && this.currentTravelGroups.length > 0) {
       const availableGroups = this.currentTravelGroups.filter((g) => g.canJoin);
 
-      // console.log(JSON.stringify(this.currentTravelGroups, null, 2));
+      //console.log(JSON.stringify(this.currentTravelGroups, null, 2));
 
-      // console.log(JSON.stringify(availableGroups, null, 2));
+      //console.log(JSON.stringify(availableGroups, null, 2));
 
       if (availableGroups.length === 1) {
         // 그룹이 하나면 바로 참여 확인
@@ -2671,7 +2854,7 @@ window.tourDetail = {
       });
     }
 
-    console.log("✅ 이벤트 리스너 설정 완료");
+    //console.log("✅ 이벤트 리스너 설정 완료");
   },
 
   // ===========================================
@@ -2751,7 +2934,7 @@ window.tourDetail = {
       }
     }, duration);
 
-    console.log(`📢 토스트 [${type}]:`, message);
+    //console.log(`📢 토스트 [${type}]:`, message);
   },
 };
 
@@ -2760,10 +2943,10 @@ window.tourDetail = {
 // ========================================
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🚀 투어 상세페이지 v3.0 로드됨");
+  //console.log("🚀 투어 상세페이지 v3.0 로드됨");
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
-  console.log("path : " + id);
+  //console.log("path : " + id);
   // URL에서 tourId 추출
   //   const pathParts = window.location.pathname.split('/');
   //   const tourId = pathParts[pathParts.length - 1];
@@ -2771,20 +2954,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // tourId 유효성 검증
   if (tourId && tourId !== "tour" && tourId.length > 5) {
-    console.log("📍 투어 ID 추출 성공:", tourId);
+    //console.log("📍 투어 ID 추출 성공:", tourId);
 
     // tourDetail 객체가 준비되면 자동 로드
     if (
       window.tourDetail &&
       typeof window.tourDetail.loadTourDetail === "function"
     ) {
-      console.log("🎯 투어 상세정보 자동 로드 시작");
+      //console.log("🎯 투어 상세정보 자동 로드 시작");
       window.tourDetail.loadTourDetail(tourId);
     } else {
-      console.error("❌ tourDetail 객체가 준비되지 않음");
+      //console.error("❌ tourDetail 객체가 준비되지 않음");
     }
   } else {
-    console.error("❌ 유효하지 않은 투어 ID:", tourId);
+    //console.error("❌ 유효하지 않은 투어 ID:", tourId);
     // 에러 페이지 표시
     if (window.tourDetail) {
       window.tourDetail.showError("잘못된 투어 페이지 주소입니다.");
@@ -2974,7 +3157,7 @@ async function showAvailableGroupsModal(availableGroups) {
 
     openGroupModal();
   } catch (e) {
-    console.error(e);
+    //console.error(e);
 
     alert("그룹 정보를 불러오지 못했습니다.");
   }
@@ -3028,7 +3211,7 @@ async function handleGroupCardClick(groupId, enrolledHint = false) {
         isMember = !!j.member;
       }
     } catch (err) {
-      console.warn("가입 여부 확인 실패(무시):", err);
+      //console.warn("가입 여부 확인 실패(무시):", err);
     }
   }
 
@@ -3075,7 +3258,7 @@ async function handleGroupCardClick(groupId, enrolledHint = false) {
 
     window.location.href = `/community?groupId=${encodeURIComponent(groupId)}`;
   } catch (err) {
-    console.error(err);
+    //console.error(err);
 
     toast("가입 중 오류가 발생했습니다.");
   }
